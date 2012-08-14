@@ -1,0 +1,2 @@
+* Non stable edges pointer when multithreading
+* Database has to have >1 example before executing training thread

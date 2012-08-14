@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="84">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <itemPath>DebugCollector.h</itemPath>
+      <itemPath>ExtGraphNodeManager.h</itemPath>
+      <itemPath>ExtMemoryManager.h</itemPath>
+      <itemPath>GNG.h</itemPath>
+      <itemPath>GNGAlgorithm.h</itemPath>
+      <itemPath>GNGDatabase.h</itemPath>
+      <itemPath>GNGGraph.h</itemPath>
+      <itemPath>GNGGraphInfo.cpp</itemPath>
+      <itemPath>GNGGraphInfo.h</itemPath>
+      <itemPath>RcppInterface.h</itemPath>
+      <itemPath>SHGraphDefs.cpp</itemPath>
+      <itemPath>SHGraphDefs.h</itemPath>
+      <itemPath>SHMemoryManager.h</itemPath>
+      <itemPath>Utils.cpp</itemPath>
+      <itemPath>Utils.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+      <itemPath>notes</itemPath>
+      <itemPath>test_file</itemPath>
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <logicalFolder name="server_client_example"
+                     displayName="server_client_example"
+                     projectFiles="true">
+        <itemPath>server_client_example/client.cpp</itemPath>
+        <itemPath>main_1.cpp</itemPath>
+        <itemPath>main_2.cpp</itemPath>
+        <itemPath>server_client_example/server.cpp</itemPath>
+      </logicalFolder>
+      <itemPath>DebugCollector.cpp</itemPath>
+      <itemPath>ExtGraphNodeManager.cpp</itemPath>
+      <itemPath>GNGAlgorithm.cpp</itemPath>
+      <itemPath>GNGDatabase.cpp</itemPath>
+      <itemPath>GNGGraph.cpp</itemPath>
+      <itemPath>RcppInterface.cpp</itemPath>
+      <itemPath>SHMemoryManager.cpp</itemPath>
+      <itemPath>main.cpp</itemPath>
+      <itemPath>test_client.cpp</itemPath>
+    </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+      <logicalFolder name="f2"
+                     displayName="New CppUnit Test"
+                     projectFiles="true"
+                     kind="TEST">
+        <itemPath>tests/newtestclass2.cpp</itemPath>
+        <itemPath>tests/newtestclass2.h</itemPath>
+        <itemPath>tests/newtestrunner2.cpp</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f1"
+                     displayName="New Folder 1"
+                     projectFiles="true"
+                     kind="TEST_LOGICAL_FOLDER">
+      </logicalFolder>
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceRootList>
+    <Elem>server_client_example</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="1">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>default</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+            <pElem>/home/staszek/usr/include</pElem>
+            <pElem>/usr/share/R/include</pElem>
+            <pElem>/usr/local/lib/R/site-library/Rcpp/include</pElem>
+            <pElem>/usr/local/lib/R/site-library/RcppArmadillo/include</pElem>
+          </incDir>
+        </ccTool>
+        <linkerTool>
+          <output>${TESTDIR}/TestFiles/f1</output>
+          <linkerAddLib>
+            <pElem>/home/staszek/usr/lib</pElem>
+            <pElem>/usr/local/lib/R/site-library/Rcpp/lib</pElem>
+            <pElem>/usr/local/lib/R/site-library/RcppArmadillo/libs</pElem>
+          </linkerAddLib>
+          <linkerDynSerch>
+            <pElem>/home/staszek/usr/include</pElem>
+            <pElem></pElem>
+            <pElem>/usr/local/lib/R/site-library/Rcpp/include</pElem>
+            <pElem>/usr/local/lib/R/site-library/RcppArmadillo/include</pElem>
+          </linkerDynSerch>
+          <linkerLibItems>
+            <linkerLibStdlibItem>PosixThreads</linkerLibStdlibItem>
+            <linkerLibLibItem>rt</linkerLibLibItem>
+            <linkerLibLibItem>boost_system</linkerLibLibItem>
+            <linkerLibLibItem>boost_thread</linkerLibLibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="RcppInterface.cpp" ex="true" tool="1" flavor2="0">
+      </item>
+      <item path="RcppInterface.h" ex="true" tool="3" flavor2="0">
+      </item>
+      <folder path="TestFiles/f1">
+        <cTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
+        <linkerTool>
+          <output>${TESTDIR}/TestFiles/f1</output>
+          <linkerLibItems>
+            <linkerLibStdlibItem>CppUnit</linkerLibStdlibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </folder>
+      <folder path="TestFiles/f2">
+        <cTool>
+          <incDir>
+            <pElem>.</pElem>
+            <pElem>.</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+            <pElem>.</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
+        <linkerTool>
+          <output>${TESTDIR}/TestFiles/f2</output>
+          <linkerLibItems>
+            <linkerLibStdlibItem>CppUnit</linkerLibStdlibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </folder>
+      <item path="main_1.cpp" ex="true" tool="1" flavor2="0">
+      </item>
+      <item path="main_2.cpp" ex="true" tool="1" flavor2="0">
+      </item>
+      <item path="server_client_example/client.cpp" ex="true" tool="1" flavor2="0">
+      </item>
+      <item path="server_client_example/server.cpp" ex="true" tool="1" flavor2="0">
+      </item>
+      <item path="test_client.cpp" ex="true" tool="1" flavor2="0">
+      </item>
+    </conf>
+    <conf name="Release" type="1">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>default</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
+        <linkerTool>
+          <output>${TESTDIR}/TestFiles/f1</output>
+        </linkerTool>
+      </compileType>
+      <folder path="TestFiles/f1">
+        <cTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
+        <linkerTool>
+          <output>${TESTDIR}/TestFiles/f1</output>
+        </linkerTool>
+      </folder>
+      <folder path="TestFiles/f2">
+        <cTool>
+          <incDir>
+            <pElem>.</pElem>
+            <pElem>.</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+            <pElem>.</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
+        <linkerTool>
+          <output>${TESTDIR}/TestFiles/f2</output>
+        </linkerTool>
+      </folder>
+    </conf>
+  </confs>
+</configurationDescriptor>
