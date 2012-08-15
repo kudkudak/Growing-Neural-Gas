@@ -81,6 +81,7 @@ RcppExport SEXP GNGClient__updateBuffer(SEXP _xp){
         int k=0;
         
         
+        
         //verification
         FOREACH(edg,ptr->buffer[i].edges){
             if(edg->nr>((int)ptr->buffer.size()-1)) cout<<k+1<<" "<<ptr->buffer[i].edgesCount<<"X\n";
@@ -170,24 +171,35 @@ RcppExport SEXP GNGClient__getNode(SEXP _xp, SEXP _nr){
     
     //cout<<edg<<endl;
     
-    Rcpp::NumericVector node(edg+3);
+    Rcpp::NumericVector node(edg+3+1);
     
     
     //memcpy?, arma position ?
     
+    node[0] = requested_node->occupied;
+    
+    //slight change of the model
+    
+   // cout<<"node read\n";
+    
+    if(! requested_node->occupied) return wrap(node);
+    
+    
     int i;
-    for(i=0;i<3;++i) {
-        node[i]=requested_node->position[i];
+    for(i=1;i<=3;++i) {
+        node[i]=requested_node->position[i-1];
     }
 
-    i = 2;
+    i = 3;
+    
+   // cout<<"pos read\n";
     
     if(edg>0){
         FOREACH(it,requested_node->edges){
             
            ++i;
            node[i] = it->nr;
-          if(i==edg+2) break; //added  new edge meanwhile
+          if(i==edg+3) break; //added  new edge meanwhile
         }  
     }    
 

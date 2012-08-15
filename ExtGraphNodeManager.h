@@ -116,14 +116,44 @@ public:
     
     
     //constant complexity
-    void removeEdge(int a,EdgeIterator it){
+     void removeRevEdge(int a,EdgeIterator it){
+        #ifdef COMPILE_WITH_GROW_MUTEX
+        ScopedLock sc(*grow_mutex);
+        #endif
+        
         int b=it->nr;
+        
         EdgeIterator rev = it->rev; 
+        
+        dbg.push_back(-1,"ExtGraphNodeManager::removing rev edge");
+
+        g_pool[b].edges->erase(rev);
+        
+        dbg.push_back(-1,"ExtGraphNodeManager::edge pretty much erased");
+  
+
+        g_pool[b].edgesCount--;      
+        
+    }
+       
+    void removeEdge(int a,EdgeIterator it){
+        #ifdef COMPILE_WITH_GROW_MUTEX
+        ScopedLock sc(*grow_mutex);
+        #endif
+        
+        int b=it->nr;
+        
+        EdgeIterator rev = it->rev; 
+        
+        dbg.push_back(-1,"ExtGraphNodeManager::removing edge");
+        
         g_pool[a].edges->erase(it);
         g_pool[b].edges->erase(rev);
         
-         g_pool[a].edgesCount--;       
-         g_pool[b].edgesCount--;      
+        dbg.push_back(-1,"ExtGraphNodeManager::edges pretty much erased");
+        
+        g_pool[a].edgesCount--;       
+        g_pool[b].edgesCount--;      
         
     }
     
@@ -162,7 +192,7 @@ public:
     }
     
  
-    bool deleteNode(int x);
+    bool deleteNode(int x);    
     
     Node * operator[](int i){ return g_pool +i; }
     
@@ -252,8 +282,13 @@ std::string ExtGraphNodeManager<Node,Edge,EdgeStorage>::reportPool(bool sorted) 
         Node * it = g_pool;
         Node * end = it + g_pool_nodes;
         
+        int k = getMaximumIndex();
+        int j=0;
         
         for (; it != end; ++it) {
+            ++j;
+            if(j>getMaximumIndex()) break;
+            
             if (it->occupied) {
                 ss << (*it) << ":";
              
@@ -270,6 +305,7 @@ std::string ExtGraphNodeManager<Node,Edge,EdgeStorage>::reportPool(bool sorted) 
                 ss << endl;
                 
             }
+            else ss<<"X"<<endl;
         }
         return ss.str();
     } else {
@@ -359,13 +395,21 @@ int ExtGraphNodeManager<Node,Edge,EdgeStorage>::newNode() {
 }
 template<class Node, class Edge, class EdgeStorage >
 bool ExtGraphNodeManager<Node,Edge,EdgeStorage>::deleteNode(int x) {
+        #ifdef COMPILE_WITH_GROW_MUTEX
+        ScopedLock sc(*grow_mutex);
+        #endif
+        
+
     --m_nodes;
-    g_pool[x-1].edgesCount=0;
-    g_pool[x - 1].occupied = false;
-    g_pool[x - 1].nextFree = m_first_free;
-    delete &(*g_pool[x - 1].edges); //wazne zeby obiekt zostal bo jest alokowany na SH
-    g_pool[x-1].edges=0; //nullpointer
-    m_first_free = x - 1;
+    g_pool[x].edgesCount=0;
+    g_pool[x ].occupied = false;
+    g_pool[x ].nextFree = m_first_free;
+    
+    //deletion is unfortunately linear - see to it?
+    
+    delete &(*g_pool[x ].edges); //wazne zeby obiekt zostal bo jest alokowany na SH
+    g_pool[x].edges=0; //nullpointer
+    m_first_free = x ;
     return true;
 }
 #endif	/* EXTGRAPHNODEMANAGER_H */

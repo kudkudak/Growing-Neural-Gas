@@ -263,7 +263,9 @@ class GNGNodeOffline{ public:
          this->occupied = rhs.occupied;
          this->nextFree = rhs.nextFree;
          memcpy(&position[0],&rhs.position[0],GNGExample::N*sizeof(double));
- 
+         
+         if(rhs.edgesCount==0 || rhs.edges==0) return true; //nie kopiuj
+         
          int i=0;
          FOREACH(edg, *rhs.edges){
              if((i++)==edgesCount) break;

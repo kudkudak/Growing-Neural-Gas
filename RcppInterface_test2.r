@@ -19,4 +19,6 @@ for(i in 1:nodes)
 }
 
 
-scatterplot3d(x,y,z, pch=16, cex.symbols=0.25, axis=FALSE )
+
+points3d(x, y, z, color=rgb(1,1,1))
+rgl.lines(x_lines,y_lines,z_lines)#,color=rgb(1,1,1))
