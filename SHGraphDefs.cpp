@@ -13,8 +13,8 @@ ExtMemoryManager* SHVector::mm = 0;
 ExtMemoryManager * SHNode::mm = 0;
 
 
-ShmemAllocator* GNGVector::alloc_inst = 0;
-ExtMemoryManager* GNGVector::mm = 0;
+ShmemAllocatorGNG* GNGList::alloc_inst = 0;
+ExtMemoryManager* GNGList::mm = 0;
 
  ExtMemoryManager * GNGNode::mm = 0;
 

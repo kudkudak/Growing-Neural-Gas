@@ -1,2 +1,22 @@
 * Non stable edges pointer when multithreading
 * Database has to have >1 example before executing training thread
+
+
+
+*** TO DO ***
+* Adopt Arma for error calculation
+* in RcppInterface and SHGraphDefs implement faster algorithms (from libraries) loop unrolling etc
+* gngDatabase - scoped lock and draw example pointer ! (copying is pointless - add const modifier)
+* move consts and typedef to be organised
+* RcppInterface.cpp -> hack for erasing edges out of buffer. ( slowing things down unnecessarily)
+
+*** TO DO BIGGER STUFF ***
+* documentation
+* header cleaning
+* memory managing (delete functions)
+* oddzielic .h od .cpp , dorobic .hpp gdzie potrzebne
+
+
+*** IDEAS ***
+* change g_pool_nodes to something like offset_ptr<vector<Node>> so it is always the same
+* ExtNodeGraphManager - good idea for file sharing or sth simillar?

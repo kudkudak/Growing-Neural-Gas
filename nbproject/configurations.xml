@@ -10,6 +10,7 @@
       <itemPath>GNG.h</itemPath>
       <itemPath>GNGAlgorithm.h</itemPath>
       <itemPath>GNGDatabase.h</itemPath>
+      <itemPath>GNGDefines.h</itemPath>
       <itemPath>GNGGraph.h</itemPath>
       <itemPath>GNGGraphInfo.cpp</itemPath>
       <itemPath>GNGGraphInfo.h</itemPath>

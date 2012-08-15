@@ -17,21 +17,21 @@
 #include <boost/bind.hpp>
 
 
+typedef  ExtGraphNodeManager<GNGNode, GNGEdge, GNGList> GNGGraphBase;
 
-
-class GNGGraph : public ExtGraphNodeManager<GNGNode, GNGEdge, GNGVector>{
+class GNGGraph : public GNGGraphBase{
     boost::mutex * m_mutex;
     
 public:
     static ExtMemoryManager * mm;
-    typedef ExtGraphNodeManager<GNGNode, GNGEdge, GNGVector> super;
+    typedef ExtGraphNodeManager<GNGNode, GNGEdge, GNGList> super;
     
-    GNGGraph(int start_number,boost::mutex * mutex):m_mutex(mutex),ExtGraphNodeManager<GNGNode, GNGEdge, GNGVector>(start_number){
+    GNGGraph(int start_number,boost::mutex * mutex):m_mutex(mutex),GNGGraphBase(start_number){
         
     }
-    GNGGraph(boost::mutex * mutex):m_mutex(mutex),ExtGraphNodeManager<GNGNode, GNGEdge, GNGVector>(){}
+    GNGGraph(boost::mutex * mutex):m_mutex(mutex),GNGGraphBase(){}
     GNGGraph(GNGNode * _g_pool, int _m_nodes, int _g_pool_nodes, int _m_first_free,boost::mutex * mutex):
-    m_mutex(mutex),ExtGraphNodeManager<GNGNode, GNGEdge, GNGVector>
+    m_mutex(mutex),GNGGraphBase
        ( _g_pool, _m_nodes,  _g_pool_nodes, _m_first_free)
     {}
     
@@ -42,14 +42,13 @@ public:
     GNGNode * operator[](int i){ return super::g_pool +i; }
     
     int newNode(double const *position){
-       //m_mutex->lock();  
         
         int i=super::newNode();
+        
+        //TO-DO: implementation depend !! (depre* after change to arma for example)
         memcpy(&(super::g_pool+i)->position[0],position,sizeof(double)*GNGExample::N);
        
-        
-        //m_mutex->unlock();
-        
+  
         return i;
     }
     

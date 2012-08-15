@@ -10,14 +10,17 @@
 
 #define GNG_MAX_DIMENSION 100 //wazne dla szybkosci
 
+#include <boost/interprocess/containers/list.hpp>
 #include <boost/interprocess/containers/vector.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/offset_ptr.hpp>
 
+#include <list>
+
 #include "SHMemoryManager.h"
 #include "GNGDatabase.h"
 
-#include <iostream>
+
 /*
 struct Edge;
 
@@ -108,17 +111,126 @@ class SHVector: public SHVectorTempl{ public:
     
 };
 
-class GNGVector;
+class GNGList
+;
+
+
 class GNGEdge{ public:
+    
     int nr;
-    GNGEdge(){}
-    GNGEdge(int nr):nr(nr){}
+    double edge;
+    GNGEdge * rev;
+    GNGEdge():edge(0){}
+    GNGEdge(int nr):nr(nr),edge(0.0){}
+    
 };
 
+
 typedef boost::interprocess::allocator<GNGEdge, boost::interprocess::managed_shared_memory::segment_manager>  ShmemAllocatorGNG;
-typedef boost::interprocess::vector<GNGEdge, ShmemAllocatorGNG> GNGVectorVectorTempl;
+typedef boost::interprocess::vector<GNGEdge, ShmemAllocatorGNG> GNGVectorTempl;
+typedef boost::interprocess::list<GNGEdge, ShmemAllocatorGNG> GNGListTempl;
 
 
+
+//how to implement iterators on this list? my own list rewrite? lets try it! but have to write iterator, that sucks.
+
+class GNGList: public GNGListTempl{ public:
+
+    
+    static ShmemAllocatorGNG * alloc_inst;
+    static ExtMemoryManager * mm;
+
+ 
+     GNGList():GNGListTempl(*alloc_inst){}
+
+     
+
+     void* operator new[](std::size_t size){
+         return mm->allocate(size);
+         
+     }
+     void * operator new(std::size_t size){
+         return mm->allocate(size);
+          
+     }
+     void operator delete(void * ptr){
+         mm->deallocate(ptr);
+     }
+    
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class GNGListSelf { public:
+
+    
+    static ShmemAllocatorGNG * alloc_inst;
+    static ExtMemoryManager * mm;
+
+ 
+     GNGList():GNGListTempl(*alloc_inst){}
+
+     
+
+     void* operator new[](std::size_t size){
+         return mm->allocate(size);
+         
+     }
+     void * operator new(std::size_t size){
+         return mm->allocate(size);
+          
+     }
+     void operator delete(void * ptr){
+         mm->deallocate(ptr);
+     }
+    
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//TODO: hack with GNGNode repair
 
 class GNGNode{ public:
     static ExtMemoryManager * mm;
@@ -146,6 +258,49 @@ class GNGNode{ public:
          return out;
      }
      
+     GNGNode():error(0.0),occupied(false),nr(-1),nextFree(-1),edgesCount(0){
+     
+     }
+     
+    double position[GNG_MAX_DIMENSION]; //wymiar//
+    
+    double error; 
+    int edgesCount; 
+    int nr;
+    bool occupied;
+    int nextFree;
+    
+    boost::interprocess::offset_ptr<GNGList> edges; //jest w shm mam nadzieje, chyba tak. do sprawdzenia
+};   
+
+
+
+class GNGNodeOffline{ public:
+     
+     friend std::ostream& operator<<(std::ostream& out, const GNGNodeOffline & node){
+         out<<node.nr<<"(";
+         for(int i=0;i<GNGExample::N;++i){
+             out<<node.position[i]<<",";
+         }
+         
+         out<<")";
+         return out;
+     }
+
+     
+     //TODO: workaround with std::copy failure
+     bool operator=(const GNGNode & rhs){
+         this->edgesCount = rhs.edgesCount;
+         this->nr = rhs.nr;
+         this->occupied = rhs.occupied;
+         this->nextFree = rhs.nextFree;
+         memcpy(&position[0],&rhs.position[0],GNGExample::N*sizeof(double));
+ 
+         FOREACH(edg, *rhs.edges){
+             edges.push_back(*edg); //rev nieistotne
+         }
+         //*(this->edges) = *(rhs.edges);
+     }
 
      
     double position[GNG_MAX_DIMENSION]; //wymiar//
@@ -156,32 +311,12 @@ class GNGNode{ public:
     bool occupied;
     int nextFree;
     
-    boost::interprocess::offset_ptr<GNGVector> edges; //jest w shm mam nadzieje, chyba tak. do sprawdzenia
-};
+    std::list<GNGEdge> edges; //jest w shm mam nadzieje, chyba tak. do sprawdzenia
+};   
 
-class GNGVector: public SHVectorTempl{ public:
-        static ShmemAllocator * alloc_inst;
-	static ExtMemoryManager * mm;
 
-     GNGVector():SHVectorTempl(*alloc_inst){}
+//typedef GNGNodeTempl<GNGVectorPointerOnline> GNGNode;
 
-     
-
-     void* operator new[](std::size_t size){
-         return mm->allocate(size);
-         
-     }
-     void * operator new(std::size_t size){
-         return mm->allocate(size);
-          
-     }
-     void operator delete(void * ptr){
-         mm->deallocate(ptr);
-     }
-    
-};
-
-   
 
 #endif	/* SHGRAPHDEFS_H */
 

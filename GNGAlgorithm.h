@@ -16,33 +16,94 @@
 
 
 
+//when reading - adding new edges
 
 class GNGAlgorithm {
     double m_error; //error of the network
     int m_lambda; //lambda parameter
+    double m_eps_v, m_eps_n; //epsilon of the winner and of the neighbour
     
+    int m_max_nodes;
+    int s;
     int c;
     
     GNGGraph m_g; //czy nie bedzie za duzo na stosie? sprawdzic miejsce potencjalnego buga
     GNGDatabase* g_db;
 public:
-    GNGAlgorithm(GNGDatabase* db, int start_number,boost::mutex * mutex):m_g(mutex),g_db(db),c(0) {
+    GNGAlgorithm(GNGDatabase* db, int start_number,boost::mutex * mutex, int lambda=200):m_g(mutex),g_db(db),c(0),s(0) ,m_max_nodes(10000){
         m_g.init(start_number);
-        m_lambda=10;
+        m_lambda=lambda;
     }
     
     double getError() const{ return m_error; }
-    bool stoppingCriterion(){ return false; }
+    bool stoppingCriterion(){ return m_g.getNumberNodes()>m_max_nodes; }
     
     GNGGraph * get_graph(){ return &m_g; }
     
-    void GNGAdapt(GNGExample * ex){
-        if(ex) m_g.newNode(ex->position);
-        if(ex) m_g.addDEdge(__int_rnd(0,m_g.getNumberNodes()-1),__int_rnd(0,m_g.getNumberNodes()-1) );
+
+    
+    void IncreaseError(GNGNode * node, double error){
+        node->error+=error;
     }
-    void GNGAddNewNode(){
+//R
+    
+    void TotallyRandomAdd(){
+
+        GNGExample  ex = g_db -> drawExample();
+        
+        m_g.newNode(&ex.position[0]);
+       // m_g.addDEdge(__int_rnd(0,m_g.getNumberNodes()-1),0);
+       m_g.addDEdge(__int_rnd(0,m_g.getNumberNodes()-1),__int_rnd(0,m_g.getNumberNodes()-1) );
+       
+       
+       
+    }
+    
+    void RandomInit(){
+        GNGExample  ex1 = g_db -> drawExample();
+        GNGExample  ex2 = g_db -> drawExample();
+        
+        m_g.newNode(ex1.position);
+        m_g.newNode(ex2.position);
+    }
+    
+    void AddNewNode(){
         
     }
+    
+    GNGNode * TwoNearestNodes(){
+        return 0;
+    }
+    
+
+    void Adapt(GNGExample * ex){
+       /* GNGNode * nearest = TwoNearestNodes();
+        
+        double error=0.0;
+        for(int i=0;i<GNGExample::N;++i)
+            error+=(nearest[0]->position[i] - ex->position[i])*(nearest[0]->position[i] - ex->position[i]); //armadillo.
+        
+        
+        IncreaseError(nearest[0],error);
+        
+        for(int i=0;i<GNGExample::N;++i){
+            nearest[0]->position[i]+=m_eps_v*(ex->position[i]-nearest[0]->position[i]);
+        }
+        
+        GNGEdge * edg = m_g.getFirstEdge(nearest[0]->nr);
+        GNGEdge * end = edg + nearest[0]->edgesCount;
+        
+        for(;edg!=end;++edg){ //cumbersome - replace?
+            
+          for(int i=0;i<GNGExample::N;++i){
+              nearest[edg->nr]->position[i]+=m_eps_n*(ex->position[i]-nearest[edg->nr]->position[i]);
+          }
+          
+        }
+        */
+    }  
+        
+    
     
     void runAlgorithm(){ //1 thread needed to do it (the one that computes)
         c=0;
@@ -50,22 +111,22 @@ public:
         bool waited=false;
 
         
+        //random init (2 nodes)
+        RandomInit();
+        
+        
         //powinien sprawdzac czy juz ma zaczac.
         while(!stoppingCriterion()){
-            for (int s = 0; s<m_lambda ;++s){
+            for (s = 0; s<m_lambda ;++s){ //global counter!!
+                boost::this_thread::sleep(boost::posix_time::microseconds(10000)); //to see the progress when the data is small
                 
-              //
-                boost::this_thread::sleep(boost::posix_time::microseconds(10000));
-                
-                if(m_g.getNumberNodes()<500) { 
-                    dbg.push_back(-3,"GNGAlgorithm::draw example");
-                    GNGExample  ex = g_db -> drawExample();
-                    dbg.push_back(-3,"GNGAlgorithm::draw example succesful");
-                    GNGAdapt(&ex); 
-                }
+                TotallyRandomAdd();
+                //GNGExample  ex = g_db -> drawExample();
+               // dbg.push_back(-3,"GNGAlgorithm::draw example");
+               // GNGAdapt(&ex);
             }
-            GNGAddNewNode();
-            c=c+1; //epoch
+            //GNGAddNewNode();
+            ++c; //epoch
         }
     }
     

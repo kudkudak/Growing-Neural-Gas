@@ -51,7 +51,7 @@ public:
     }
     void push_back(int level, std::string line){
         #ifdef DEBUG_COLLECTOR_DEBUG
-                if(level>= DEBUG_COLLECTOR_LEVEL) std::cout<<line<<endl;
+                if(level>= DEBUG_COLLECTOR_LEVEL) std::cout<<line<<std::endl;
         #endif
         //records.push_back(Record(level,line));
     }

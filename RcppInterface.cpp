@@ -13,7 +13,7 @@ GNGGraphInfo * ggi;
 int GNGExample::N=3; 
 RcppExport SEXP GNGClient__new(){
    //GNGExample::N=3; g
-    
+   
     
     
    managed_shared_memory *  mshm1= new managed_shared_memory(open_only,"SHMemoryPool_Segment1");
@@ -23,7 +23,9 @@ RcppExport SEXP GNGClient__new(){
    MyMutex * database_mutex = (mshm2->find< MyMutex >("database_mutex")).first;	
    SHGNGExampleDatabase * database_vec = (mshm2->find< SHGNGExampleDatabase >("database_vec")).first;	
    
-   grow_mutex->lock();
+   ScopedLock sc(*grow_mutex); 
+   
+  // grow_mutex->lock();
 
    GNGGraphInfo * ggi2 = (mshm1->find<GNGGraphInfo >("SHGraphInfo")).first; //musi byc stworzony : kolejne miejsce na blad !
    
@@ -41,7 +43,7 @@ RcppExport SEXP GNGClient__new(){
 
 
    
-   grow_mutex->unlock();
+   //grow_mutex->unlock();
 
    return wrap(ptr); 
 }
@@ -53,28 +55,74 @@ RcppExport SEXP GNGClient__updateBuffer(SEXP _xp){
     
     Rcpp::XPtr<GNGClient> ptr(_xp);
 
-    ptr->grow_mutex->lock();
-  
-    int a = ptr->ggi->nodes;
-  
-    ptr->grow_mutex->unlock();     
+    ScopedLock sc(*ptr->grow_mutex);
+    
+    GraphAccess & graph = *(ptr->readGraph());
+    
+    //copy routine !
+    
+    ptr->buffer.clear();
+    ptr->buffer.resize(graph.getNumberNodes());
+    
+    
+    
+    for(int i=0;i<graph.getNumberNodes();++i){
+        ptr->buffer[i] = (graph.getPool())[i]; //operator= !! wazne zeby dawac tego typu rzeczy do klas
+        if(ptr->buffer[i].edgesCount==0) continue;
+        
+        //replace
+        //TO-DO: hack
+        /*
+        FOREACH(edg,ptr->buffer[i].edges){
+            if(edg->nr>((int)ptr->buffer.size()-1)) edg=ptr->buffer[i].edges.erase(edg);
+           
+        }
+        */
+    }
+
     
     return wrap(0);    
+}
+
+RcppExport SEXP GNGClient__getNumberNodesOnline(SEXP _xp){
+    
+    
+    
+    Rcpp::XPtr<GNGClient> ptr(_xp);
+    ScopedLock sc(*ptr->grow_mutex);
+    
+    GraphAccess & graph = *(ptr->readGraph());
+    return wrap((int)(graph.getNumberNodes()));
 }
 
 RcppExport SEXP GNGClient__getNumberNodes(SEXP _xp){
     
     Rcpp::XPtr<GNGClient> ptr(_xp);
+    
+    return wrap((int)(ptr->buffer.size()));
+}
 
-    ptr->grow_mutex->lock();
-  
-    int a = ptr->ggi->nodes;
-  
-    ptr->grow_mutex->unlock();     
+RcppExport SEXP GNGClient__getNodeNumberEdges(SEXP _xp, SEXP _nr){
+    Rcpp::XPtr<GNGClient> ptr(_xp);
+    return wrap((int)
+            (ptr->buffer[as<int>(_nr)].edges.size())
+    );
+}
+
+RcppExport SEXP GNGClient__getNodeMatrix(SEXP _xp){
+    Rcpp::XPtr<GNGClient> ptr(_xp); 
     
-   
+    int nodes = (int)ptr->buffer.size();
     
-    return wrap(a);
+    Rcpp::NumericMatrix node_matrix(nodes,GNGExample::N);
+    
+    for(int i=0;i<nodes;++i){
+        for(int j=0;j<GNGExample::N;++j){
+            node_matrix(i,j) = ptr->buffer[i].position[j];
+        }
+    }
+    
+    return wrap(node_matrix);
 }
 
 
@@ -82,43 +130,42 @@ RcppExport SEXP GNGClient__getNode(SEXP _xp, SEXP _nr){
 
     Rcpp::XPtr<GNGClient> ptr(_xp);
     int nr = as<int>(_nr);
-    
-    ptr->grow_mutex->lock();
 
-  
     int a = 1;
  
-    GraphAccess & graph = *(ptr->readGraph());
-    
- 
-    GNGNode * requested_node = graph[nr];
+   
+    GNGNodeOffline * requested_node = &ptr->buffer[nr];
  
     int edg = requested_node->edgesCount;
     
+    //cout<<edg<<endl;
+    
     Rcpp::NumericVector node(edg+3);
     
-    for(int i=0;i<3;++i) {
+    
+    //memcpy?, arma position ?
+    
+    int i;
+    for(i=0;i<3;++i) {
         node[i]=requested_node->position[i];
     }
 
+    i = 2;
+    
     if(edg>0){
-      GNGEdge * first = graph.getFirstEdge(nr);
-    
-      for(int i=0;i<edg;++i){
-          node[i+3] = first->nr;
-          ++first;
-      }  
-    }
-    
+        FOREACH(it,requested_node->edges){
+            
+           ++i;
+           node[i] = it->nr;
+          if(i==edg+2) break; //added  new edge meanwhile
+        }  
+    }    
 
-   // memcpy(pos,&(graph[2]->position[0]),3*sizeof(double));
-
-    ptr->grow_mutex->unlock();     
-    
-   
     
     return wrap(node);
 }
+
+
 
 RcppExport SEXP GNGClient__addExamples(SEXP _xp, SEXP _examples){
     Rcpp::XPtr<GNGClient> ptr(_xp);

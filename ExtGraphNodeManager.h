@@ -29,6 +29,8 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/bind.hpp>
 
+#include "GNGDefines.h"
+
 extern DebugCollector dbg;
 
 #ifdef COMPILE_WITH_GROW_MUTEX
@@ -89,20 +91,47 @@ public:
     
     void init(int start_number);
     
+    
+    //linear complexity but gng graph is sparse because it is delanuay triangulation inducted graph which is O(N), where N is the dimension of GNG network
+    bool isEdges(int a, int b){
+    
+    }
+    
+    void addUDEdge(int a, int b){
+        //no self loops !! - important for correctness//
+        ScopedLock sc(*grow_mutex);
+        
+        
+        //what is important is that you cant remove edge when buffering so grow_mutex lock is necessary
+        
+        //high_constans
+        
+
+        ((g_pool + a)->edges)->push_back(b);
+        ((g_pool+b)->edges)->push_back(a);
+        
+        
+       // (g_pool+a)->edges->back()->rev = &(*((g_pool+b)->edges->back()));
+       // (g_pool+b)->edges->back()->rev = &(*((g_pool+a)->edges->back()));
+        
+        
+        (g_pool + a)->edgesCount++;       
+        (g_pool + b)->edgesCount++;
+        
+    }
+    
     void addDEdge(int a, int b){
         //problem z krawedziami
         //ofset sie zmienia to nei jest bezwzgledny!
        // GNGEdge ed(b);
+        
+        grow_mutex->lock();
         ((g_pool+a)->edges)->push_back(b);
-       
         (g_pool+a)->edgesCount++;
+        grow_mutex->unlock();
     }
     
-    Edge * getFirstEdge(int a){
-        if((g_pool+a)->edges==0) return 0;
-        return reinterpret_cast<Edge*>(&(*(g_pool+a)->edges)[0]);
-    }
-    
+ 
     bool deleteNode(int x);
     
     Node * operator[](int i){ return g_pool +i; }
@@ -201,11 +230,9 @@ std::string ExtGraphNodeManager<Node,Edge,EdgeStorage>::reportPool(bool sorted) 
                 
                
                 if(it->edgesCount!=0){
-                    Edge * it2 =getFirstEdge(it->nr);
-                    Edge * end = it2+ it->edgesCount;
-               
+                 
                   
-                   for(;it2!=end;++it2) ss << (it2->nr) << ",";
+                   FOREACH(it2,*(it->edges)) ss << (it2->nr) << ",";
                 }
                  
                 //FOREACH(it2, *(it->edges)) ss << (it2->nr) << ",";
@@ -226,9 +253,8 @@ std::string ExtGraphNodeManager<Node,Edge,EdgeStorage>::reportPool(bool sorted) 
             if (it->occupied) {
                 tmp = tmp + to_string(*it) + ":";
 
-                Edge * it2 = getFirstEdge(it->nr);
-                Edge * end = it2+ it->edgesCount;
-                for(;it2!=end;++it2) tmp = tmp + to_string(it2->nr) + ",";
+       
+                FOREACH(it2, *(it->edges)) tmp = tmp + to_string(it2->nr) + ",";
                 
                 //FOREACH(it2, *it->edges) tmp = tmp + to_string(it2->nr) + ",";
 
@@ -284,7 +310,7 @@ int ExtGraphNodeManager<Node,Edge,EdgeStorage>::newNode() {
 
    
 
-    int createdNode = m_first_free;
+    int createdNode = m_first_free; //taki sam jak w g_node_pool
 
     g_pool[createdNode].occupied = true;
     g_pool[createdNode].nr = createdNode;

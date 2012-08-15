@@ -24,11 +24,7 @@
 
 #include "RcppInterface.h"
 
-
-
-#define GNGNODEPOOL_MODIFIED 0
-#define GNG_MAX_DIM 100
-
+#include "GNGDefines.h"
 
 #endif	/* GNGINCLUDE_H */
 

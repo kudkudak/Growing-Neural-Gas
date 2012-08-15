@@ -122,6 +122,7 @@ public:
         if(g_database->size() == g_database->capacity()) grow_database();
         g_database->push_back(*ex); //operator= kopiowania, ale jest to struct wiec nie trzeba nic pisac
         
+        
         database_mutex->unlock();
     }
     

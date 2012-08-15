@@ -19,10 +19,8 @@
 
 
 
-typedef boost::interprocess::interprocess_mutex MyMutex;
-typedef boost::interprocess::offset_ptr< GNGNode  > PoolPtr;
-typedef ExtGraphNodeManager<GNGNode, GNGEdge, GNGVector> GraphAccess;
 
+typedef  ExtGraphNodeManager<GNGNode, GNGEdge, GNGList> GraphAccess;
 
 struct GNGClient{
     GNGGraphInfo * ggi; //czyta z shared memory w new
@@ -32,7 +30,7 @@ struct GNGClient{
         return new GraphAccess((ggi->ptr).get(),ggi->nodes,ggi->pool_nodes,ggi->first_free);
     }
     
-    vector<GNGNode> buffer;  
+    vector<GNGNodeOffline> buffer;  
      
 };
 

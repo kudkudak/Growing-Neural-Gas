@@ -11,6 +11,8 @@
 #include <boost/interprocess/offset_ptr.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 
+#include <list>
+
 #include "GNG.h"
 
 
@@ -39,7 +41,7 @@ int * communication_buffer;
 
 
 void gngTrainingThread(){
-    while(myDatabase->getSize()==0);
+    while(myDatabase->getSize()<100);
     dbg.push_back(3,"gngTrainingThread::proceeding to algorithm");
     gngAlgorithm->runAlgorithm();
 }
@@ -119,10 +121,17 @@ void gngDatabaseThread2(){
 
 
 int main(int argc, char** argv) {
-
+    std::list<int> a;
+    a.push_back(1);
+    a.push_back(2);
+    std::list<int>::iterator it = a.begin();
+    ++it;
+    --it;
+    //std::list<int>::iterator it = a.push_back(5);
+     
     
     typedef boost::interprocess::interprocess_mutex MyMutex;
-    //SharedMemory Setup
+    //SharedMemory Setup        
     
     shm=new SHMemoryManager(100000000*sizeof(double));
     shm->new_segment(10000000*sizeof(double));
@@ -130,10 +139,14 @@ int main(int argc, char** argv) {
     cout<<shm->get_name(1)<<endl;
     cout<<shm->get_name(0)<<endl;
     //Memory
+    
+    //TO-DO: q()
+    //implementation-depend : move
+    
     GNGGraph::mm = shm;
     GNGNode::mm = shm;
-    GNGVector::mm = shm;
-    GNGVector::alloc_inst = new ShmemAllocator(shm->get_segment(0)->get_segment_manager());
+    GNGList::mm = shm;
+    GNGList::alloc_inst = new ShmemAllocatorGNG(shm->get_segment(0)->get_segment_manager());
     
     //Dimension
     GNGExample::N=3;
