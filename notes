@@ -3,6 +3,11 @@
 
 
 
+*** TO DO SMALL ***
+* code metrics plugin
+* obtaining iterator to back()
+* operator[] in ExtNodeManager should return reference not pointer
+
 *** TO DO ***
 * Adopt Arma for error calculation
 * in RcppInterface and SHGraphDefs implement faster algorithms (from libraries) loop unrolling etc
@@ -15,8 +20,26 @@
 * header cleaning
 * memory managing (delete functions)
 * oddzielic .h od .cpp , dorobic .hpp gdzie potrzebne
+* GNGList - own implementation : to omit cumbersome iterators things and multiple inheritance from boost library.
+* Integrate GNGGraphInfo with GNGGraph - inner class !!
 
 
 *** IDEAS ***
 * change g_pool_nodes to something like offset_ptr<vector<Node>> so it is always the same
 * ExtNodeGraphManager - good idea for file sharing or sth simillar?
+
+
+*** RCPP INTERFACE ***
+* nodeMatrix index doesnt match with node number ! pretty important !, in buffer indexes are correct
+
+
+*** CLASSES ***
+
+* ExtGraphNodeManager - generalny manager wierzcholkow, razem z klasami z SHGraphDefs pozwala na dowolna odseparowana implementacje pamieci, wymaga
+pewnych rzeczy od klas templatowych, np kontener krawedzi musi miec wiekszosc rzeczy typu .begin(), .back() etc
+
+* Klasy z SHGraphDefs.h, oraz GNGGraph.h definiuja implementacje SHM do ExtGraphNodeManager - posluguja sie biblioteka Boost poniewaz SHM jest zaimplementowane
+z uzyciem biblioteki Boost
+
+* SHMemoryManager implementuje "bebechy" SHM w oparciu o biblioteke Boost - mozna ja w dowolnej chwili zmienic
+

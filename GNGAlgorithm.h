@@ -30,7 +30,7 @@ class GNGAlgorithm {
     GNGGraph m_g; //czy nie bedzie za duzo na stosie? sprawdzic miejsce potencjalnego buga
     GNGDatabase* g_db;
 public:
-    GNGAlgorithm(GNGDatabase* db, int start_number,boost::mutex * mutex, int lambda=200):m_g(mutex),g_db(db),c(0),s(0) ,m_max_nodes(10000){
+    GNGAlgorithm(GNGDatabase* db, int start_number,boost::mutex * mutex, int lambda=200):m_g(mutex),g_db(db),c(0),s(0) ,m_max_nodes(50){
         m_g.init(start_number);
         m_lambda=lambda;
     }
@@ -53,10 +53,35 @@ public:
         
         m_g.newNode(&ex.position[0]);
        // m_g.addDEdge(__int_rnd(0,m_g.getNumberNodes()-1),0);
-       m_g.addDEdge(__int_rnd(0,m_g.getNumberNodes()-1),__int_rnd(0,m_g.getNumberNodes()-1) );
+        
        
+        int a=-1,b=-1;
+        
+        
+        while(a==b){
+          a = __int_rnd(0,m_g.getNumberNodes()-1);
+          b = __rnd(0,m_g.getNumberNodes()-1);
+        }
+        
+        
+        m_g.addUDEdge(a,b);
        
+        dbg.push_back(1,"GNGAlgorithm:: add edge between "+to_string(a)+" and "+to_string(b));
+        dbg.push_back(1,"GNGAlgorithm::addSuccessful");
+      
        
+        a = __int_rnd(0,m_g.getNumberNodes()-1);
+        b = __rnd(0,m_g.getNumberNodes()-1);
+          
+        while(!m_g.isEdge(a,b)){
+          a = __int_rnd(0,m_g.getNumberNodes()-1);
+          b = __rnd(0,m_g.getNumberNodes()-1);
+        }
+       
+        dbg.push_back(1,"GNGAlgorithm:: erase edge between "+to_string(a)+" and "+to_string(b));
+        //m_g.removeEdge(a,    --(m_g[a]->edges->end())     );
+        dbg.push_back(1,"GNGAlgorithm::removalSuccessful");
+        
     }
     
     void RandomInit(){

@@ -28,7 +28,8 @@ struct GNGClient{
     GNGDatabase * g_database;
      GraphAccess * readGraph(){
         return new GraphAccess((ggi->ptr).get(),ggi->nodes,ggi->pool_nodes,ggi->first_free);
-    }
+        
+     }
     
     vector<GNGNodeOffline> buffer;  
      

@@ -111,25 +111,25 @@ class SHVector: public SHVectorTempl{ public:
     
 };
 
-class GNGList
-;
-
-
-class GNGEdge{ public:
-    
-    int nr;
-    double edge;
-    GNGEdge * rev;
-    GNGEdge():edge(0){}
-    GNGEdge(int nr):nr(nr),edge(0.0){}
-    
-};
-
+class GNGEdge;
 
 typedef boost::interprocess::allocator<GNGEdge, boost::interprocess::managed_shared_memory::segment_manager>  ShmemAllocatorGNG;
 typedef boost::interprocess::vector<GNGEdge, ShmemAllocatorGNG> GNGVectorTempl;
 typedef boost::interprocess::list<GNGEdge, ShmemAllocatorGNG> GNGListTempl;
 
+class GNGList;
+
+typedef typename GNGListTempl::iterator GNGListTemplIterator;
+
+class GNGEdge{ public:
+    
+    int nr;
+    double edge;
+    GNGListTemplIterator rev;
+    GNGEdge():edge(0){}
+    GNGEdge(int nr):nr(nr),edge(0.0){}
+    
+};
 
 
 //how to implement iterators on this list? my own list rewrite? lets try it! but have to write iterator, that sucks.
@@ -172,38 +172,6 @@ class GNGList: public GNGListTempl{ public:
 
 
 
-
-
-
-
-
-
-
-
-class GNGListSelf { public:
-
-    
-    static ShmemAllocatorGNG * alloc_inst;
-    static ExtMemoryManager * mm;
-
- 
-     GNGList():GNGListTempl(*alloc_inst){}
-
-     
-
-     void* operator new[](std::size_t size){
-         return mm->allocate(size);
-         
-     }
-     void * operator new(std::size_t size){
-         return mm->allocate(size);
-          
-     }
-     void operator delete(void * ptr){
-         mm->deallocate(ptr);
-     }
-    
-};
 
 
 
@@ -296,8 +264,11 @@ class GNGNodeOffline{ public:
          this->nextFree = rhs.nextFree;
          memcpy(&position[0],&rhs.position[0],GNGExample::N*sizeof(double));
  
+         int i=0;
          FOREACH(edg, *rhs.edges){
+             if((i++)==edgesCount) break;
              edges.push_back(*edg); //rev nieistotne
+             
          }
          //*(this->edges) = *(rhs.edges);
      }

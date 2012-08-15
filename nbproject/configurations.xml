@@ -26,6 +26,7 @@
                    projectFiles="true">
       <itemPath>notes</itemPath>
       <itemPath>test_file</itemPath>
+      <itemPath>todonow</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"

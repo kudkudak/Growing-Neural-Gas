@@ -61,23 +61,33 @@ RcppExport SEXP GNGClient__updateBuffer(SEXP _xp){
     
     //copy routine !
     
-    ptr->buffer.clear();
-    ptr->buffer.resize(graph.getNumberNodes());
+    int maximumIndex = graph.getMaximumIndex();
+    
+    //cout<<maximumIndex<<endl;
+    
+    //ptr->buffer.clear();
+    ptr->buffer.resize(maximumIndex+1);
     
     
     
-    for(int i=0;i<graph.getNumberNodes();++i){
-        ptr->buffer[i] = (graph.getPool())[i]; //operator= !! wazne zeby dawac tego typu rzeczy do klas
-        if(ptr->buffer[i].edgesCount==0) continue;
+    
+    
+    for(int i=0;i<=maximumIndex;++i){
+        //hack!
+        if(!graph[i]->occupied) { ptr->buffer[i].occupied=false; for(int i=0;i<GNGExample::N;++i) ptr->buffer[i].position[i]=0; continue;  } //no more data is needed here (for in getNodeMatrix it will simply check for correctness of buffer line
+       
         
-        //replace
-        //TO-DO: hack
-        /*
+        ptr->buffer[i] = (graph.getPool())[i]; //operator= !! wazne zeby dawac tego typu rzeczy do klas
+        int k=0;
+        
+        
+        //verification
         FOREACH(edg,ptr->buffer[i].edges){
-            if(edg->nr>((int)ptr->buffer.size()-1)) edg=ptr->buffer[i].edges.erase(edg);
-           
+            if(edg->nr>((int)ptr->buffer.size()-1)) cout<<k+1<<" "<<ptr->buffer[i].edgesCount<<"X\n";
+            ++k;
         }
-        */
+        
+        
     }
 
     
@@ -95,11 +105,19 @@ RcppExport SEXP GNGClient__getNumberNodesOnline(SEXP _xp){
     return wrap((int)(graph.getNumberNodes()));
 }
 
+RcppExport SEXP GNGClient__getBufferSize(SEXP _xp){
+
+    Rcpp::XPtr<GNGClient> ptr(_xp);
+    
+    return wrap((int)(ptr->buffer.size()));
+    
+}
+
 RcppExport SEXP GNGClient__getNumberNodes(SEXP _xp){
     
     Rcpp::XPtr<GNGClient> ptr(_xp);
     
-    return wrap((int)(ptr->buffer.size()));
+    return wrap((int)(ptr->ggi->nodes));
 }
 
 RcppExport SEXP GNGClient__getNodeNumberEdges(SEXP _xp, SEXP _nr){
@@ -109,22 +127,34 @@ RcppExport SEXP GNGClient__getNodeNumberEdges(SEXP _xp, SEXP _nr){
     );
 }
 
+/*
 RcppExport SEXP GNGClient__getNodeMatrix(SEXP _xp){
     Rcpp::XPtr<GNGClient> ptr(_xp); 
     
-    int nodes = (int)ptr->buffer.size();
+    int pool_nodes = (int)ptr->buffer.size();
+
     
-    Rcpp::NumericMatrix node_matrix(nodes,GNGExample::N);
+    cout<<"nodeMatrix size = "<<pool_nodes<<endl;
     
-    for(int i=0;i<nodes;++i){
+    Rcpp::NumericMatrix node_matrix((int)ptr->buffer.size(),GNGExample::N);
+    
+    
+    
+    int k=0;
+    for(int i=0;i<(int)ptr->buffer.size();++i){
+        if(!(ptr->buffer[i].occupied)) {
+            for (int j = 0; j < GNGExample::N; ++j) {
+                node_matrix(k++, j) = 0;//ptr->buffer[i].position[j];
+            }
+        } else
         for(int j=0;j<GNGExample::N;++j){
-            node_matrix(i,j) = ptr->buffer[i].position[j];
+            node_matrix(k++,j) = ptr->buffer[i].position[j];
         }
     }
     
     return wrap(node_matrix);
 }
-
+*/
 
 RcppExport SEXP GNGClient__getNode(SEXP _xp, SEXP _nr){
 

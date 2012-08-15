@@ -121,15 +121,7 @@ void gngDatabaseThread2(){
 
 
 int main(int argc, char** argv) {
-    std::list<int> a;
-    a.push_back(1);
-    a.push_back(2);
-    std::list<int>::iterator it = a.begin();
-    ++it;
-    --it;
-    //std::list<int>::iterator it = a.push_back(5);
-     
-    
+
     typedef boost::interprocess::interprocess_mutex MyMutex;
     //SharedMemory Setup        
     

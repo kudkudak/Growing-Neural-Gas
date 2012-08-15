@@ -41,6 +41,8 @@ public:
    
     GNGNode * operator[](int i){ return super::g_pool +i; }
     
+   
+    
     int newNode(double const *position){
         
         int i=super::newNode();

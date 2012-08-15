@@ -52,6 +52,9 @@ extern MyMutex * grow_mutex;
  */
 template<class Node, class Edge, class EdgeStorage>
 class ExtGraphNodeManager {
+    
+    typedef typename EdgeStorage::iterator EdgeIterator;
+    
 protected:  
    // ExtMemoryManager *m_mm;
     Node *  g_pool; 
@@ -62,6 +65,7 @@ protected:
     
     int g_pool_nodes;
     
+   
     
     //for error checking
     bool growPool();
@@ -91,10 +95,36 @@ public:
     
     void init(int start_number);
     
+    //return part of pool occupied -> past it is nothing
+    int getMaximumIndex() const{
+        int maximum=0;
+        for(int i=0;i<g_pool_nodes;++i){
+            if(g_pool[i].occupied) maximum=i;
+        }
+        return maximum;
+    }
     
     //linear complexity but gng graph is sparse because it is delanuay triangulation inducted graph which is O(N), where N is the dimension of GNG network
-    bool isEdges(int a, int b){
+    bool isEdge(int a, int b){
+        
+        FOREACH(edg,*(g_pool[a].edges)){
+            if(edg->nr == b) return true;
+        }
+        
+        return false;
+    }
     
+    
+    //constant complexity
+    void removeEdge(int a,EdgeIterator it){
+        int b=it->nr;
+        EdgeIterator rev = it->rev; 
+        g_pool[a].edges->erase(it);
+        g_pool[b].edges->erase(rev);
+        
+         g_pool[a].edgesCount--;       
+         g_pool[b].edgesCount--;      
+        
     }
     
     void addUDEdge(int a, int b){
@@ -104,15 +134,15 @@ public:
         
         //what is important is that you cant remove edge when buffering so grow_mutex lock is necessary
         
-        //high_constans
-        
 
         ((g_pool + a)->edges)->push_back(b);
         ((g_pool+b)->edges)->push_back(a);
         
         
-       // (g_pool+a)->edges->back()->rev = &(*((g_pool+b)->edges->back()));
-       // (g_pool+b)->edges->back()->rev = &(*((g_pool+a)->edges->back()));
+        
+        (g_pool+a)->edges->back().rev = --((g_pool+b)->edges->end());
+        (g_pool+b)->edges->back().rev = --((g_pool+a)->edges->end());
+                
         
         
         (g_pool + a)->edgesCount++;       
