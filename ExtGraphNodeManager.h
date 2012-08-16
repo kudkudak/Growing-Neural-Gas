@@ -50,6 +50,9 @@ extern MyMutex * grow_mutex;
 /*
  * O alokacje w SHM dba oczywiscie vector z boost'a
  */
+
+// Node -> nr ==== numer w tablicy wierzcholkow (dokladnie jak w pamieci!)
+// Do funkcji podajemy /Node ->nr, co one z nimi zrobia - nie wazne
 template<class Node, class Edge, class EdgeStorage>
 class ExtGraphNodeManager {
     
@@ -135,7 +138,19 @@ public:
         g_pool[b].edgesCount--;      
         
     }
-       
+     
+     //return false if edge doesnt exist//
+    bool removeEdge(int a, int b){
+        #ifdef COMPILE_WITH_GROW_MUTEX
+        ScopedLock sc(*grow_mutex);
+        #endif
+        
+        FOREACH(edg,*(g_pool[a].edges)){
+            if(edg->nr==b) {removeEdge(a,edg); return true;}
+        }
+        
+        return false;
+    }   
     void removeEdge(int a,EdgeIterator it){
         #ifdef COMPILE_WITH_GROW_MUTEX
         ScopedLock sc(*grow_mutex);
@@ -287,7 +302,7 @@ std::string ExtGraphNodeManager<Node,Edge,EdgeStorage>::reportPool(bool sorted) 
         
         for (; it != end; ++it) {
             ++j;
-            if(j>getMaximumIndex()) break;
+            if(j>getMaximumIndex()+1) break;
             
             if (it->occupied) {
                 ss << (*it) << ":";
@@ -399,17 +414,18 @@ bool ExtGraphNodeManager<Node,Edge,EdgeStorage>::deleteNode(int x) {
         ScopedLock sc(*grow_mutex);
         #endif
         
+   if(g_pool[x].occupied) {
+        --m_nodes;
+        g_pool[x].edgesCount = 0;
+        g_pool[x ].occupied = false;
+        g_pool[x ].nextFree = m_first_free;
 
-    --m_nodes;
-    g_pool[x].edgesCount=0;
-    g_pool[x ].occupied = false;
-    g_pool[x ].nextFree = m_first_free;
-    
-    //deletion is unfortunately linear - see to it?
-    
-    delete &(*g_pool[x ].edges); //wazne zeby obiekt zostal bo jest alokowany na SH
-    g_pool[x].edges=0; //nullpointer
-    m_first_free = x ;
+        //deletion is unfortunately linear - see to it?
+
+        delete &(*g_pool[x ].edges); //wazne zeby obiekt zostal bo jest alokowany na SH
+        g_pool[x].edges = 0; //nullpointer
+        m_first_free = x;
+    }
     return true;
 }
 #endif	/* EXTGRAPHNODEMANAGER_H */

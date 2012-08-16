@@ -41,17 +41,18 @@ int * communication_buffer;
 
 
 void gngTrainingThread(){
-    while(myDatabase->getSize()<100);
+    while(myDatabase->getSize()<5);
     dbg.push_back(3,"gngTrainingThread::proceeding to algorithm");
     gngAlgorithm->runAlgorithm();
 }
 void gngDatabaseThread(){
-    boost::posix_time::millisec workTime(1);  
+    boost::posix_time::millisec workTime(1000);  
 
     
 
     dbg.push_back(1,"gngDatabaseThread::created GNGGraphInfo");
     
+    int k=0;
     double pos[3];
     
     while(1)
@@ -64,6 +65,10 @@ void gngDatabaseThread(){
         
         myDatabase->addExample(new GNGExample(&pos[0])); //memory leak
         
+        ++k;
+        if(k%3==0){
+            cout<<(gngAlgorithm->get_graph()->reportPool(false))<<endl;
+        }
    
         
       
@@ -170,7 +175,7 @@ int main(int argc, char** argv) {
     //while(1){(grow_mutex)->lock(); grow_mutex->unlock(); }
     
    boost::thread workerThread1(gngTrainingThread);  
-   boost::thread workerThread2(gngDatabaseThread2); 
+   boost::thread workerThread2(gngDatabaseThread); 
 
    workerThread1.join();
    workerThread2.join();

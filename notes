@@ -1,6 +1,5 @@
+*** GENERAL NOTES *** 
 * Removal of an edge/node cannot be performed online (without mutex)
-
-
 * Non stable edges pointer when multithreading
 * Database has to have >1 example before executing training thread
 
@@ -19,12 +18,14 @@
 * RcppInterface.cpp -> hack for erasing edges out of buffer. ( slowing things down unnecessarily)
 
 *** TO DO BIGGER STUFF ***
+* get rid of offset_ptr in GNGNode class, as it is created in the SH and should work well (itself is an offset_pointer), unnecessary overhead
 * documentation
 * header cleaning
 * memory managing (delete functions)
 * oddzielic .h od .cpp , dorobic .hpp gdzie potrzebne
 * GNGList - own implementation : to omit cumbersome iterators things and multiple inheritance from boost library.
 * Integrate GNGGraphInfo with GNGGraph - inner class !!
+* list of inserted nodes?
 
 
 *** IDEAS ***

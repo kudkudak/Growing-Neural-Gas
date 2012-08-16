@@ -39,9 +39,22 @@ public:
         super::init(start_number);
     }
    
-    GNGNode * operator[](int i){ return super::g_pool +i; }
+    double getDist(int a, int b){
+        double distance=0;
+        for(int i=0;i<GNGExample::N;++i){
+            distance += (super::operator[](a)->position[i]-super::operator[](b)->position[i])*(super::operator[](a)->position[i]-super::operator[](b)->position[i]);
+        }
+        return distance;
+    }
+    double getDist(double * pos_a, double * pos_b){
+        double distance=0;
+        for(int i=0;i<GNGExample::N;++i){
+            distance += (pos_a[i]-pos_b[i])*(pos_a[i]-pos_b[i]);
+        }
+        return distance;
+    }
+        
     
-   
     
     int newNode(double const *position){
         

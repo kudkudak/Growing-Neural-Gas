@@ -124,10 +124,11 @@ typedef typename GNGListTempl::iterator GNGListTemplIterator;
 class GNGEdge{ public:
     
     int nr;
-    double edge;
+    double error;
+    int age;
     GNGListTemplIterator rev;
-    GNGEdge():edge(0){}
-    GNGEdge(int nr):nr(nr),edge(0.0){}
+    GNGEdge():error(0),age(0){}
+    GNGEdge(int nr):nr(nr),error(0.0),age(0){}
     
 };
 
@@ -218,7 +219,7 @@ class GNGNode{ public:
     
      
      friend std::ostream& operator<<(std::ostream& out, const GNGNode & node){
-         out<<node.nr<<"(";
+         out<<node.nr<<"("<<node.error<<")(";
          for(int i=0;i<GNGExample::N;++i){
              out<<node.position[i]<<",";
          }

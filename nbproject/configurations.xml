@@ -57,9 +57,9 @@
                      displayName="New CppUnit Test"
                      projectFiles="true"
                      kind="TEST">
-        <itemPath>tests/newtestclass2.cpp</itemPath>
-        <itemPath>tests/newtestclass2.h</itemPath>
-        <itemPath>tests/newtestrunner2.cpp</itemPath>
+        <itemPath>server_client_example/tests/newtestclass.cpp</itemPath>
+        <itemPath>server_client_example/tests/newtestclass.h</itemPath>
+        <itemPath>server_client_example/tests/newtestrunner.cpp</itemPath>
       </logicalFolder>
       <logicalFolder name="f1"
                      displayName="New Folder 1"
@@ -148,10 +148,12 @@
             <pElem>.</pElem>
             <pElem>.</pElem>
             <pElem>.</pElem>
+            <pElem>.</pElem>
           </incDir>
         </cTool>
         <ccTool>
           <incDir>
+            <pElem>.</pElem>
             <pElem>.</pElem>
             <pElem>.</pElem>
             <pElem>.</pElem>
@@ -160,6 +162,7 @@
         <linkerTool>
           <output>${TESTDIR}/TestFiles/f2</output>
           <linkerLibItems>
+            <linkerLibStdlibItem>CppUnit</linkerLibStdlibItem>
             <linkerLibStdlibItem>CppUnit</linkerLibStdlibItem>
           </linkerLibItems>
         </linkerTool>

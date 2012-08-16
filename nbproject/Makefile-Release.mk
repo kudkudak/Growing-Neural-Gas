@@ -35,11 +35,11 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/GNGAlgorithm.o \
 	${OBJECTDIR}/main_2.o \
+	${OBJECTDIR}/GNGAlgorithm.o \
 	${OBJECTDIR}/GNGGraph.o \
-	${OBJECTDIR}/server_client_example/server.o \
 	${OBJECTDIR}/main.o \
+	${OBJECTDIR}/server_client_example/server.o \
 	${OBJECTDIR}/SHGraphDefs.o \
 	${OBJECTDIR}/Utils.o \
 	${OBJECTDIR}/DebugCollector.o \
@@ -83,30 +83,30 @@ ${TESTDIR}/TestFiles/f1: ${OBJECTFILES}
 	${MKDIR} -p ${TESTDIR}/TestFiles
 	${LINK.cc} -o ${TESTDIR}/TestFiles/f1 ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
-${OBJECTDIR}/GNGAlgorithm.o: GNGAlgorithm.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.cc) -O2 -I. -MMD -MP -MF $@.d -o ${OBJECTDIR}/GNGAlgorithm.o GNGAlgorithm.cpp
-
 ${OBJECTDIR}/main_2.o: main_2.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.cc) -O2 -I. -MMD -MP -MF $@.d -o ${OBJECTDIR}/main_2.o main_2.cpp
+
+${OBJECTDIR}/GNGAlgorithm.o: GNGAlgorithm.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -I. -MMD -MP -MF $@.d -o ${OBJECTDIR}/GNGAlgorithm.o GNGAlgorithm.cpp
 
 ${OBJECTDIR}/GNGGraph.o: GNGGraph.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.cc) -O2 -I. -MMD -MP -MF $@.d -o ${OBJECTDIR}/GNGGraph.o GNGGraph.cpp
 
-${OBJECTDIR}/server_client_example/server.o: server_client_example/server.cpp 
-	${MKDIR} -p ${OBJECTDIR}/server_client_example
-	${RM} $@.d
-	$(COMPILE.cc) -O2 -I. -MMD -MP -MF $@.d -o ${OBJECTDIR}/server_client_example/server.o server_client_example/server.cpp
-
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.cc) -O2 -I. -MMD -MP -MF $@.d -o ${OBJECTDIR}/main.o main.cpp
+
+${OBJECTDIR}/server_client_example/server.o: server_client_example/server.cpp 
+	${MKDIR} -p ${OBJECTDIR}/server_client_example
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -I. -MMD -MP -MF $@.d -o ${OBJECTDIR}/server_client_example/server.o server_client_example/server.cpp
 
 ${OBJECTDIR}/SHGraphDefs.o: SHGraphDefs.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -168,35 +168,22 @@ ${OBJECTDIR}/test_client.o: test_client.cpp
 
 # Build Test Targets
 .build-tests-conf: .build-conf ${TESTFILES}
-${TESTDIR}/TestFiles/f2: ${TESTDIR}/tests/newtestclass2.o ${TESTDIR}/tests/newtestrunner2.o ${OBJECTFILES:%.o=%_nomain.o}
+${TESTDIR}/TestFiles/f2: ${TESTDIR}/server_client_example/tests/newtestclass.o ${TESTDIR}/server_client_example/tests/newtestrunner.o ${OBJECTFILES:%.o=%_nomain.o}
 	${MKDIR} -p ${TESTDIR}/TestFiles
 	${LINK.cc}   -o ${TESTDIR}/TestFiles/f2 $^ ${LDLIBSOPTIONS} 
 
 
-${TESTDIR}/tests/newtestclass2.o: tests/newtestclass2.cpp 
-	${MKDIR} -p ${TESTDIR}/tests
+${TESTDIR}/server_client_example/tests/newtestclass.o: server_client_example/tests/newtestclass.cpp 
+	${MKDIR} -p ${TESTDIR}/server_client_example/tests
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -I. -I. -I. -I. -MMD -MP -MF $@.d -o ${TESTDIR}/tests/newtestclass2.o tests/newtestclass2.cpp
+	$(COMPILE.cc) -O2 -I. -I. -I. -I. -MMD -MP -MF $@.d -o ${TESTDIR}/server_client_example/tests/newtestclass.o server_client_example/tests/newtestclass.cpp
 
 
-${TESTDIR}/tests/newtestrunner2.o: tests/newtestrunner2.cpp 
-	${MKDIR} -p ${TESTDIR}/tests
+${TESTDIR}/server_client_example/tests/newtestrunner.o: server_client_example/tests/newtestrunner.cpp 
+	${MKDIR} -p ${TESTDIR}/server_client_example/tests
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -I. -I. -I. -I. -MMD -MP -MF $@.d -o ${TESTDIR}/tests/newtestrunner2.o tests/newtestrunner2.cpp
+	$(COMPILE.cc) -O2 -I. -I. -I. -I. -MMD -MP -MF $@.d -o ${TESTDIR}/server_client_example/tests/newtestrunner.o server_client_example/tests/newtestrunner.cpp
 
-
-${OBJECTDIR}/GNGAlgorithm_nomain.o: ${OBJECTDIR}/GNGAlgorithm.o GNGAlgorithm.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	@NMOUTPUT=`${NM} ${OBJECTDIR}/GNGAlgorithm.o`; \
-	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
-	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
-	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
-	then  \
-	    ${RM} $@.d;\
-	    $(COMPILE.cc) -O2 -I. -Dmain=__nomain -MMD -MP -MF $@.d -o ${OBJECTDIR}/GNGAlgorithm_nomain.o GNGAlgorithm.cpp;\
-	else  \
-	    ${CP} ${OBJECTDIR}/GNGAlgorithm.o ${OBJECTDIR}/GNGAlgorithm_nomain.o;\
-	fi
 
 ${OBJECTDIR}/main_2_nomain.o: ${OBJECTDIR}/main_2.o main_2.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -209,6 +196,19 @@ ${OBJECTDIR}/main_2_nomain.o: ${OBJECTDIR}/main_2.o main_2.cpp
 	    $(COMPILE.cc) -O2 -I. -Dmain=__nomain -MMD -MP -MF $@.d -o ${OBJECTDIR}/main_2_nomain.o main_2.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/main_2.o ${OBJECTDIR}/main_2_nomain.o;\
+	fi
+
+${OBJECTDIR}/GNGAlgorithm_nomain.o: ${OBJECTDIR}/GNGAlgorithm.o GNGAlgorithm.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/GNGAlgorithm.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} $@.d;\
+	    $(COMPILE.cc) -O2 -I. -Dmain=__nomain -MMD -MP -MF $@.d -o ${OBJECTDIR}/GNGAlgorithm_nomain.o GNGAlgorithm.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/GNGAlgorithm.o ${OBJECTDIR}/GNGAlgorithm_nomain.o;\
 	fi
 
 ${OBJECTDIR}/GNGGraph_nomain.o: ${OBJECTDIR}/GNGGraph.o GNGGraph.cpp 
@@ -224,19 +224,6 @@ ${OBJECTDIR}/GNGGraph_nomain.o: ${OBJECTDIR}/GNGGraph.o GNGGraph.cpp
 	    ${CP} ${OBJECTDIR}/GNGGraph.o ${OBJECTDIR}/GNGGraph_nomain.o;\
 	fi
 
-${OBJECTDIR}/server_client_example/server_nomain.o: ${OBJECTDIR}/server_client_example/server.o server_client_example/server.cpp 
-	${MKDIR} -p ${OBJECTDIR}/server_client_example
-	@NMOUTPUT=`${NM} ${OBJECTDIR}/server_client_example/server.o`; \
-	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
-	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
-	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
-	then  \
-	    ${RM} $@.d;\
-	    $(COMPILE.cc) -O2 -I. -Dmain=__nomain -MMD -MP -MF $@.d -o ${OBJECTDIR}/server_client_example/server_nomain.o server_client_example/server.cpp;\
-	else  \
-	    ${CP} ${OBJECTDIR}/server_client_example/server.o ${OBJECTDIR}/server_client_example/server_nomain.o;\
-	fi
-
 ${OBJECTDIR}/main_nomain.o: ${OBJECTDIR}/main.o main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	@NMOUTPUT=`${NM} ${OBJECTDIR}/main.o`; \
@@ -248,6 +235,19 @@ ${OBJECTDIR}/main_nomain.o: ${OBJECTDIR}/main.o main.cpp
 	    $(COMPILE.cc) -O2 -I. -Dmain=__nomain -MMD -MP -MF $@.d -o ${OBJECTDIR}/main_nomain.o main.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/main.o ${OBJECTDIR}/main_nomain.o;\
+	fi
+
+${OBJECTDIR}/server_client_example/server_nomain.o: ${OBJECTDIR}/server_client_example/server.o server_client_example/server.cpp 
+	${MKDIR} -p ${OBJECTDIR}/server_client_example
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/server_client_example/server.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} $@.d;\
+	    $(COMPILE.cc) -O2 -I. -Dmain=__nomain -MMD -MP -MF $@.d -o ${OBJECTDIR}/server_client_example/server_nomain.o server_client_example/server.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/server_client_example/server.o ${OBJECTDIR}/server_client_example/server_nomain.o;\
 	fi
 
 ${OBJECTDIR}/SHGraphDefs_nomain.o: ${OBJECTDIR}/SHGraphDefs.o SHGraphDefs.cpp 

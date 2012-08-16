@@ -132,21 +132,21 @@ ${OBJECTDIR}/GNGGraphInfo.o: GNGGraphInfo.cpp
 
 # Build Test Targets
 .build-tests-conf: .build-conf ${TESTFILES}
-${TESTDIR}/TestFiles/f2: ${TESTDIR}/tests/newtestclass2.o ${TESTDIR}/tests/newtestrunner2.o ${OBJECTFILES:%.o=%_nomain.o}
+${TESTDIR}/TestFiles/f2: ${TESTDIR}/server_client_example/tests/newtestclass.o ${TESTDIR}/server_client_example/tests/newtestrunner.o ${OBJECTFILES:%.o=%_nomain.o}
 	${MKDIR} -p ${TESTDIR}/TestFiles
-	${LINK.cc}   -o ${TESTDIR}/TestFiles/f2 $^ ${LDLIBSOPTIONS} -lcppunit 
+	${LINK.cc}   -o ${TESTDIR}/TestFiles/f2 $^ ${LDLIBSOPTIONS} -lcppunit -lcppunit 
 
 
-${TESTDIR}/tests/newtestclass2.o: tests/newtestclass2.cpp 
-	${MKDIR} -p ${TESTDIR}/tests
+${TESTDIR}/server_client_example/tests/newtestclass.o: server_client_example/tests/newtestclass.cpp 
+	${MKDIR} -p ${TESTDIR}/server_client_example/tests
 	${RM} $@.d
-	$(COMPILE.cc) -g -I. -I. -I. -I. -I/home/staszek/usr/include -I/usr/share/R/include -I/usr/local/lib/R/site-library/Rcpp/include -I/usr/local/lib/R/site-library/RcppArmadillo/include -MMD -MP -MF $@.d -o ${TESTDIR}/tests/newtestclass2.o tests/newtestclass2.cpp
+	$(COMPILE.cc) -g -I. -I. -I. -I. -I. -I/home/staszek/usr/include -I/usr/share/R/include -I/usr/local/lib/R/site-library/Rcpp/include -I/usr/local/lib/R/site-library/RcppArmadillo/include -MMD -MP -MF $@.d -o ${TESTDIR}/server_client_example/tests/newtestclass.o server_client_example/tests/newtestclass.cpp
 
 
-${TESTDIR}/tests/newtestrunner2.o: tests/newtestrunner2.cpp 
-	${MKDIR} -p ${TESTDIR}/tests
+${TESTDIR}/server_client_example/tests/newtestrunner.o: server_client_example/tests/newtestrunner.cpp 
+	${MKDIR} -p ${TESTDIR}/server_client_example/tests
 	${RM} $@.d
-	$(COMPILE.cc) -g -I. -I. -I. -I. -I/home/staszek/usr/include -I/usr/share/R/include -I/usr/local/lib/R/site-library/Rcpp/include -I/usr/local/lib/R/site-library/RcppArmadillo/include -MMD -MP -MF $@.d -o ${TESTDIR}/tests/newtestrunner2.o tests/newtestrunner2.cpp
+	$(COMPILE.cc) -g -I. -I. -I. -I. -I. -I/home/staszek/usr/include -I/usr/share/R/include -I/usr/local/lib/R/site-library/Rcpp/include -I/usr/local/lib/R/site-library/RcppArmadillo/include -MMD -MP -MF $@.d -o ${TESTDIR}/server_client_example/tests/newtestrunner.o server_client_example/tests/newtestrunner.cpp
 
 
 ${OBJECTDIR}/GNGAlgorithm_nomain.o: ${OBJECTDIR}/GNGAlgorithm.o GNGAlgorithm.cpp 
