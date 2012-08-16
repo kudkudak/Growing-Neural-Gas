@@ -65,6 +65,7 @@ protected:
     int m_first_free;
     
     int m_nodes;
+    int m_maximum_index;
     
     int g_pool_nodes;
     
@@ -87,7 +88,7 @@ public:
     ExtGraphNodeManager(int start_number);
     ExtGraphNodeManager(){}
     ExtGraphNodeManager(Node * _g_pool, int _m_nodes, int _g_pool_nodes, int _m_first_free):
-        g_pool(_g_pool),m_nodes(_m_nodes),g_pool_nodes(_g_pool_nodes),m_first_free(_m_first_free)
+        g_pool(_g_pool),m_nodes(_m_nodes),g_pool_nodes(_g_pool_nodes),m_first_free(_m_first_free),m_maximum_index(0)
     {}
     
     int newNode();
@@ -100,11 +101,8 @@ public:
     
     //return part of pool occupied -> past it is nothing
     int getMaximumIndex() const{
-        int maximum=0;
-        for(int i=0;i<g_pool_nodes;++i){
-            if(g_pool[i].occupied) maximum=i;
-        }
-        return maximum;
+       
+        return m_maximum_index;
     }
     
     //linear complexity but gng graph is sparse because it is delanuay triangulation inducted graph which is O(N), where N is the dimension of GNG network
@@ -140,18 +138,35 @@ public:
     }
      
      //return false if edge doesnt exist//
-    bool removeEdge(int a, int b){
+    EdgeIterator removeEdge(int a, int b){
         #ifdef COMPILE_WITH_GROW_MUTEX
         ScopedLock sc(*grow_mutex);
         #endif
         
         FOREACH(edg,*(g_pool[a].edges)){
-            if(edg->nr==b) {removeEdge(a,edg); return true;}
+            if(edg->nr==b) {
+                EdgeIterator rev = edg->rev;
+                
+                dbg.push_back(-1, "ExtGraphNodeManager::removing edge");
+
+                EdgeIterator ret= g_pool[a].edges->erase(edg);
+                g_pool[b].edges->erase(rev);
+
+                dbg.push_back(-1, "ExtGraphNodeManager::edges pretty much erased");
+
+                g_pool[a].edgesCount--;
+                g_pool[b].edgesCount--;    
+                
+                return ret;
+            }
         }
         
-        return false;
+        return g_pool[a].edges->end();
     }   
-    void removeEdge(int a,EdgeIterator it){
+    
+    
+    
+    EdgeIterator removeEdge(int a,EdgeIterator it){
         #ifdef COMPILE_WITH_GROW_MUTEX
         ScopedLock sc(*grow_mutex);
         #endif
@@ -162,7 +177,7 @@ public:
         
         dbg.push_back(-1,"ExtGraphNodeManager::removing edge");
         
-        g_pool[a].edges->erase(it);
+        EdgeIterator ret=g_pool[a].edges->erase(it);
         g_pool[b].edges->erase(rev);
         
         dbg.push_back(-1,"ExtGraphNodeManager::edges pretty much erased");
@@ -170,6 +185,7 @@ public:
         g_pool[a].edgesCount--;       
         g_pool[b].edgesCount--;      
         
+        return ret;
     }
     
     void addUDEdge(int a, int b){
@@ -302,19 +318,14 @@ std::string ExtGraphNodeManager<Node,Edge,EdgeStorage>::reportPool(bool sorted) 
         
         for (; it != end; ++it) {
             ++j;
-            if(j>getMaximumIndex()+1) break;
+            if(j>getMaximumIndex()+1) break; //not current edge?
             
             if (it->occupied) {
                 ss << (*it) << ":";
              
                 
-               
-                if(it->edgesCount!=0){
-                 
-                  
-                   FOREACH(it2,*(it->edges)) ss << (it2->nr) << ",";
-                }
-                 
+            
+                
                 //FOREACH(it2, *(it->edges)) ss << (it2->nr) << ",";
                 
                 ss << endl;
@@ -392,7 +403,10 @@ int ExtGraphNodeManager<Node,Edge,EdgeStorage>::newNode() {
    
 
     int createdNode = m_first_free; //taki sam jak w g_node_pool
-
+    
+    //not accurate but that is not essential of course to have always correct value as it is a matter of few nodes at most
+    m_maximum_index = createdNode>m_maximum_index ? createdNode : m_maximum_index;
+    
     g_pool[createdNode].occupied = true;
     g_pool[createdNode].nr = createdNode;
     m_first_free = g_pool[createdNode].nextFree;
@@ -410,10 +424,11 @@ int ExtGraphNodeManager<Node,Edge,EdgeStorage>::newNode() {
 }
 template<class Node, class Edge, class EdgeStorage >
 bool ExtGraphNodeManager<Node,Edge,EdgeStorage>::deleteNode(int x) {
+   
         #ifdef COMPILE_WITH_GROW_MUTEX
         ScopedLock sc(*grow_mutex);
         #endif
-        
+       
    if(g_pool[x].occupied) {
         --m_nodes;
         g_pool[x].edgesCount = 0;

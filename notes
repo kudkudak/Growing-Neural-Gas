@@ -3,12 +3,14 @@
 * Non stable edges pointer when multithreading
 * Database has to have >1 example before executing training thread
 
+* grow_mutex issue.
 
 
 *** TO DO SMALL ***
 * code metrics plugin
 * obtaining iterator to back()
 * operator[] in ExtNodeManager should return reference not pointer
+* crash test with growing .
 
 *** TO DO ***
 * Adopt Arma for error calculation
@@ -16,6 +18,12 @@
 * gngDatabase - scoped lock and draw example pointer ! (copying is pointless - add const modifier)
 * move consts and typedef to be organised
 * RcppInterface.cpp -> hack for erasing edges out of buffer. ( slowing things down unnecessarily)
+* edge removal mutex instead of single grow_mutex cause can lead to locking
+* account for no-node in R scritps
+
+*** QUESTIONS ***
+* what to do about grow_mutex
+* 0 outgoing edges vertex?
 
 *** TO DO BIGGER STUFF ***
 * get rid of offset_ptr in GNGNode class, as it is created in the SH and should work well (itself is an offset_pointer), unnecessary overhead

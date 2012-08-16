@@ -63,9 +63,10 @@ RcppExport SEXP GNGClient__updateBuffer(SEXP _xp){
     
     int maximumIndex = graph.getMaximumIndex();
     
-    //cout<<maximumIndex<<endl;
+    cout<<"Size of buffer = "<<maximumIndex<<endl;
     
     //ptr->buffer.clear();
+    
     ptr->buffer.resize(maximumIndex+1);
     
     

@@ -3,7 +3,6 @@ source("RcppInterface.r")
 library("multicore")
 library("rgl")
 library("e1071")
-library("scatterplot3d")
 
 iteration<-0
 
@@ -14,8 +13,8 @@ sv<-new("GNGClient")
 mat <- matrix(rnorm(20,mean=1), 10000,3)
 
 for(j in 1:10000){
-	t<-rnorm(1,mean=0,sd=2)
-	u<-rnorm(1,mean=0,sd=2)
+	t<-rnorm(1,mean=0,sd=2)+300
+	u<-rnorm(1,mean=0,sd=2)+300
 	val<-3*sigmoid(t^2+u^2);
 	mat[j,1] = t
 	mat[j,2] = u
@@ -25,24 +24,22 @@ for(j in 1:10000){
 
 sv$addExamples(mat)
 
+
 while(1){
 
-Sys.sleep(1.0)
+Sys.sleep(2)
 
-print("::asking for number of nodes")
 if(sv$getNumberNodesOnline()!=0){
 
 iteration<-iteration+1
-
-
 #print(cat("iteration nr ",iteration,sep=""))
-print(":: updating buffer..")
-
 tmp<-sv$updateBuffer()
+
 print(cat(":: update of buffer successful, iteration nr ",iteration,sep=""))
 
 #not that good........
 nodes <- sv$getBufferSize()
+print(nodes)
 
 x_lines <- c(0,0)
 y_lines <- c(0,0)
@@ -58,14 +55,14 @@ z<-c(1:nodes)
 for(i in 1:(nodes))
 {
 	node = sv$getNode(i-1) #from node matrix?
-	
+	#print(node)
 	x[i]=node[2]
 	y[i]=node[3]
 	z[i]=node[4]
 	
 	#print(node)
-
-if( length(node)>4){
+	#print(cat(length(node)-3," edges"))
+	if( length(node)>4){
 	
 	
 
@@ -79,7 +76,7 @@ if( length(node)>4){
 		
 		#idea - find edges later when have all x,y,z read in - better?
 
-		connected_node = (sv$getNode(node[j+3]))
+		connected_node = (sv$getNode(node[j+4]))
 
 		x_lines[k+1]=connected_node[2]
 		y_lines[k+1]=connected_node[3]
@@ -91,14 +88,32 @@ if( length(node)>4){
 
 	}
 	
-	#print(cat(i,node,sep=";"))
-	
 }
-print(":: read successful")
+print("::reading was succesful")
+print(cat(nodes," of nodes",cat=""))
 
-rgl.bg(color="white")
-points3d(x, y, z , color=rgb(0,0,0))
-rgl.lines(x_lines,y_lines,z_lines,color=rgb(0,0,0))
+zscale <- 1
+
+
+# clear scene:
+#clear3d("all")
+ 
+# setup env:
+  clear3d(type="shapes")
+  rgl.bg(color="black")
+
+  
+#light3d()
+cx <- c(1:(nodes-1))
+cy <- c(1:(nodes-1))
+cz <- c(1:(nodes-1))
+
+cx <- abs(x)/max(abs(x))
+cy <- abs(y)/max(abs(y))
+cz <- abs(z)/max(abs(z))
+
+rgl.lines(x_lines,y_lines,z_lines,color=rgb(1,1,1))
+points3d(x, y, z, radius=0.3 , color=rgb(cx,cy,cz))
 
 }
 }

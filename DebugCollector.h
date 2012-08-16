@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-#define DEBUG_COLLECTOR_LEVEL 3
+#define DEBUG_COLLECTOR_LEVEL 7
 #define DEBUG_COLLECTOR_DEBUG
 
 class DebugCollector {

@@ -224,6 +224,11 @@ class GNGNode{ public:
              out<<node.position[i]<<",";
          }
          out<<")";
+
+        if (node.edgesCount != 0) {
+            FOREACH(it2, *(node.edges)) out << (it2->nr) << ",";
+        }
+        
          return out;
      }
      

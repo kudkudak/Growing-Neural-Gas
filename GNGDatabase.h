@@ -41,9 +41,17 @@ public:
        
     }
     
-    void operator = (const GNGExample & rhs){
-        memcpy(&position[0],rhs.position,sizeof(double)*N);
+    void operator= (const GNGExample & rhs){
+        memcpy(
+                &position[0],rhs.position,sizeof(double)*N);
     }
+    bool operator== (const GNGExample & rhs){
+        double eps=0.00000000001;
+        REP(i,N){
+            if(position[i]-rhs.position[i]<-eps || position[i]-rhs.position[i]>eps ) return false;
+        }
+        return true;
+    }    
 };
 
 

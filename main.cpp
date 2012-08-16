@@ -46,7 +46,7 @@ void gngTrainingThread(){
     gngAlgorithm->runAlgorithm();
 }
 void gngDatabaseThread(){
-    boost::posix_time::millisec workTime(1000);  
+    boost::posix_time::millisec workTime(1);  
 
     
 
@@ -63,28 +63,36 @@ void gngDatabaseThread(){
         pos[1] = (double)__int_rnd(0,100);
         pos[2] = (double)__int_rnd(0,100);
         
-        myDatabase->addExample(new GNGExample(&pos[0])); //memory leak
+       if(myDatabase->getSize()<10000) myDatabase->addExample(new GNGExample(&pos[0])); //memory leak
         
         ++k;
-        if(k%3==0){
-            cout<<(gngAlgorithm->get_graph()->reportPool(false))<<endl;
+        if(k%100==0) {
+            //cout<<(gngAlgorithm->get_graph()->reportPool(false))<<endl;
+            int a = gngAlgorithm->get_graph()->getNumberNodes();
+            int b = myDatabase->getSize();
+            //cout<<(gngAlgorithm->get_graph()->reportPool(false))<<endl;
+            cout << ":" << a << "," << b << endl;
+            grow_mutex->lock();
+
+            // cout<<gngAlgorithm->get_graph()->reportPool()<<endl;
+            dbg.push_back(-1, "gngDatabaseThread::updatingStructure()");
+            //ggi->update();
+
+
+
+            //cout<<(long)(ggi->ptr).get()<<endl;
+
+            ggi->update();
+
+            grow_mutex->unlock();
         }
    
+        //problem with grow_mutex 
         
-      
-        // cout<<gngAlgorithm->get_graph()->reportPool()<<endl;
-        dbg.push_back(-1,"gngDatabaseThread::updatingStructure()");
-        ggi->update();
         
-        int a = gngAlgorithm->get_graph()->getNumberNodes();
-        int b = myDatabase->getSize();
-        //cout<<(gngAlgorithm->get_graph()->reportPool(false))<<endl;
-        cout<<":"<<a<<","<<b<<endl;
-        
-        //cout<<(long)(ggi->ptr).get()<<endl;
-        
-         //GNGGraphInfo::get_info(ggi); 
-        grow_mutex->unlock();
+
+
+
         dbg.push_back(-1,"gngDatabaseThread::updatingStructureSuccess()");
      
     }
@@ -158,7 +166,7 @@ int main(int argc, char** argv) {
     SHGNGExampleDatabase * database_vec = shm->get_segment(1)->construct< SHGNGExampleDatabase >("database_vec")(alc);
   
     myDatabase =new GNGDatabaseSimple(database_mutex,database_vec);     
-    gngAlgorithm= new GNGAlgorithm(myDatabase,5000,0);
+    gngAlgorithm= new GNGAlgorithm(myDatabase,10000,0);
     
     
     
