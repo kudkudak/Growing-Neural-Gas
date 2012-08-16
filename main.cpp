@@ -12,6 +12,7 @@
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 
 #include <list>
+#include <cmath>
 
 #include "GNG.h"
 
@@ -59,10 +60,15 @@ void gngDatabaseThread(){
     {
        
         boost::this_thread::sleep(workTime);  
-        pos[0] = (double)rand()*100;
-        pos[1] = (double)rand()*100;
-        pos[2] = (double)rand()*100;
         
+        double r = 100;//(double)rand()*100;
+        double alfa = (double)rand()*6.14;
+        double beta = (double)rand()*3.14;
+        pos[0] = r*cos(beta);
+        pos[1] = r*sin(beta)*cos(alfa);
+        pos[2] = r*sin(beta)*sin(alfa);
+        
+       
        if(myDatabase->getSize()<14000) myDatabase->addExample(new GNGExample(&pos[0])); //memory leak
         
         ++k;
@@ -72,7 +78,9 @@ void gngDatabaseThread(){
             int b = myDatabase->getSize();
             //cout<<(gngAlgorithm->get_graph()->reportPool(false))<<endl;
             cout << ":" << a << "," << b << endl;
-            grow_mutex->lock();
+ 
+        }
+              grow_mutex->lock();
 
             // cout<<gngAlgorithm->get_graph()->reportPool()<<endl;
             //dbg.push_back(-1, "gngDatabaseThread::updatingStructure()");
@@ -85,8 +93,6 @@ void gngDatabaseThread(){
             ggi->update();
 
             grow_mutex->unlock();
-        }
-   
         //problem with grow_mutex 
         
         
@@ -132,64 +138,72 @@ void gngDatabaseThread2(){
 }
 
 
-
-int main(int argc, char** argv) {
+void initGNGServer(){
 
     typedef boost::interprocess::interprocess_mutex MyMutex;
     //SharedMemory Setup        
-    
-    shm=new SHMemoryManager(100000000*sizeof(double));
-    shm->new_segment(10000000*sizeof(double));
-    
-    cout<<shm->get_name(1)<<endl;
-    cout<<shm->get_name(0)<<endl;
+
+    shm = new SHMemoryManager(100000000 * sizeof (double));
+    shm->new_segment(10000000 * sizeof (double));
+
+    cout << shm->get_name(1) << endl;
+    cout << shm->get_name(0) << endl;
     //Memory
-    
+
     //TO-DO: q()
     //implementation-depend : move
-    
+
     GNGGraph::mm = shm;
     GNGNode::mm = shm;
     GNGList::mm = shm;
     GNGList::alloc_inst = new ShmemAllocatorGNG(shm->get_segment(0)->get_segment_manager());
-    
-    //Dimension
-    GNGExample::N=3;
-    
-    //Inits
-    
-    SHGNGExampleDatabaseAllocator alc(shm->get_segment(1)->get_segment_manager());
-    
-    grow_mutex = shm->get_segment(0)->construct< MyMutex >("grow_mutex")();
-    database_mutex = shm->get_segment(1)->construct< MyMutex >("database_mutex")();
-    
-    SHGNGExampleDatabase * database_vec = shm->get_segment(1)->construct< SHGNGExampleDatabase >("database_vec")(alc);
-  
-    myDatabase =new GNGDatabaseSimple(database_mutex,database_vec);     
-    gngAlgorithm= new GNGAlgorithm(myDatabase,10000,0);
-    
-    
-    
-    ggi = shm->get_segment(0)->construct< GNGGraphInfo >("SHGraphInfo")(gngAlgorithm,shm);    
-    
-    
-    communication_buffer = static_cast<int*>(shm->allocate(200*sizeof(int),1));
-    
-    //dbg.push_back(3,"Main::Allocated main structures");
-    
-    
-    
-   // long a;
-    //while(1){(grow_mutex)->lock(); grow_mutex->unlock(); }
-    
-   boost::thread workerThread1(gngTrainingThread);  
-   boost::thread workerThread2(gngDatabaseThread); 
 
-   workerThread1.join();
-   workerThread2.join();
-   
+    //Dimension
+    GNGExample::N = 3;
+
+    //Inits
+
+    SHGNGExampleDatabaseAllocator alc(shm->get_segment(1)->get_segment_manager());
+
+    grow_mutex = shm->get_segment(0)->construct< MyMutex > ("grow_mutex")();
+    database_mutex = shm->get_segment(1)->construct< MyMutex > ("database_mutex")();
+
+    SHGNGExampleDatabase * database_vec = shm->get_segment(1)->construct< SHGNGExampleDatabase > ("database_vec")(alc);
+
+    myDatabase = new GNGDatabaseSimple(database_mutex, database_vec);
+    gngAlgorithm = new GNGAlgorithm(myDatabase, 10000, 0);
+
+
+
+    ggi = shm->get_segment(0)->construct< GNGGraphInfo > ("SHGraphInfo")(gngAlgorithm, shm);
+
+
+    communication_buffer = static_cast<int*> (shm->allocate(200 * sizeof (int), 1));
+
+    //dbg.push_back(3,"Main::Allocated main structures");
+
+
+
+    // long a;
+    //while(1){(grow_mutex)->lock(); grow_mutex->unlock(); }
+
+    boost::thread workerThread1(gngTrainingThread);
+    boost::thread workerThread2(gngDatabaseThread);
+
+    workerThread1.join();
+    workerThread2.join();
+
 
     delete shm;
+}
+
+
+
+
+int main(int argc, char** argv) {
+    //uniform grid dev
+    
+    initGNGServer();
     
     return 0;
 }

@@ -20,6 +20,7 @@
 * RcppInterface.cpp -> hack for erasing edges out of buffer. ( slowing things down unnecessarily)
 * edge removal mutex instead of single grow_mutex cause can lead to locking
 * account for no-node in R scritps
+* in RcppInterface alg shouldnt be in ggi - bad solution
 
 *** QUESTIONS ***
 * what to do about grow_mutex

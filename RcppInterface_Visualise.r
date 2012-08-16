@@ -14,7 +14,7 @@ rgl.light()
 
 while(1){
 
-Sys.sleep(3.6)
+Sys.sleep(0.6)
 
 if(sv$getNumberNodesOnline()!=0){
 
@@ -87,10 +87,10 @@ zscale <- 1
  
 # setup env:
   clear3d(type="shapes")
-  rgl.bg(color="black")
+  rgl.bg(color="white")
 
   
-light3d()
+#light3d()
 cx <- c(1:(nodes-1))
 cy <- c(1:(nodes-1))
 cz <- c(1:(nodes-1))
@@ -99,8 +99,8 @@ cx <- abs(x)/max(abs(x))
 cy <- abs(y)/max(abs(y))
 cz <- abs(z)/max(abs(z))
 
-rgl.lines(x_lines,y_lines,z_lines,color=rgb(cx,cy,cz))
-spheres3d(x,y,z,radius=1.0,color=rgb(1,1,1))
+rgl.lines(x_lines,y_lines,z_lines,color=rgb(0.7,0.8,0.7))
+spheres3d(x, y, z, radius=1.0 , color=rgb(cx,cy,cz))
 
 }
 }

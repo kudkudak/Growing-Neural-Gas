@@ -50,6 +50,15 @@ RcppExport SEXP GNGClient__new(){
 
 //czyta 3 node
 
+
+RcppExport SEXP GNGClient__getAccumulatedError(SEXP _xp) {
+    Rcpp::XPtr<GNGClient> ptr(_xp);
+
+    
+    //alg nie w ggi ale dobra
+    return wrap(ptr->ggi->accumulated_error);
+}
+
 RcppExport SEXP GNGClient__updateBuffer(SEXP _xp){
     
     
@@ -61,7 +70,7 @@ RcppExport SEXP GNGClient__updateBuffer(SEXP _xp){
     
     //copy routine !
     
-    int maximumIndex = graph.getMaximumIndex();
+    int maximumIndex = ptr->ggi->maximum_index;
     
     cout<<"Size of buffer = "<<maximumIndex<<endl;
     

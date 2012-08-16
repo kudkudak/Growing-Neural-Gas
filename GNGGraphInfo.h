@@ -19,6 +19,10 @@ struct GNGGraphInfo{
     int nodes;
     int pool_nodes;
     int first_free;
+    double accumulated_error;
+    int maximum_index;
+    
+    
     PoolPtr ptr;
     GNGAlgorithm * alg;
 
@@ -36,6 +40,8 @@ struct GNGGraphInfo{
         nodes = alg->get_graph()->getNumberNodes();
         pool_nodes = alg->get_graph()->getPoolNodes();
         first_free =alg->get_graph()->getFirstFree();
+        maximum_index = alg->get_graph()->getMaximumIndex();   
+        accumulated_error = alg->getAccumulatedError();
 
     }
     
