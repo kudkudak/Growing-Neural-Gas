@@ -42,7 +42,7 @@ int * communication_buffer;
 
 void gngTrainingThread(){
     while(myDatabase->getSize()<5);
-    dbg.push_back(3,"gngTrainingThread::proceeding to algorithm");
+    //dbg.push_back(3,"gngTrainingThread::proceeding to algorithm");
     gngAlgorithm->runAlgorithm();
 }
 void gngDatabaseThread(){
@@ -50,7 +50,7 @@ void gngDatabaseThread(){
 
     
 
-    dbg.push_back(1,"gngDatabaseThread::created GNGGraphInfo");
+    //dbg.push_back(1,"gngDatabaseThread::created GNGGraphInfo");
     
     int k=0;
     double pos[3];
@@ -59,11 +59,11 @@ void gngDatabaseThread(){
     {
        
         boost::this_thread::sleep(workTime);  
-        pos[0] = (double)__int_rnd(0,100);
-        pos[1] = (double)__int_rnd(0,100);
-        pos[2] = (double)__int_rnd(0,100);
+        pos[0] = (double)rand()*100;
+        pos[1] = (double)rand()*100;
+        pos[2] = (double)rand()*100;
         
-       if(myDatabase->getSize()<10000) myDatabase->addExample(new GNGExample(&pos[0])); //memory leak
+       if(myDatabase->getSize()<14000) myDatabase->addExample(new GNGExample(&pos[0])); //memory leak
         
         ++k;
         if(k%100==0) {
@@ -75,7 +75,7 @@ void gngDatabaseThread(){
             grow_mutex->lock();
 
             // cout<<gngAlgorithm->get_graph()->reportPool()<<endl;
-            dbg.push_back(-1, "gngDatabaseThread::updatingStructure()");
+            //dbg.push_back(-1, "gngDatabaseThread::updatingStructure()");
             //ggi->update();
 
 
@@ -93,7 +93,7 @@ void gngDatabaseThread(){
 
 
 
-        dbg.push_back(-1,"gngDatabaseThread::updatingStructureSuccess()");
+        //dbg.push_back(-1,"gngDatabaseThread::updatingStructureSuccess()");
      
     }
 }
@@ -109,7 +109,7 @@ void gngDatabaseThread2(){
     
         boost::this_thread::sleep(workTime); 
         grow_mutex->lock();
-        dbg.push_back(-1,"gngDatabaseThread2::updatingInfo()"); 
+        //dbg.push_back(-1,"gngDatabaseThread2::updatingInfo()"); 
         int a = gngAlgorithm->get_graph()->getNumberNodes();
         int b = myDatabase->getSize();
         //cout<<(gngAlgorithm->get_graph()->reportPool(false))<<endl;
@@ -124,10 +124,10 @@ void gngDatabaseThread2(){
        // myDatabase->addExample(new GNGExample(&pos[0])); //memory leak
         
         
-        dbg.push_back(-1,"gngDatabaseThread2::updatingStructure()");
+        //dbg.push_back(-1,"gngDatabaseThread2::updatingStructure()");
         ggi->update();
         grow_mutex->unlock();
-        dbg.push_back(-1,"gngDatabaseThread2::updatingStructureSuccess()");
+        //dbg.push_back(-1,"gngDatabaseThread2::updatingStructureSuccess()");
     }
 }
 
@@ -175,7 +175,7 @@ int main(int argc, char** argv) {
     
     communication_buffer = static_cast<int*>(shm->allocate(200*sizeof(int),1));
     
-    dbg.push_back(3,"Main::Allocated main structures");
+    //dbg.push_back(3,"Main::Allocated main structures");
     
     
     

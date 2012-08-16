@@ -3,18 +3,19 @@ source("RcppInterface.r")
 library("multicore")
 library("rgl")
 library("e1071")
+library("scatterplot3d")
 
 iteration<-0
 
 sv<-new("GNGClient")
 
-#rgl.light()
+rgl.light()
 
 mat <- matrix(rnorm(20,mean=1), 10000,3)
 
 for(j in 1:10000){
-	t<-rnorm(1,mean=0,sd=2)+300
-	u<-rnorm(1,mean=0,sd=2)+300
+	t<-rnorm(1,mean=0,sd=1)
+	u<-rnorm(1,mean=0,sd=1)
 	val<-3*sigmoid(t^2+u^2);
 	mat[j,1] = t
 	mat[j,2] = u
@@ -22,12 +23,8 @@ for(j in 1:10000){
 
 }
 
-sv$addExamples(mat)
+#sv$addExamples(mat)
 
-
-while(1){
-
-Sys.sleep(2)
 
 if(sv$getNumberNodesOnline()!=0){
 
@@ -100,7 +97,7 @@ zscale <- 1
  
 # setup env:
   clear3d(type="shapes")
-  rgl.bg(color="black")
+  rgl.bg(color="white")
 
   
 #light3d()
@@ -112,8 +109,8 @@ cx <- abs(x)/max(abs(x))
 cy <- abs(y)/max(abs(y))
 cz <- abs(z)/max(abs(z))
 
-rgl.lines(x_lines,y_lines,z_lines,color=rgb(1,1,1))
-points3d(x, y, z, radius=0.3 , color=rgb(cx,cy,cz))
+#rgl.lines(x_lines,y_lines,z_lines,color=rgb(0,0,0))
+points3d(x, y, z,  color=rgb(cx,cy,cz))
 
 }
-}
+

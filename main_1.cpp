@@ -157,7 +157,7 @@ int main(int argc, char** argv) {
     gngAlgorithm= new GNGAlgorithm(myDatabase,2000,0);
     
     
-    dbg.push_back(3,"Main::Allocated main structures");
+    //dbg.push_back(3,"Main::Allocated main structures");
     
    // long a;
     //while(1){(grow_mutex)->lock(); grow_mutex->unlock(); }

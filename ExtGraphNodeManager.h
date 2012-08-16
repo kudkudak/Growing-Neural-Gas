@@ -126,11 +126,11 @@ public:
         
         EdgeIterator rev = it->rev; 
         
-        dbg.push_back(-1,"ExtGraphNodeManager::removing rev edge");
+        //dbg.push_back(-1,"ExtGraphNodeManager::removing rev edge");
 
         g_pool[b].edges->erase(rev);
         
-        dbg.push_back(-1,"ExtGraphNodeManager::edge pretty much erased");
+        //dbg.push_back(-1,"ExtGraphNodeManager::edge pretty much erased");
   
 
         g_pool[b].edgesCount--;      
@@ -147,12 +147,12 @@ public:
             if(edg->nr==b) {
                 EdgeIterator rev = edg->rev;
                 
-                dbg.push_back(-1, "ExtGraphNodeManager::removing edge");
+                //dbg.push_back(-1, "ExtGraphNodeManager::removing edge");
 
                 EdgeIterator ret= g_pool[a].edges->erase(edg);
                 g_pool[b].edges->erase(rev);
 
-                dbg.push_back(-1, "ExtGraphNodeManager::edges pretty much erased");
+                //dbg.push_back(-1, "ExtGraphNodeManager::edges pretty much erased");
 
                 g_pool[a].edgesCount--;
                 g_pool[b].edgesCount--;    
@@ -175,12 +175,12 @@ public:
         
         EdgeIterator rev = it->rev; 
         
-        dbg.push_back(-1,"ExtGraphNodeManager::removing edge");
+        //dbg.push_back(-1,"ExtGraphNodeManager::removing edge");
         
         EdgeIterator ret=g_pool[a].edges->erase(it);
         g_pool[b].edges->erase(rev);
         
-        dbg.push_back(-1,"ExtGraphNodeManager::edges pretty much erased");
+        //dbg.push_back(-1,"ExtGraphNodeManager::edges pretty much erased");
         
         g_pool[a].edgesCount--;       
         g_pool[b].edgesCount--;      
@@ -256,7 +256,7 @@ bool  ExtGraphNodeManager<Node,Edge,EdgeStorage>::growPool(){
         grow_mutex->lock();
         #endif
         
-        dbg.push_back(2,"ExtGraphNodeManager::growing");
+        //dbg.push_back(2,"ExtGraphNodeManager::growing");
         g_pool_nodes*=2;   
         
         Node * tmp=g_pool;
@@ -286,14 +286,14 @@ bool  ExtGraphNodeManager<Node,Edge,EdgeStorage>::growPool(){
         
         delete tmp;
         
-        dbg.push_back(3,"ExtGraphNodeManager::m_free="+to_string(m_first_free));
+        //dbg.push_back(3,"ExtGraphNodeManager::m_free="+to_string(m_first_free));
         
         #ifdef COMPILE_WITH_GROW_MUTEX        
         grow_mutex->unlock();
         #endif
 
         
-        dbg.push_back(2,"ExtGraphNodeManager::completed");
+        //dbg.push_back(2,"ExtGraphNodeManager::completed");
         
         return true;
     }
@@ -395,7 +395,7 @@ ExtGraphNodeManager<Node,Edge,EdgeStorage>::ExtGraphNodeManager(int start_number
 template<class Node, class Edge, class EdgeStorage >
 int ExtGraphNodeManager<Node,Edge,EdgeStorage>::newNode() {
     if (poolIsFull()) {
-        dbg.push_back(3,"ExtGraphNodeManager::zabraklo miejsca powiekszam z "+to_string(g_pool_nodes)); 
+        //dbg.push_back(3,"ExtGraphNodeManager::zabraklo miejsca powiekszam z "+to_string(g_pool_nodes)); 
 
         growPool(); 
     }

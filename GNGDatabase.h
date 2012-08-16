@@ -84,9 +84,9 @@ class GNGDatabaseSimple: public GNGDatabase
     SHGNGExampleDatabase *g_database;
    //vector<GNGExample> *g_database;
     void grow_database(){
-        dbg.push_back(1,"GNGDatabaseSimple::resizing");
+        //dbg.push_back(1,"GNGDatabaseSimple::resizing");
         g_database->reserve(g_database->capacity()*2);
-        dbg.push_back(1,"GNGDatabaseSimple::resizing completed");
+        //dbg.push_back(1,"GNGDatabaseSimple::resizing completed");
     }
 public:
     int getSize() const{ int ret; database_mutex->lock();     ret=(int)(g_database->size());  database_mutex->unlock(); return ret;}
@@ -111,7 +111,7 @@ public:
          
         database_mutex->lock();  
         
-        dbg.push_back(-200,"GNGDatabaseSimple:: size = "+to_string(index)+" drawing!");
+        //dbg.push_back(-200,"GNGDatabaseSimple:: size = "+to_string(index)+" drawing!");
         
         int draw = __int_rnd(0,g_database->size()-1);
         
