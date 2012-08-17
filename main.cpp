@@ -28,7 +28,7 @@ typedef boost::interprocess::interprocess_mutex MyMutex;
 
 
 GNGAlgorithm * gngAlgorithm;
-GNGDatabaseSimple* myDatabase;
+GNGDatabase* myDatabase;
 GNGGraphInfo * ggi;
 SHMemoryManager *shm;
 MyMutex * grow_mutex; //koniecznie taka nazwa (Extern)
@@ -42,7 +42,7 @@ int * communication_buffer;
 
 
 void gngTrainingThread(){
-    while(myDatabase->getSize()<5);
+    while(myDatabase->getSize()<20000);
     //dbg.push_back(3,"gngTrainingThread::proceeding to algorithm");
     gngAlgorithm->runAlgorithm();
 }
@@ -56,27 +56,84 @@ void gngDatabaseThread(){
     int k=0;
     double pos[3];
     
+    
+    while((myDatabase->getSize()<54000) ){
+            double r = 100;//(double)rand()*100;
+        double alfa = (double)rand()*6.28;
+        double beta = (double)rand()*3.14;
+        pos[0] = r*cos(beta);
+        pos[1] = r*sin(beta)*cos(alfa);
+        pos[2] = r*sin(beta)*sin(alfa);
+        pos[0] = (double)rand() / RAND_MAX;
+        pos[1] = (double)rand() / RAND_MAX;
+        pos[2]=1.0;
+     
+       
+       myDatabase->addExample(new GNGExample(&pos[0])); //memory leak
+    }
     while(1)
     {
        
         boost::this_thread::sleep(workTime);  
         
-        double r = 100;//(double)rand()*100;
-        double alfa = (double)rand()*6.14;
-        double beta = (double)rand()*3.14;
-        pos[0] = r*cos(beta);
-        pos[1] = r*sin(beta)*cos(alfa);
-        pos[2] = r*sin(beta)*sin(alfa);
-        
-       
-       if(myDatabase->getSize()<14000) myDatabase->addExample(new GNGExample(&pos[0])); //memory leak
+
         
         ++k;
-        if(k%100==0) {
+        if(k%3000==0) {
             //cout<<(gngAlgorithm->get_graph()->reportPool(false))<<endl;
             int a = gngAlgorithm->get_graph()->getNumberNodes();
             int b = myDatabase->getSize();
+           // cout<<(gngAlgorithm->get_graph()->reportPool(false))<<endl;
+            cout << ":" << a << "," << b << endl;
+ 
+        }
+              grow_mutex->lock();
+
+            // cout<<gngAlgorithm->get_graph()->reportPool()<<endl;
+            //dbg.push_back(-1, "gngDatabaseThread::updatingStructure()");
+            //ggi->update();
+
+
+
+            //cout<<(long)(ggi->ptr).get()<<endl;
+
+            ggi->update();
+
+            grow_mutex->unlock();
+        //problem with grow_mutex 
+        
+        
+
+
+
+        //dbg.push_back(-1,"gngDatabaseThread::updatingStructureSuccess()");
+     
+    }
+}
+void gngDatabaseThread3(){
+    boost::posix_time::millisec workTime(1);  
+
+    
+
+    //dbg.push_back(1,"gngDatabaseThread::created GNGGraphInfo");
+    
+    int k=0;
+    double pos[3];
+    
+
+    while(1)
+    {
+       
+        boost::this_thread::sleep(workTime);  
+        
+
+        
+        ++k;
+        if(k%3000==0) {
             //cout<<(gngAlgorithm->get_graph()->reportPool(false))<<endl;
+            int a = gngAlgorithm->get_graph()->getNumberNodes();
+            int b = myDatabase->getSize();
+           // cout<<(gngAlgorithm->get_graph()->reportPool(false))<<endl;
             cout << ":" << a << "," << b << endl;
  
         }
@@ -144,7 +201,7 @@ void initGNGServer(){
     //SharedMemory Setup        
 
     shm = new SHMemoryManager(100000000 * sizeof (double));
-    shm->new_segment(10000000 * sizeof (double));
+    shm->new_segment(100000000 * sizeof (double));
 
     cout << shm->get_name(1) << endl;
     cout << shm->get_name(0) << endl;
@@ -170,7 +227,7 @@ void initGNGServer(){
 
     SHGNGExampleDatabase * database_vec = shm->get_segment(1)->construct< SHGNGExampleDatabase > ("database_vec")(alc);
 
-    myDatabase = new GNGDatabaseSimple(database_mutex, database_vec);
+    myDatabase = new GNGDatabaseSphere();//GNGDatabaseSimple(database_mutex, database_vec);
     gngAlgorithm = new GNGAlgorithm(myDatabase, 10000, 0);
 
 
@@ -188,7 +245,7 @@ void initGNGServer(){
     //while(1){(grow_mutex)->lock(); grow_mutex->unlock(); }
 
     boost::thread workerThread1(gngTrainingThread);
-    boost::thread workerThread2(gngDatabaseThread);
+    boost::thread workerThread2(gngDatabaseThread3);
 
     workerThread1.join();
     workerThread2.join();

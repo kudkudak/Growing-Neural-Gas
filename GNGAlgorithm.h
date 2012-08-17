@@ -113,8 +113,7 @@ class GNGAlgorithm {
                 }
             }
                    
-        
-        
+          //
         return largest;
     }
     GNGNode ** TwoNearestNodes(double * position){ //to the example
@@ -143,17 +142,35 @@ class GNGAlgorithm {
                
                 if(dist>new_dist){
                     dist = new_dist;
-                   
-                    nearest[1] = nearest[0];
+                 
                     nearest[0] = m_g[i];
                 }
             }
         }
         
-         
+        start_index=0;
+        
+        while(!m_g[start_index]->occupied || start_index==nearest[0]->nr) ++start_index;   
+        dist=m_g.getDist(position, m_g[start_index]->position);
+        nearest[1] = m_g[start_index];
+        
+       for(int i=start_index+1;i<=m_g.getMaximumIndex();++i){ //another idea for storing list of actual nodes?
+            
+            if(m_g[i]->occupied && i!=nearest[0]->nr){
+                
+                double new_dist = m_g.getDist(position, m_g[i]->position);
+               
+                if(dist>new_dist){
+                    dist = new_dist;
+                 
+                    nearest[1] = m_g[i];
+                }
+            }
+        }
+             
         
        
-        
+        /*
         if(nearest[1]==0) {
             start_index = start_index + 1;
 
@@ -175,7 +192,7 @@ class GNGAlgorithm {
                 }
             }
           }           
-        }
+        }*/
         //dbg.push_back(1,"search successful and nearest[1]= "+to_string(nearest[1]));
         return nearest;
     }
@@ -206,9 +223,9 @@ class GNGAlgorithm {
 public:
     GNGAlgorithm(GNGDatabase* db, int start_number,boost::mutex * mutex, int lambda=1):
             m_g(mutex),g_db(db),c(0),s(0) ,
-            m_max_nodes(1000),m_max_age(200),
-            m_alpha(0.95),m_betha(0.9995),m_lambda(200),
-            m_eps_v(0.05),m_eps_n(0.0006)
+            m_max_nodes(1000),m_max_age(50),
+            m_alpha(0.9),m_betha(0.9995),m_lambda(100),
+            m_eps_v(0.09),m_eps_n(0.001)
     {
         m_g.init(start_number);
     }
@@ -313,6 +330,14 @@ public:
         REP(i,m_g.getMaximumIndex()){
             if(m_g.getDist(m_g[i]->position,ex->position)<m_g.getDist(nearest[0]->position,ex->position)) cout<<"XXXXXXXXXXXXXXXXXXXX\n";
         }
+
+        REP(i,m_g.getMaximumIndex()){
+            if(m_g[i]->occupied && m_g.getDist(m_g[i]->position,ex->position)<m_g.getDist(nearest[1]->position,ex->position) && i!=nearest[0]->nr){
+                cout<<"XXXXXXXXXXXXXXXXXXXX\n";
+                cout<<nearest[1]->nr<<" "<<nearest[0]->nr<<" "<<i<<endl;
+                cout<<m_g.getDist(nearest[1]->position,ex->position)<<">"<<m_g.getDist(m_g[i]->position,ex->position)<<endl;
+            }
+        }
         
         /*GNGNode ** nearest=new GNGNode*[2];
         
@@ -357,10 +382,12 @@ public:
             m_g.addUDEdge(nearest[0]->nr, nearest[1]->nr);
             //dbg.push_back(4,"GNGAlgorith::Adapt::added edge beetwen "+to_string(nearest[0]->nr)+ " and " +to_string(nearest[1]->nr));
         }
-        
+        //cout<<(*nearest[0])<<endl;
+        bool BYPASS=false;
         FOREACH(edg,*(nearest[0]->edges))
         {
-             
+          //  cout<<edg->nr<<",";
+            if(BYPASS){--edg; BYPASS=false;}
             
              edg->age++;
              edg->rev->age++;
@@ -368,16 +395,20 @@ public:
              if(edg->nr == nearest[1]->nr) {edg->age=0; edg->rev->age=0; }
              
              if(edg->age>m_max_age) {
+                // cout<<"DELETION";
                  //dbg.push_back(3,"GNGAlgorith::Adapt::Removing aged edge "+to_string(nearest[0]->nr)+" - "+to_string(edg->nr));
-
+                 int nr = edg->nr;
                  edg=m_g.removeEdge(nearest[0]->nr, edg);
-                 if(m_g[edg->nr]->edgesCount==0)  m_g.deleteNode(edg->nr);
+                 if(edg == nearest[0]->edges->end()) break;
+                 BYPASS=true;
+                 if(m_g[nr]->edgesCount==0)  m_g.deleteNode(nr);
+                 if(m_g[nearest[0]->nr]->edgesCount==0)  m_g.deleteNode(nearest[0]->nr);
                  //dbg.push_back(3,"GNGAlgorith::Adapt::Removal completed");
                  //dbg.push_back(2,to_string(*nearest[0]));
         
              }
         }
-        
+       //  cout<<(*nearest[0])<<endl;
         
         DecreaseAllErrors();
         
@@ -414,6 +445,25 @@ public:
             }
         }
     }
+    void TestAgeCorrectness(){
+         int maximumIndex = m_g.getMaximumIndex();
+     
+        REP(i,maximumIndex){
+           
+            if(m_g[i]->occupied && m_g[i]->edgesCount){
+                FOREACH(edg,*(m_g[i]->edges)){
+                    if(edg->age > m_max_age){
+                        cout<<"XXXXXXXXXXXXXXXXX\n";
+                        cout<<*(m_g[i])<<endl;
+                    }
+                    //cout<<m_g.getDistEdge(i,edg)<<endl;
+                    if(m_g.getDistEdge(i,edg)>0.2){
+                        cout<<(*m_g[i])<<" TO "<<edg->nr<<endl;
+                    }
+                }
+            }
+        }   
+    }
     
     void runAlgorithm(){ //1 thread needed to do it (the one that computes)
         c=0;
@@ -437,6 +487,7 @@ public:
             if(m_max_nodes>m_g.getNumberNodes())AddNewNode();
             ++c; //epoch
             CalculateAccumulatedError();
+            if(m_g.getNumberNodes()>800) TestAgeCorrectness();
            // test_routine();
         }
     }

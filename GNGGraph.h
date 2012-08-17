@@ -16,6 +16,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/bind.hpp>
 
+#include <cmath>
 
 typedef  ExtGraphNodeManager<GNGNode, GNGEdge, GNGList> GNGGraphBase;
 
@@ -54,7 +55,9 @@ public:
         return distance;
     }
         
-    
+    double getDistEdge(int a,super::EdgeIterator it){
+        return std::sqrt(getDist(super::operator[](a)->position,super::operator[](it->nr)->position));
+    }    
     
     int newNode(double const *position){
         

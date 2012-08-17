@@ -226,7 +226,7 @@ class GNGNode{ public:
          out<<")";
 
         if (node.edgesCount != 0) {
-            FOREACH(it2, *(node.edges)) out << (it2->nr) << ",";
+            FOREACH(it2, *(node.edges)) out << (it2->nr)<<"|"<<it2->age << ",";
         }
         
          return out;

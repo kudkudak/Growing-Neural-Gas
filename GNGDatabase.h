@@ -76,6 +76,93 @@ private:
 typedef boost::interprocess::allocator<GNGExample, boost::interprocess::managed_shared_memory::segment_manager>  SHGNGExampleDatabaseAllocator;
 typedef boost::interprocess::vector<GNGExample, SHGNGExampleDatabaseAllocator> SHGNGExampleDatabase;
 
+ class GNGDatabaseSphere : public GNGDatabase{
+public:
+     int getSize() const{ return 100000000; }
+    
+    GNGDatabaseSphere(): GNGDatabase(){
+   
+        __init_rnd();
+    }
+    
+    void removeExample(GNGExample const * ex){
+    
+        
+        throw 1; //not implemented
+        
+
+    }
+    
+    GNGExample drawExample() const{
+        GNGExample ret;
+         
+     
+        //dbg.push_back(-200,"GNGDatabaseSimple:: size = "+to_string(index)+" drawing!");
+        
+       
+        double alfa=6.18*((double)rand() / RAND_MAX);
+        double beta=3.14*((double)rand() / RAND_MAX);
+        double r=1.0;
+        
+       ret.position[0] = r*cos(beta);
+        ret.position[1] = r*sin(beta)*cos(alfa);
+        ret.position[2] = r*sin(beta)*sin(alfa);
+      
+        
+        return ret;
+    }
+    
+    void addExample(GNGExample const * ex){
+     
+        throw 1;
+    }
+    
+    ~GNGDatabaseSphere(){
+        
+    }
+};
+class GNGDatabasePlane : public GNGDatabase{
+public:
+     int getSize() const{ return 100000000; }
+    
+    GNGDatabasePlane(): GNGDatabase(){
+   
+        __init_rnd();
+    }
+    
+    void removeExample(GNGExample const * ex){
+    
+        
+        throw 1; //not implemented
+        
+
+    }
+    
+    GNGExample drawExample() const{
+        GNGExample ret;
+         
+     
+        //dbg.push_back(-200,"GNGDatabaseSimple:: size = "+to_string(index)+" drawing!");
+        
+       
+        ret.position[1]=1.0;
+        ret.position[0]=(double)rand() / RAND_MAX;
+        ret.position[2]=(double)rand() / RAND_MAX;
+      
+        
+        return ret;
+    }
+    
+    void addExample(GNGExample const * ex){
+     
+        throw 1;
+    }
+    
+    ~GNGDatabasePlane(){
+        
+    }
+};
+
 class GNGDatabaseSimple: public GNGDatabase
 {
     mutable boost::interprocess::interprocess_mutex * database_mutex; //wazne zeby stworzone przed kreacja watkow

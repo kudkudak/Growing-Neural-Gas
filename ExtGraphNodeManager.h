@@ -56,9 +56,11 @@ extern MyMutex * grow_mutex;
 template<class Node, class Edge, class EdgeStorage>
 class ExtGraphNodeManager {
     
-    typedef typename EdgeStorage::iterator EdgeIterator;
+    
     
 protected:  
+    typedef typename EdgeStorage::iterator EdgeIterator;
+    
    // ExtMemoryManager *m_mm;
     Node *  g_pool; 
     
