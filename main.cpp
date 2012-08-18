@@ -42,7 +42,7 @@ int * communication_buffer;
 
 
 void gngTrainingThread(){
-    while(myDatabase->getSize()<20000);
+    while(myDatabase->getSize()<2000);
     //dbg.push_back(3,"gngTrainingThread::proceeding to algorithm");
     gngAlgorithm->runAlgorithm();
 }
@@ -227,7 +227,7 @@ void initGNGServer(){
 
     SHGNGExampleDatabase * database_vec = shm->get_segment(1)->construct< SHGNGExampleDatabase > ("database_vec")(alc);
 
-    myDatabase = new GNGDatabaseSphere();//GNGDatabaseSimple(database_mutex, database_vec);
+    myDatabase = new GNGDatabaseSimple(database_mutex, database_vec);
     gngAlgorithm = new GNGAlgorithm(myDatabase, 10000, 0);
 
 

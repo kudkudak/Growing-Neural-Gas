@@ -9,12 +9,12 @@ iteration<-0
 sv<-new("GNGClient")
 
 rgl.light()
-
+rgl.clear("all")
 
 
 while(1){
 
-Sys.sleep(0.6)
+Sys.sleep(3.6)
 
 if(sv$getNumberNodesOnline()!=0){
 
@@ -41,7 +41,7 @@ z<-c(1:nodes)
 for(i in 1:(nodes))
 {
 	node = sv$getNode(i-1) #from node matrix?
-	
+	#print(node)
 	x[i]=node[2]
 	y[i]=node[3]
 	z[i]=node[4]
@@ -67,7 +67,15 @@ for(i in 1:(nodes))
 		x_lines[k+1]=connected_node[2]
 		y_lines[k+1]=connected_node[3]
 		z_lines[k+1]=connected_node[4]
-		k=k+2		
+		
+		#print(connected_node)
+		
+
+		dist = sqrt((x[i] - connected_node[2])^2 + (y[i] - connected_node[3])^2 + (z[i] - connected_node[4])^2)
+		#print(dist)
+
+		 k=k+2
+		
 	 }	
 
 	
@@ -76,7 +84,7 @@ for(i in 1:(nodes))
 	
 }
 print("::reading was succesful")
-print(cat(nodes," of nodes",cat=""))
+print(cat(nodes," of nodes",cat=""))<
 print(sv$getAccumulatedError())
 
 zscale <- 1
@@ -89,8 +97,7 @@ zscale <- 1
   clear3d(type="shapes")
   rgl.bg(color="white")
 
-  
-#light3d()
+ 
 cx <- c(1:(nodes-1))
 cy <- c(1:(nodes-1))
 cz <- c(1:(nodes-1))
@@ -99,8 +106,12 @@ cx <- abs(x)/max(abs(x))
 cy <- abs(y)/max(abs(y))
 cz <- abs(z)/max(abs(z))
 
-rgl.lines(x_lines,y_lines,z_lines,color=rgb(0.7,0.8,0.7))
-spheres3d(x, y, z, radius=1.0 , color=rgb(cx,cy,cz))
+errortext<-cat("Error = ",sv$getAccumulatedError(),cat="")
+
+axes3d(edges="bbox")
+rgl.spheres(x,y,z,radius=0.009,color=rgb(cx,cy,cz))
+rgl.lines(x_lines,y_lines,z_lines,color=rgb(cx,cy,cz))
+
 
 }
 }

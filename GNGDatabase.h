@@ -121,6 +121,49 @@ public:
         
     }
 };
+class GNGDatabaseRec : public GNGDatabase{
+public:
+     int getSize() const{ return 100000000; }
+    
+    GNGDatabaseRec(): GNGDatabase(){
+   
+        __init_rnd();
+    }
+    
+    void removeExample(GNGExample const * ex){
+    
+        
+        throw 1; //not implemented
+        
+
+    }
+    
+    GNGExample drawExample() const{
+        GNGExample ret;
+         
+     
+        //dbg.push_back(-200,"GNGDatabaseSimple:: size = "+to_string(index)+" drawing!");
+        
+       
+       
+        
+       ret.position[0] = ((double)rand() / RAND_MAX);
+        ret.position[1] = ((double)rand() / RAND_MAX);
+        ret.position[2] = ((double)rand() / RAND_MAX);
+      
+        
+        return ret;
+    }
+    
+    void addExample(GNGExample const * ex){
+     
+        throw 1;
+    }
+    
+    ~GNGDatabaseRec(){
+        
+    }
+};
 class GNGDatabasePlane : public GNGDatabase{
 public:
      int getSize() const{ return 100000000; }
