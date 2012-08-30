@@ -95,6 +95,10 @@ public:
     
     int newNode();
     
+    void checkNodeEgdeStorage(){
+        
+    }
+    
     int getNumberNodes() const{return m_nodes;}
     int getPoolNodes() const{return g_pool_nodes;}
     int getFirstFree() const{return m_first_free;}
@@ -229,6 +233,7 @@ public:
     
     Node * operator[](int i){ return g_pool +i; }
     
+    
     //TODO: dodac const
     Node * getPool() const{ return g_pool; }
     int getPoolSize() const{ return g_pool_nodes; }
@@ -258,7 +263,7 @@ bool  ExtGraphNodeManager<Node,Edge,EdgeStorage>::growPool(){
         grow_mutex->lock();
         #endif
         
-        //dbg.push_back(2,"ExtGraphNodeManager::growing");
+        dbg.push_back(2,"ExtGraphNodeManager::growing");
         g_pool_nodes*=2;   
         
         Node * tmp=g_pool;
@@ -282,6 +287,8 @@ bool  ExtGraphNodeManager<Node,Edge,EdgeStorage>::growPool(){
             g_pool[i].occupied = false;
             g_pool[i].edgesCount = 0;
             g_pool[i].edges=0;
+            
+            
             if (i != g_pool_nodes - 1) g_pool[i].nextFree = i + 1;
             else g_pool[i].nextFree = -1;           
         }
@@ -419,6 +426,7 @@ int ExtGraphNodeManager<Node,Edge,EdgeStorage>::newNode() {
 
     g_pool[createdNode].edges = new EdgeStorage();
 
+    
      ++m_nodes; //zwiekszam licznik wierzcholkow //na koncu zeby sie nie wywalil przypadkowo
     
     

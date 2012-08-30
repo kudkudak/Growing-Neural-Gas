@@ -11,6 +11,7 @@
 * obtaining iterator to back()
 * operator[] in ExtNodeManager should return reference not pointer
 * crash test with growing .
+* calculate or betha powers
 
 *** TO DO ***
 * Adopt Arma for error calculation
@@ -35,7 +36,8 @@
 * GNGList - own implementation : to omit cumbersome iterators things and multiple inheritance from boost library.
 * Integrate GNGGraphInfo with GNGGraph - inner class !!
 * list of inserted nodes?
-
+* uniform grid hack? bad design. (SOLUTION: wrapper for node_pool with operator[] as a parameter to template and parameter in constructor)
+* rare errors in uniform grid?
 
 *** IDEAS ***
 * change g_pool_nodes to something like offset_ptr<vector<Node>> so it is always the same

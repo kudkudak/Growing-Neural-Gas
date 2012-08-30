@@ -8,3 +8,4 @@
 #include "GNGAlgorithm.h"
 
 
+GNGNode * GNGGraphAccessHack::pool =0;

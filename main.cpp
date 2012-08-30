@@ -35,6 +35,7 @@ MyMutex * grow_mutex; //koniecznie taka nazwa (Extern)
 MyMutex * graph_mutex; //not used
 MyMutex * database_mutex; //not used
 int * communication_buffer;
+int GNG_DIM=3;
 //trzeba updatowac dosyc czesto
 
 
@@ -58,15 +59,13 @@ void gngDatabaseThread(){
     
     
     while((myDatabase->getSize()<54000) ){
-            double r = 100;//(double)rand()*100;
+            double r = 1;//(double)rand()*100;
         double alfa = (double)rand()*6.28;
         double beta = (double)rand()*3.14;
         pos[0] = r*cos(beta);
         pos[1] = r*sin(beta)*cos(alfa);
         pos[2] = r*sin(beta)*sin(alfa);
-        pos[0] = (double)rand() / RAND_MAX;
-        pos[1] = (double)rand() / RAND_MAX;
-        pos[2]=1.0;
+    
      
        
        myDatabase->addExample(new GNGExample(&pos[0])); //memory leak
@@ -79,7 +78,7 @@ void gngDatabaseThread(){
 
         
         ++k;
-        if(k%3000==0) {
+        if(k%100==0) {
             //cout<<(gngAlgorithm->get_graph()->reportPool(false))<<endl;
             int a = gngAlgorithm->get_graph()->getNumberNodes();
             int b = myDatabase->getSize();
@@ -129,7 +128,7 @@ void gngDatabaseThread3(){
 
         
         ++k;
-        if(k%3000==0) {
+        if(k%100==0) {
             //cout<<(gngAlgorithm->get_graph()->reportPool(false))<<endl;
             int a = gngAlgorithm->get_graph()->getNumberNodes();
             int b = myDatabase->getSize();
@@ -193,6 +192,41 @@ void gngDatabaseThread2(){
         //dbg.push_back(-1,"gngDatabaseThread2::updatingStructureSuccess()");
     }
 }
+ std::vector<GNGExample> pool;
+double dist(int a, double* b){
+	double ret=0.0;
+	for(int i=0;i<GNG_DIM;++i){
+		ret+=(pool[a].position[i]-b[i])*(pool[a].position[i]-b[i])	;
+	} 
+	return ret;
+}
+void testUG(){
+     myDatabase = new GNGDatabaseSphere();
+    __init_rnd();
+    
+    typedef std::list<int> Node;
+    
+    double orig[3]={-2.0,-2.0,-2.0};
+    int dim[3]={100,100,100};
+    double query[3];
+    
+    UniformGrid<std::vector< Node >, Node> ug(orig,dim,0.04);
+    ug.setDistFunction(dist);
+    
+
+   
+   
+    
+    REP(i,100000){
+        GNGExample tmp = myDatabase->drawExample();
+        //write_array(tmp.position,tmp.position+3);
+        pool.push_back(tmp);
+        ug.insert(tmp.position,i);
+    }
+    cout<<ug.getDensity()<<endl;
+
+}
+
 
 
 void initGNGServer(){
@@ -200,8 +234,8 @@ void initGNGServer(){
     typedef boost::interprocess::interprocess_mutex MyMutex;
     //SharedMemory Setup        
 
-    shm = new SHMemoryManager(100000000 * sizeof (double));
-    shm->new_segment(100000000 * sizeof (double));
+    shm = new SHMemoryManager(200000000 * sizeof (double));
+    shm->new_segment(220000000 * sizeof (double));
 
     cout << shm->get_name(1) << endl;
     cout << shm->get_name(0) << endl;
@@ -219,7 +253,12 @@ void initGNGServer(){
     GNGExample::N = 3;
 
     //Inits
+    double orig[3]={-2.0,-2.0,-2.0};
+    double axis[3]={2.0,2.0,2.0};
+    
 
+    
+    
     SHGNGExampleDatabaseAllocator alc(shm->get_segment(1)->get_segment_manager());
 
     grow_mutex = shm->get_segment(0)->construct< MyMutex > ("grow_mutex")();
@@ -227,9 +266,16 @@ void initGNGServer(){
 
     SHGNGExampleDatabase * database_vec = shm->get_segment(1)->construct< SHGNGExampleDatabase > ("database_vec")(alc);
 
-    myDatabase = new GNGDatabaseSimple(database_mutex, database_vec);
-    gngAlgorithm = new GNGAlgorithm(myDatabase, 10000, 0);
-
+    myDatabase =new GNGDatabasePlane();//new GNGDatabaseSimple(database_mutex, database_vec);
+   
+   
+    
+    //A little bit to complicated init  
+    gngAlgorithm = new GNGAlgorithm(myDatabase, 25000, orig, axis,2.0);
+    
+    
+    
+    
 
 
     ggi = shm->get_segment(0)->construct< GNGGraphInfo > ("SHGraphInfo")(gngAlgorithm, shm);
@@ -245,7 +291,7 @@ void initGNGServer(){
     //while(1){(grow_mutex)->lock(); grow_mutex->unlock(); }
 
     boost::thread workerThread1(gngTrainingThread);
-    boost::thread workerThread2(gngDatabaseThread3);
+    boost::thread workerThread2(gngDatabaseThread);
 
     workerThread1.join();
     workerThread2.join();
@@ -259,7 +305,7 @@ void initGNGServer(){
 
 int main(int argc, char** argv) {
     //uniform grid dev
-    
+    //testUG();
     initGNGServer();
     
     return 0;

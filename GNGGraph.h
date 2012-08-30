@@ -21,18 +21,17 @@
 typedef  ExtGraphNodeManager<GNGNode, GNGEdge, GNGList> GNGGraphBase;
 
 class GNGGraph : public GNGGraphBase{
-    boost::mutex * m_mutex;
-    
+
 public:
     static ExtMemoryManager * mm;
     typedef ExtGraphNodeManager<GNGNode, GNGEdge, GNGList> super;
     
-    GNGGraph(int start_number,boost::mutex * mutex):m_mutex(mutex),GNGGraphBase(start_number){
+    GNGGraph(int start_number): GNGGraphBase(start_number){
         
     }
-    GNGGraph(boost::mutex * mutex):m_mutex(mutex),GNGGraphBase(){}
-    GNGGraph(GNGNode * _g_pool, int _m_nodes, int _g_pool_nodes, int _m_first_free,boost::mutex * mutex):
-    m_mutex(mutex),GNGGraphBase
+    GNGGraph():GNGGraphBase(){}
+    GNGGraph(GNGNode * _g_pool, int _m_nodes, int _g_pool_nodes, int _m_first_free):
+    GNGGraphBase
        ( _g_pool, _m_nodes,  _g_pool_nodes, _m_first_free)
     {}
     
@@ -65,45 +64,30 @@ public:
         
         //TO-DO: implementation depend !! (depre* after change to arma for example)
         memcpy(&(super::g_pool+i)->position[0],position,sizeof(double)*GNGExample::N);
-       
+        g_pool[i].error=0.0;
+        g_pool[i].error_cycle=0;
+        g_pool[i].error_new=0.0;
   
         return i;
     }
     
     int newNode(GNGNode const *node){
-        //m_mutex->lock();  
-        
-       // m_mutex->unlock();
-        //not implemented
+
         return -1;
     }   
     
     void deleteNode(int i){
-       //m_mutex->lock();  
-         
+
         
         super::deleteNode(i);
-        
-       //m_mutex->unlock();
+
     }
     
     
     virtual ~GNGGraph(){
     
     }
-    
-    
-     /*void* operator new[](std::size_t size){
-         return mm->allocate(size);
-         
-     }
-     void * operator new(std::size_t size){
-         return mm->allocate(size);
-          
-     }
-     void operator delete(void * ptr){
-         mm->deallocate(ptr);
-     } */
+
     
 private:
   

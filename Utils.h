@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+#include <list>
 
 using namespace std;
 typedef vector<int> VI;
@@ -39,13 +40,29 @@ typedef long long LL;
 #include <stdlib.h>
 #include <time.h>
 
+#include "DebugCollector.h"
 
 void __init_rnd();
 int __rnd(int min, int max);
 int __int_rnd(int min, int max);
+double __double_rnd(double min, double max);
 
-#include "DebugCollector.h"
+template<class T>
+void write_array(T* begin, T*end){
+	for(;begin!=end;++begin){
+		std::cout<<*begin<<",";
+	}
+	std::cout<<endl;
+}
 
+
+template<class T>
+void write_cnt(T begin, T end){
+	for(;begin!=end;++begin){
+		std::cout<<*begin<<",";
+	}
+	std::cout<<endl;
+}
 
 template<class T>
 std::string to_string(T& x){
@@ -57,4 +74,3 @@ std::string to_string(T& x){
 
 
 #endif	/* UTILS_H */
-

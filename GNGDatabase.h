@@ -17,13 +17,15 @@
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/offset_ptr.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
+
 #include "SHMemoryManager.h"
 
 #include "Utils.h"
 #include "DebugCollector.h"
-extern DebugCollector dbg;
 
-#define GNG_MAX_DIM 100
+#include "GNGGlobals.h"
+
+extern DebugCollector dbg;
 
 //struct-like : zeby latwo bylo przekazywac przez shm
 
@@ -97,9 +99,7 @@ public:
         GNGExample ret;
          
      
-        //dbg.push_back(-200,"GNGDatabaseSimple:: size = "+to_string(index)+" drawing!");
-        
-       
+    
         double alfa=6.18*((double)rand() / RAND_MAX);
         double beta=3.14*((double)rand() / RAND_MAX);
         double r=1.0;
@@ -142,10 +142,7 @@ public:
         GNGExample ret;
          
      
-        //dbg.push_back(-200,"GNGDatabaseSimple:: size = "+to_string(index)+" drawing!");
-        
-       
-       
+   
         
        ret.position[0] = ((double)rand() / RAND_MAX);
         ret.position[1] = ((double)rand() / RAND_MAX);
@@ -185,9 +182,6 @@ public:
         GNGExample ret;
          
      
-        //dbg.push_back(-200,"GNGDatabaseSimple:: size = "+to_string(index)+" drawing!");
-        
-       
         ret.position[1]=1.0;
         ret.position[0]=(double)rand() / RAND_MAX;
         ret.position[2]=(double)rand() / RAND_MAX;

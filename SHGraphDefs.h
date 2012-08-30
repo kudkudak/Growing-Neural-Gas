@@ -80,6 +80,10 @@ class SHNode{ public:
      void operator delete(void * ptr){
          mm->deallocate(ptr);
      }
+ 
+     void operator delete[](void * ptr){
+         mm->deallocate(ptr);
+     }     
      
     int edgesCount; 
     int nr;
@@ -232,13 +236,15 @@ class GNGNode{ public:
          return out;
      }
      
-     GNGNode():error(0.0),occupied(false),nr(-1),nextFree(-1),edgesCount(0){
+     GNGNode():error(0.0),error_cycle(0),occupied(false),nr(-1),nextFree(-1),edgesCount(0){
      
      }
      
     double position[GNG_MAX_DIMENSION]; //wymiar//
     
+    int error_cycle;
     double error; 
+    double error_new;
     int edgesCount; 
     int nr;
     bool occupied;

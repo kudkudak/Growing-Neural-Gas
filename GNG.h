@@ -8,6 +8,8 @@
 #ifndef GNGINCLUDE_H
 #define	GNGINCLUDE_H
 
+#include "UniformGrid.h"
+
 #include "SHMemoryManager.h"
 #include "SHGraphDefs.h"
 
@@ -25,6 +27,8 @@
 #include "RcppInterface.h"
 
 #include "GNGDefines.h"
+
+#include "GNGGlobals.h"
 
 #endif	/* GNGINCLUDE_H */
 

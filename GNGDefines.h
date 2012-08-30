@@ -9,8 +9,6 @@
 #define	GNGDEFINES_H
 
 
-#define GNGNODEPOOL_MODIFIED 0
-#define GNG_MAX_DIM 100
 
 
 typedef boost::interprocess::interprocess_mutex MyMutex;
