@@ -200,32 +200,7 @@ double dist(int a, double* b){
 	} 
 	return ret;
 }
-void testUG(){
-     myDatabase = new GNGDatabaseSphere();
-    __init_rnd();
-    
-    typedef std::list<int> Node;
-    
-    double orig[3]={-2.0,-2.0,-2.0};
-    int dim[3]={100,100,100};
-    double query[3];
-    
-    UniformGrid<std::vector< Node >, Node> ug(orig,dim,0.04);
-    ug.setDistFunction(dist);
-    
 
-   
-   
-    
-    REP(i,100000){
-        GNGExample tmp = myDatabase->drawExample();
-        //write_array(tmp.position,tmp.position+3);
-        pool.push_back(tmp);
-        ug.insert(tmp.position,i);
-    }
-    cout<<ug.getDensity()<<endl;
-
-}
 
 
 
@@ -253,8 +228,8 @@ void initGNGServer(){
     GNGExample::N = 3;
 
     //Inits
-    double orig[3]={0.0,0.0,0.0};
-    double axis[3]={1.0,1.0,1.0};
+    double orig[3]={-4.0,-4.0,-4.0};
+    double axis[3]={8.0,8.0,8.0};
     
 
     
@@ -266,10 +241,19 @@ void initGNGServer(){
 
     SHGNGExampleDatabase * database_vec = shm->get_segment(1)->construct< SHGNGExampleDatabase > ("database_vec")(alc);
 
-    myDatabase =new GNGDatabasePlane();//new GNGDatabaseSimple(database_mutex, database_vec);
-   
+    myDatabase = new GNGDatabaseMeshes();//new GNGDatabasePlane();//new GNGDatabaseSimple(database_mutex, database_vec);
    
     
+    double c1[]={0,0.5,0,5};
+    double c2[]={-1,-2,-1};
+    double c3[]={-3,-3,-3};
+    
+    
+    GNGDatabaseSphere d1(c1, 1.0),d2(c2,1.5);
+    reinterpret_cast<GNGDatabaseMeshes*>(myDatabase)->addMesh(&d1);
+    reinterpret_cast<GNGDatabaseMeshes*>(myDatabase)->addMesh(&d2);
+    GNGDatabasePlane p(c3,0.5);
+    reinterpret_cast<GNGDatabaseMeshes*>(myDatabase)->addMesh(&p);
     //A little bit to complicated init  
     gngAlgorithm = new GNGAlgorithm(myDatabase, 25000, orig, axis,2.0);
     

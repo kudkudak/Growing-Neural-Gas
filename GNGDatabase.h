@@ -23,9 +23,11 @@
 #include "Utils.h"
 #include "DebugCollector.h"
 
+//why not in GNGGlobals
 #include "GNGGlobals.h"
 
 extern DebugCollector dbg;
+extern int GNG_DIM;
 
 //struct-like : zeby latwo bylo przekazywac przez shm
 
@@ -75,15 +77,54 @@ private:
     GNGDatabase(const GNGDatabase& orig){}
 };
 
+class GNGDatabaseMeshes: public GNGDatabase{
+public:
+    std::vector<GNGDatabase*> meshes;    
+    
+    GNGDatabaseMeshes(): GNGDatabase(){
+        __init_rnd();
+    }
+    
+    void removeExample(GNGExample const * ex){
+    
+        
+        throw 1; //not implemented
+        
+
+    }
+    
+    void addMesh(GNGDatabase * mesh){
+        meshes.push_back(mesh);
+    }
+    
+    GNGExample drawExample() const{
+        
+        int i = __int_rnd(0,SIZE(meshes)-1);
+        return meshes[i]->drawExample();
+    }
+    
+    void addExample(GNGExample const * ex){
+     
+        throw 1;
+    }
+    int getSize() const{ return 100000000; }
+    ~GNGDatabaseMeshes(){
+        
+    }    
+};
+
 typedef boost::interprocess::allocator<GNGExample, boost::interprocess::managed_shared_memory::segment_manager>  SHGNGExampleDatabaseAllocator;
 typedef boost::interprocess::vector<GNGExample, SHGNGExampleDatabaseAllocator> SHGNGExampleDatabase;
 
  class GNGDatabaseSphere : public GNGDatabase{
 public:
+    double m_center[GNG_MAX_DIM];
+    double m_r;
      int getSize() const{ return 100000000; }
     
-    GNGDatabaseSphere(): GNGDatabase(){
-   
+    GNGDatabaseSphere(double *center, double r): GNGDatabase(){
+        memcpy(m_center,center,sizeof(double)*GNG_DIM);
+        m_r=r;
         __init_rnd();
     }
     
@@ -102,11 +143,11 @@ public:
     
         double alfa=6.18*((double)rand() / RAND_MAX);
         double beta=3.14*((double)rand() / RAND_MAX);
-        double r=1.0;
+
         
-       ret.position[0] = r*cos(beta);
-        ret.position[1] = r*sin(beta)*cos(alfa);
-        ret.position[2] = r*sin(beta)*sin(alfa);
+       ret.position[0] = m_r*cos(beta) + m_center[0];
+        ret.position[1] = m_r*sin(beta)*cos(alfa)+ m_center[1];
+        ret.position[2] = m_r*sin(beta)*sin(alfa)+m_center[2];
       
         
         return ret;
@@ -164,9 +205,11 @@ public:
 class GNGDatabasePlane : public GNGDatabase{
 public:
      int getSize() const{ return 100000000; }
-    
-    GNGDatabasePlane(): GNGDatabase(){
-   
+     double m_a;
+     double m_center[GNG_MAX_DIM];
+    GNGDatabasePlane(double * center, double a): GNGDatabase(){
+        memcpy(m_center,center,sizeof(double)*GNG_DIM);
+        m_a=a;
         __init_rnd();
     }
     
@@ -182,9 +225,9 @@ public:
         GNGExample ret;
          
      
-        ret.position[1]=1.0;
-        ret.position[0]=(double)rand() / RAND_MAX;
-        ret.position[2]=(double)rand() / RAND_MAX;
+        ret.position[0]=m_center[0];
+        ret.position[1]=m_a*((double)rand() / RAND_MAX)+m_center[1];
+        ret.position[2]=m_a*((double)rand() / RAND_MAX)+m_center[2];
       
         
         return ret;

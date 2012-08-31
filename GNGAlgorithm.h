@@ -359,11 +359,11 @@ class GNGAlgorithm { public:
 public:
     GNGAlgorithm(GNGDatabase* db, int start_number,double * boundingbox_origin, double * boundingbox_axis, double l):
             m_g(),g_db(db),c(0),s(0) ,
-            m_max_nodes(10000),m_max_age(50),
+            m_max_nodes(6000),m_max_age(50),
             m_alpha(0.9),m_betha(0.9995),m_lambda(100),
             m_eps_v(0.09),m_eps_n(0.001),ug(boundingbox_origin, boundingbox_axis,l),
             m_density_threshold(0.1), m_grow_rate(1.5),
-            errorHeap(m_g)
+            errorHeap(m_g) 
     {
         m_g.init(start_number);
         GNGGraphAccessHack::pool = m_g.getPool();
@@ -401,26 +401,21 @@ public:
     
     void AddNewNode(){
         using namespace std;
-       //GNGNode ** error_nodes_new=LargestErrorNodes();
+        //GNGNode ** error_nodes=LargestErrorNodes();
         GNGNode ** error_nodes_new = LargestErrorNodesLazy();
-    
-       // for(int i=0;i<2;++i){
-       //     cout<<error_nodes[i]->error<<" = "<<error_nodes_new[i]->error_new<<endl;
-            
-       // }
         
-      //  if(error_nodes[0]->nr != error_nodes[1]->nr) cout<<"XXXX\n";
-        
-        //int index = m_g.getMaximumIndex();
-       
-       /* REP(i,index){
+        double max_error=-1;
+        /*
+        REP(i,m_g.getMaximumIndex()){
             if(m_g[i]->occupied){
-                if(i==error_nodes_new[0]->nr) cout<<"XXXXXXX";
-                REPORT(m_g[i]->error);
-                REPORT(m_g[i]->error_new);
+                max_error = std::max(max_error, m_g[i]->error_new);
             }
-        }*/
-        
+        }
+        if(max_error != error_nodes_new[0]->error_new) {
+            REPORT(max_error);
+            REPORT(error_nodes_new[0]->error_new);
+        }
+        */
         
         double  position[GNG_DIM];
         for(int i=0;i<GNG_DIM;++i)
@@ -485,7 +480,7 @@ public:
       //if(m_g.getNumberNodes()>9000){ cout<<"ok\n";}
        
         //ug.print3d();
-        
+        /*
         REP(i,m_g.getMaximumIndex()){
             if(m_g.getDist(m_g[i]->position,ex->position)<m_g.getDist(nearest[0]->position,ex->position)){
                 cout<<"XXXXXXXXXXXXXXXXXXXX\n";
@@ -511,7 +506,7 @@ public:
                 cout<<m_g.getDist(nearest[1]->position,ex->position)<<">"<<m_g.getDist(m_g[i]->position,ex->position)<<endl;
             }
         }
-        
+        */
         //dbg.push_back(4,"GNGAlgorith::Adapt::found nearest nodes to the drawn example "+to_string(*nearest[0])+" "+to_string(*nearest[1]));
         
                 
