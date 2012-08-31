@@ -1,3 +1,8 @@
+
+
+#ifndef UNIFORM_GRID_H
+#define UNIFORM_GRID_H
+
 /* 
  * File:   UniformGrid.h
  * Author: staszek
@@ -5,27 +10,42 @@
  * Created on August 19, 2012, 7:02 AM
  */
 
-#ifndef UNIFORMGRID_H
-#define	UNIFORMGRID_H
-
 #include <iostream>
 #include "Utils.h"
 #include <stdio.h>
 #include <string.h>
 #include <cmath>
-
+#include <iostream>
+#include "Utils.h"
+#include <stdio.h>
+#include <string.h>
+#include <cmath>
 #include "GNGGlobals.h"
 
 extern int GNG_DIM; //zmienne
 extern DebugCollector dbg;
 
+//vector<bool> TMP(100000);
+
 template<class VectorContainer, class ListContainer, class T = int>
 class UniformGrid {     
     typedef ListContainer Node;
     typedef VectorContainer NodeArray;
+	
+public:
 
-private:
-    double (*m_dist_fnc)(T,double*); //distance function;
+	//global variables for search query
+	int s_found_cells[4];    
+	double s_found_cells_dist[4];
+	int s_search_query;
+        
+        int s_center[GNG_MAX_DIM];
+        int s_radius;
+        int s_pos[GNG_MAX_DIM];
+        double s_query[GNG_MAX_DIM];
+
+
+	double (*m_dist_fnc)(T,double*); //distance function;
 
     double m_l;
     double m_h;
@@ -40,15 +60,23 @@ private:
 
     int m_dim[GNG_MAX_DIM]; //number of uniform cells along certain axis
 
+    int m_tmp_int[GNG_MAX_DIM]; //avoid alloc on heap all the time in calccell <- one thread!
+    
     vector< int > m_neigh;
 
 
     double m_origin[GNG_MAX_DIM];
 
-    double m_tmp_double[GNG_MAX_DIM];
-    int m_tmp_int[GNG_MAX_DIM];
 
     int * _calculateCell(double *p) {
+        //int * m_tmp_int = new int[GNG_DIM];
+        for (int i = 0; i < GNG_DIM; ++i) {
+            m_tmp_int[i] = (int) ((p[i] - m_origin[i]) / m_l);
+        }
+        return &m_tmp_int[0];
+    }
+    //thread safe version
+    int * _calculateCellTS(double *p) {
         int * tmp_int = new int[GNG_DIM];
         for (int i = 0; i < GNG_DIM; ++i) {
             tmp_int[i] = (int) ((p[i] - m_origin[i]) / m_l);
@@ -56,31 +84,18 @@ private:
         return tmp_int;
     }
 
-    int _getIndex(int * tmp_int) {
-        for (int i = GNG_DIM - 1; i > 0; --i) {
-            tmp_int[i - 1] += tmp_int[i] * m_dim[i];
-        }
-        return tmp_int[0];
-    }
 
     bool _inside(int x) {
         return (x) >= 0 && (x) < m_grid.size();
     }
 
-    int _indx(int m, int n) {
-        int i = 0;
-        while (m % n == 0) {
-            ++i;
-            m = m / n;
-        }
-        return i;
-    }
-    
+
     bool isZero(double x){
         return x>-EPS && x <EPS;
     }
     void purge(double *origin, int* dim, double l);
 public:
+	NodeArray m_grid;
 
     void print3d(){
         using namespace std;
@@ -91,10 +106,11 @@ public:
                 REP(i,m_dim[0]){
                     index[0]=i; index[1]=j; index[2]=k;
                     
-                    int inner_index = _getIndex(index);
+                    int inner_index = getIndex(index);
                     
-                    cout<<inner_index<<":";
-                    
+                    cout<<inner_index;
+                    //if(TMP[inner_index]) cout<<"::"; 
+				 cout<<":";
                     FOREACH(x,m_grid[inner_index]) cout<<*x<<",";
                     cout<<"\t";
                            
@@ -108,6 +124,13 @@ public:
     
     }
     
+    bool searchSuccessful(double min_dist=-1){
+		REP(i, s_search_query){
+			if(s_found_cells[i]==-1 || s_found_cells_dist[i]>min_dist) return false;
+		}	
+		return true;
+	}
+
     double getCellLength() const{
         return m_l;
     }
@@ -130,8 +153,8 @@ public:
 
 
     //unify!
-    NodeArray m_grid;
-    std::vector<bool> m_grid_lookup;
+    
+
 
     void new_l(double l){
         double *org = new double[3];
@@ -156,10 +179,10 @@ public:
     //mutates pos!
 
     int insert(double *p, T x);
-    void remove(double *p);
+    bool remove(double *p);
     T find(double *p);
     
-    T * findTwoNearest(double *p,bool debug=false);
+    T * findNearest(double *p,int n=2);
     
     void setDistFunction(double (*dist_fnc)(T,double*)){
         m_dist_fnc = dist_fnc;
@@ -169,14 +192,132 @@ public:
 
     int getIndex(int *p) {
         //not working for dim>2 idiot!
-
-        memcpy(&m_tmp_int[0], p, sizeof (double) *GNG_DIM);
-        for (int i = GNG_DIM - 1; i > 0; --i) {
-            m_tmp_int[i - 1] = m_tmp_int[i - 1] + m_tmp_int[i] * m_dim[i];
-        }
-        return m_tmp_int[0];
+		int value= p[0];
+		double mul = m_dim[0];
+        for (int i =  1; i < GNG_DIM; ++i) {
+           value += p[i]*mul; mul*=m_dim[i]; }
+		
+        return value;
     }
+	
+	void scanCell(int k,double* query){
+		double dist_candidate;
 
+		FOREACH(node,m_grid[k]){
+			
+			dist_candidate = m_dist_fnc(*node,query);
+									
+			if(s_found_cells_dist[0]==-1 || dist_candidate<s_found_cells_dist[0]){
+					s_found_cells_dist[0] = dist_candidate;
+				    s_found_cells[0] = *node;
+					
+					for(int j=1;j<=s_search_query;++j) {
+						if(s_found_cells_dist[j]==-1 || dist_candidate<s_found_cells_dist[j]){
+							std::swap(s_found_cells[j],s_found_cells[j-1]);
+							std::swap(s_found_cells_dist[j],s_found_cells_dist[j-1]);
+						}			
+					}
+			}
+		
+			
+		}
+	}
+
+	//globalne zmienne nie ma po co przechowywac poprawic
+	void crawl(int current_dim, int fixed_dim){
+
+		//cout<<"crawl ("<<getIndex(pos)<<")\n";
+		//write_array(pos,pos+3);		
+		if(current_dim==fixed_dim){
+			if(current_dim>=GNG_DIM-1){
+						//cout<<"crawled to "; 
+						//int d=-1;						
+						//REP(i,GNG_DIM){
+						//	d = std::max(std::abs(pos[i] - center[i]),d);
+						//}
+						//cout<<"("<<getIndex(pos)<<"),"<<d;						
+						scanCell(getIndex(s_pos),s_query);
+						//TMP[getIndex(pos)]=true;			
+			}
+			//skip current dimension
+			else crawl(current_dim+1,fixed_dim);		
+		}	
+		else{
+			int from,to;
+			
+			//skip corners
+				if(current_dim<fixed_dim){
+					from = std::max(s_center[current_dim] - s_radius +1 ,0);
+					to = std::min(s_center[current_dim] + s_radius -1, m_dim[current_dim]-1);
+				}else{
+					from = std::max(s_center[current_dim] - s_radius  ,0);
+					to = std::min(s_center[current_dim] + s_radius , m_dim[current_dim]-1);
+				}
+				
+				//cout<<"range from "<<from<<" to "<<to<<endl;
+
+				for(int i=from;i<=to;++i){
+					
+
+					s_pos[current_dim] = i;
+
+					if(current_dim == GNG_DIM-1){
+						//cout<<"crawled to "; 
+						//int d=-1;						
+						//REP(i,GNG_DIM){
+						//	d = std::max(std::abs(pos[i] - center[i]),d);
+						//}
+						//cout<<"("<<getIndex(pos)<<"),"<<d;						
+						scanCell(getIndex(s_pos),s_query);
+						//TMP[getIndex(pos)]=true;
+					} else{
+						crawl(current_dim+1,fixed_dim);					
+					}
+				}
+					
+			
+  		}	
+
+
+		return;
+	}
+
+	bool scanCorners(){
+	
+		int left,right;
+		
+		bool scanned=false;
+
+	
+		memcpy(s_pos,s_center,sizeof(int)*GNG_DIM);
+
+                
+		REP(i, GNG_DIM){
+			left =  s_center[i] - s_radius;
+			right = s_center[i] + s_radius;
+			
+			
+
+			if(s_center[i]-s_radius>=0){
+				s_pos[i] = left;
+				//cout<<"crawler to "<<getIndex(pos)<<endl;
+				//write_array(pos,pos+GNG_DIM);
+				crawl(0,i);
+				scanned=true;
+			}
+			if(s_center[i]+s_radius<m_dim[i]){
+            	s_pos[i] = right;
+				//cout<<"crawler to "<<getIndex(pos)<<endl;
+				//write_array(pos,pos+GNG_DIM);
+				crawl(0,i);
+				scanned=true;
+			}
+
+                s_pos[i]=s_center[i];
+		}	
+
+		return scanned;	
+	}
 
 };
 
@@ -200,22 +341,19 @@ template<class VectorContainer, class ListContainer, class T>
 void UniformGrid<VectorContainer,ListContainer,T>::purge(double *origin, int* dim, double l) {
     m_l = l;
     REPORT(m_l);
+
     memcpy(&m_dim[0], dim, sizeof (int) *GNG_DIM);
     memcpy(&m_origin, origin, sizeof (double) *GNG_DIM);
+	
+	write_array(m_dim,m_dim+GNG_DIM);
+
     m_density = 0.0;
     m_density_threshold = 0.1;
     m_grow_factor = 1.5;
     m_nodes = 0;
-    //dbg.push_back(2, "purge..");
-    m_neigh.clear();
 
     m_grid.clear();
-    m_grid_lookup.clear();
-    //dbg.push_back(2, "purge ok..");
-   // cout<<"NEW DIMS:";
-   // write_array(m_dim,m_dim+GNG_DIM);
-   // write_array(m_origin,m_origin+GNG_DIM);
-  // write_array(m_axis,m_axis+GNG_DIM);
+
     int new_size = 1;
 
     REP(i, GNG_DIM) {
@@ -223,39 +361,8 @@ void UniformGrid<VectorContainer,ListContainer,T>::purge(double *origin, int* di
     }
 
     m_grid.resize(new_size);
-    m_grid_lookup.resize(new_size);
 
     REPORT(new_size);
-    
-    FOREACH(cell, m_grid_lookup) (*cell) = false;
-
-
-    int *w = new int[GNG_DIM];
-    int *w_tmp = new int[GNG_DIM];
-    REP(i, GNG_DIM) w[i] = 0;
-    int *skok = new int[GNG_DIM];
-    REP(i, GNG_DIM) skok[i] = 1;
-
-    int m = 0, j = 0, k = GNG_DIM, n = 3;
-
-    do {
-
-
-        REP(i, GNG_DIM) w_tmp[i] = w[i] - 1;
-        m_neigh.push_back(_getIndex(w_tmp));
-
-        ++m;
-        j = _indx(m, n) + 1;
-
-        if (j <= k) {
-            w[j - 1] += skok[j - 1];
-            if (w[j - 1] == 0) skok[j - 1] = 1;
-            if (w[j - 1] == n - 1) skok[j - 1] = -1;
-        }
-    } while (j <= k);
-
-    cout << "GENERATED ";
-    write_cnt(m_neigh.begin(), m_neigh.end());
 }
 
 
@@ -264,7 +371,8 @@ template<class VectorContainer, class ListContainer, class T>
 int UniformGrid<VectorContainer,ListContainer,T>::insert(double *p, T x) {
     //memcpy(&m_copy[0],p,sizeof(double)*GNG_DIM);
     int * index = _calculateCell(p);
-    int k = _getIndex(index);
+    int k = getIndex(index);
+
     //dbg.push_back(0,"UniformGrid:: "+to_string(k)+" inser");
     m_grid[k].push_back(x);
     m_nodes++;
@@ -272,242 +380,87 @@ int UniformGrid<VectorContainer,ListContainer,T>::insert(double *p, T x) {
     return k;
 }
 template<class VectorContainer, class ListContainer, class T >
-T * UniformGrid<VectorContainer,ListContainer,T>::findTwoNearest(double *p,bool debug) { //returns indexes (values whatever)
-    std::list<int> search_query, checked_cells;
-    double b, tmp;
-
-    T * nearest = new T[GNG_DIM];
-    nearest[0]=-1;
-    nearest[1]=-1;
-    double best_dist[2];
-    bool occupied[2] = {false, false};
-    
-    //end of defs
 
 
+T * UniformGrid<VectorContainer,ListContainer,T>::findNearest(double *p,int n) { //returns indexes (values whatever)
+	s_search_query=n;
 
-    int * index = _calculateCell(p);
 
+    int * center = _calculateCell(p);
+    memcpy(s_center,center,sizeof(int)*GNG_DIM);
+    memcpy(s_query,p,sizeof(double)*GNG_DIM);
+ 
+	int center_id = getIndex(center);
+	double border, border_squared,tmp;
+	s_found_cells_dist[0]=s_found_cells_dist[1]=-1;
+	s_found_cells[0]=s_found_cells[1]=-1;
+	
+	//REP(i,10000) TMP[i]=false;
 
+ 	//init of the search
+	scanCell(center_id,s_query);
 
-    if(debug){
-    cout << "search for";
-    write_array(p, p + GNG_DIM);
-    write_array(index, index + GNG_DIM);
-    }
-
-    for (int i = 0; i < GNG_DIM; ++i) {
-        tmp = abs((p[i] - m_origin[i] - index[i] * m_l)) < abs((p[i] - m_origin[i] - (index[i] + 1) * m_l)) ?
-                abs((p[i] - m_origin[i] - index[i] * m_l)) :
-                abs((p[i] - m_origin[i] - (index[i] + 1) * m_l));
+	
+	for (int i = 0; i < GNG_DIM; ++i) {
+        tmp = abs((p[i] - m_origin[i] - center[i] * m_l)) < abs((p[i] - m_origin[i] - (center[i] + 1) * m_l)) ?
+                abs((p[i] - m_origin[i] - center[i] * m_l)) :
+                abs((p[i] - m_origin[i] - (center[i] + 1) * m_l));
        // cout << tmp << endl;
-        if (b > tmp || i == 0) b = tmp;
+        if (border > tmp || i == 0) border = tmp;
     }
-    if(debug) cout << "closest b = " << b << endl;
-    int k = _getIndex(index);
-    if(debug) cout<<"Index = "<<k<<endl;
-//
-    //searching with given b
-    search_query.push_back(k);
-    int iteration = 0, radius = 0, number_of_cells = 1;
+	
+	border_squared = border*border;
 
-    while (1) {
-       if(debug) cout<< "commence radius = " + to_string(radius) + " b = " + to_string(b)<<endl;
-        //if(++iteration>2) break;
+	//REPORT(center_id);
+	//write_array(center,center+GNG_DIM);
+	//cout<<"\n\n";
 
-        FOREACH(cell, search_query) {
-
-            FOREACH(it, m_grid[*(cell)]) {
-                double distcompare = m_dist_fnc(*it, p);
-               if(debug) cout<<*it<<" distcompare=" + to_string(distcompare)<<endl;
-          
-                if (!occupied[0] || best_dist[0] > distcompare) {
-
-                    if (occupied[0]) {
-                        nearest[1] = nearest[0];
-                        best_dist[1] = best_dist[0];
-                        occupied[1] = true;
-                    }
-
-                    nearest[0] = *it;
-                    best_dist[0] = distcompare;
-                    occupied[0] = true;
-                } else if ((!occupied[1] || best_dist[1] > distcompare) && (*it) != nearest[0]) {
-                    nearest[1] = *it;
-                    best_dist[1] = distcompare;
-                    occupied[1] = true;
-                }
-            }
-            checked_cells.push_back(*cell);
-            m_grid_lookup[*cell] = true;
-        }
-        //dbg.push_back(2, "search result " + to_string(best_dist[0]) + " " + to_string(best_dist[1]));
-        if (occupied[0] && occupied[1] && best_dist[0] < b && best_dist[1] < b) break; //within this cell for 100%
-
-        //adding surrounding cells
-
-        b = b + m_l;
-        ++radius;
-
-        //adding new cells (klocenie sie o stale, dim^n-1 dodatkowej roboty (wspolne) )
-        list<int>::iterator it = search_query.begin(); //invariant: not empty		
-        std::list<int> new_search_query;
-
-        int new_number = 0;
-
-        for (int i = 0; i < number_of_cells; ++i) {
-
-            FOREACH(n, m_neigh) {
-                if (_inside(*it + *n))
-                    if (m_grid_lookup[*it + *n] == false) {
-                        ++new_number;
-                        m_grid_lookup[*it + *n] = true;
-                        new_search_query.push_back(*it + *n);
-                    }
-            }
-            ++it;
-        }
-
-        //cout << "\n\n\n\n";
+	s_radius = 0;	
+	
+	while
+	(
+		!searchSuccessful(border_squared)
+	){
+		++s_radius;
+		border+=m_l;
+		border_squared = border*border;
 
 
-        //clearing search query
-        search_query = new_search_query;
-        number_of_cells = new_number;
+		if(!scanCorners()) break; //false if no cells to check (no cell checked)
+		
+		//cout<<"results:\n";
+		//REPORT(border);
+		//write_array(m_found_cells,m_found_cells+2);
+		//write_array(m_found_cells_dist,m_found_cells_dist+2); cout<<"--\n";	
 
 
-        if(debug){
-        cout << "checked";
-        FOREACH(cell, checked_cells) cout << *cell << ",";
-        cout << endl;
-        }
+	}
+	
 
 
-        //cout << "to check";
-        //FOREACH(cell, search_query) cout << *cell << ",";
-        //cout << endl;
+	int * ret = new int[2];
+	memcpy(ret,s_found_cells,sizeof(int)*2);
 
-        if (number_of_cells == 0) break;
-    }
-    FOREACH(cell, checked_cells) m_grid_lookup[*cell] = false;
-    return nearest;
-
+    return ret;
 }
 
 
 
 template<class VectorContainer, class ListContainer, class T >
-void UniformGrid<VectorContainer,ListContainer,T>::remove(double *p) { //returns indexes (values whatever)
-    std::list<int> search_query, checked_cells;
-    int * index = _calculateCell(p);
-    int k = _getIndex(index);
-
-    search_query.push_back(k);
-    int iteration = 0, radius = 0, number_of_cells = 1;
-
-    while (1) {
-        
-       // REPORT(radius);
-        FOREACH(cell, search_query) {
-            
-            // cout<<"commence search " <<  *cell<<"\n"; 
-            FOREACH(it, m_grid[*(cell)]) {
-                double distcompare = m_dist_fnc(*it, p);
-               // REPORT(distcompare);
-                if (isZero(distcompare)) {m_grid[*cell].erase(it); m_nodes--;
-                m_density = (double) m_nodes / (double) SIZE(m_grid); return;}
-            }
-            checked_cells.push_back(*cell);
-            m_grid_lookup[*cell] = true;
-        }
-  
-
-        ++radius;
-
-      
-        std::list<int>::iterator it = search_query.begin(); //invariant: not empty		
-        std::list<int> new_search_query;
-
-        int new_number = 0;
-
-        for (int i = 0; i < number_of_cells; ++i) {
-
-            FOREACH(n, m_neigh) {
-                if (_inside(*it + *n))
-                    if (m_grid_lookup[*it + *n] == false) {
-                        ++new_number;
-                        m_grid_lookup[*it + *n] = true;
-                        new_search_query.push_back(*it + *n);
-                    }
-            }
-            ++it;
-        }
-
-        search_query = new_search_query;
-        number_of_cells = new_number;
-
-        if (number_of_cells == 0) break;
-    }
-    FOREACH(cell, checked_cells) m_grid_lookup[*cell] = false;
-}
-
-
-template<class VectorContainer, class ListContainer, class T >
-T UniformGrid<VectorContainer,ListContainer,T>::find(double *p) { //returns indexes (values whatever)
-    std::list<int> search_query, checked_cells;
-    int * index = _calculateCell(p);
-    int k = _getIndex(index);
-
-    search_query.push_back(k);
-    int iteration = 0, radius = 0, number_of_cells = 1;
-
-    while (1) {
-        
-       // REPORT(radius);
-        FOREACH(cell, search_query) {
-            
-            // cout<<"commence search " <<  *cell<<"\n"; 
-            FOREACH(it, m_grid[*(cell)]) {
-                double distcompare = m_dist_fnc(*it, p);
-               // REPORT(distcompare);
-                if (isZero(distcompare)) {  return *cell;}
-            }
-            checked_cells.push_back(*cell);
-            m_grid_lookup[*cell] = true;
-        }
-  
-
-        ++radius;
-
-      
-        std::list<int>::iterator it = search_query.begin(); //invariant: not empty		
-        std::list<int> new_search_query;
-
-        int new_number = 0;
-
-        for (int i = 0; i < number_of_cells; ++i) {
-
-            FOREACH(n, m_neigh) {
-                if (_inside(*it + *n))
-                    if (m_grid_lookup[*it + *n] == false) {
-                        ++new_number;
-                        m_grid_lookup[*it + *n] = true;
-                        new_search_query.push_back(*it + *n);
-                    }
-            }
-            ++it;
-        }
-
-        search_query = new_search_query;
-        number_of_cells = new_number;
-
-        if (number_of_cells == 0) break;
-    }
-    FOREACH(cell, checked_cells) m_grid_lookup[*cell] = false;
-    return T();
+bool UniformGrid<VectorContainer,ListContainer,T>::remove(double *p) { //returns indexes (values whatever)
+    int * cell = _calculateCell(p);
+	int  index = getIndex(cell);
+	FOREACH(node,m_grid[index]){
+		if(isZero(m_dist_fnc(*node,p))){
+			m_grid[index].erase(node);
+                        --m_nodes;
+			return true;		
+		}	
+	}
+	return false;
 }
 
 
 
-#endif	/* UNIFORMGRID_H */
 
+#endif

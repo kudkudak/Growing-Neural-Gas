@@ -24,7 +24,7 @@ class GNGGraph : public GNGGraphBase{
 
 public:
     static ExtMemoryManager * mm;
-    typedef ExtGraphNodeManager<GNGNode, GNGEdge, GNGList> super;
+    typedef ExtGraphNodeManager<GNGNode, GNGEdge, GNGList >  super;
     
     GNGGraph(int start_number): GNGGraphBase(start_number){
         

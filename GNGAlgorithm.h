@@ -29,7 +29,7 @@ struct GNGGraphAccessHack{
         REP(i,GNG_DIM){
             x+=(pool[index].position[i] - position[i])*(pool[index].position[i] - position[i]);
         }
-        return std::sqrt(x);
+        return x;
     }
 };
 
@@ -49,6 +49,7 @@ class GNGAlgorithm { public:
     
     double m_alpha,m_betha;
     double * m_betha_powers;
+    double * m_betha_powers_to_n;
     int m_betha_powers_size;
     double m_accumulated_error;
     
@@ -146,13 +147,9 @@ class GNGAlgorithm { public:
     
     void FixErrorNew(GNGNode * node){
         if(node->error_cycle==c) return;
-            //cout<<"fixing erro\n";
-        int exp = m_lambda*(c-node->error_cycle);
-            double coef ;
-            if(exp<m_betha_powers_size)
-             coef=m_betha_powers[m_lambda*(c - node->error_cycle)];
-            else coef = std::pow(m_betha,(double)exp);
-            
+
+            double coef=m_betha_powers_to_n[c-node->error_cycle] ;
+       
             node->error_new = coef*node->error_new;
             node->error_cycle = c;
         
@@ -362,7 +359,7 @@ class GNGAlgorithm { public:
 public:
     GNGAlgorithm(GNGDatabase* db, int start_number,double * boundingbox_origin, double * boundingbox_axis, double l):
             m_g(),g_db(db),c(0),s(0) ,
-            m_max_nodes(2000),m_max_age(50),
+            m_max_nodes(10000),m_max_age(50),
             m_alpha(0.9),m_betha(0.9995),m_lambda(100),
             m_eps_v(0.09),m_eps_n(0.001),ug(boundingbox_origin, boundingbox_axis,l),
             m_density_threshold(0.1), m_grow_rate(1.5),
@@ -371,9 +368,13 @@ public:
         m_g.init(start_number);
         GNGGraphAccessHack::pool = m_g.getPool();
         ug.setDistFunction(GNGGraphAccessHack::dist);
-        m_betha_powers_size = m_lambda*1000;
+        m_betha_powers_size = m_lambda*10;
         m_betha_powers = new double[m_betha_powers_size];
         REP(i,m_betha_powers_size) m_betha_powers[i] = std::pow(m_betha,(double)(i) );
+        
+        m_betha_powers_to_n= new double[m_max_nodes*2];
+        REP(i,m_max_nodes*2) m_betha_powers_to_n[i] = std::pow(m_betha,m_lambda*(double)(i) );
+        
     }
     
     double getError() const{ return m_error; }
@@ -466,10 +467,10 @@ public:
         Time t1(boost::posix_time::microsec_clock::local_time());
         
         
-        int * nearest_index = ug.findTwoNearest(ex->position);//TwoNearestNodes(ex->position);
+        int * nearest_index = ug.findNearest(ex->position,2);//TwoNearestNodes(ex->position);
         
        // 
-        GNGNode * nearest[2]={m_g[nearest_index[0]],m_g[nearest_index[1]]};
+        GNGNode * nearest[2]={m_g[nearest_index[1]],m_g[nearest_index[0]]};
         
         Time t2(boost::posix_time::microsec_clock::local_time());
         
@@ -479,11 +480,12 @@ public:
         
         t1=boost::posix_time::microsec_clock::local_time();
         
-       // GNGNode ** nearest = TwoNearestNodes(ex->position);
+        //GNGNode ** nearest = TwoNearestNodes(ex->position);
         
       //if(m_g.getNumberNodes()>9000){ cout<<"ok\n";}
        
-        /*
+        //ug.print3d();
+        
         REP(i,m_g.getMaximumIndex()){
             if(m_g.getDist(m_g[i]->position,ex->position)<m_g.getDist(nearest[0]->position,ex->position)){
                 cout<<"XXXXXXXXXXXXXXXXXXXX\n";
@@ -494,13 +496,14 @@ public:
                // ug.print3d();
                // ug.findTwoNearest(ex->position,true);
                 cout<<"MISSED "<<i<<endl;
+                cout<<"FOUND "<<nearest[0]->nr<<endl;
                // cout<<ug.find(m_g[i]->position)<<endl;
                // write_array(m_g[i]->position,m_g[i]->position+3);
 
             }
         }
-*/
-        /*
+
+        
         REP(i,m_g.getMaximumIndex()){
             if(m_g[i]->occupied && m_g.getDist(m_g[i]->position,ex->position)<m_g.getDist(nearest[1]->position,ex->position) && i!=nearest[0]->nr){
                 cout<<"XXXXXXXXXXXXXXXXXXXX\n";
@@ -508,7 +511,7 @@ public:
                 cout<<m_g.getDist(nearest[1]->position,ex->position)<<">"<<m_g.getDist(m_g[i]->position,ex->position)<<endl;
             }
         }
-         */
+        
         //dbg.push_back(4,"GNGAlgorith::Adapt::found nearest nodes to the drawn example "+to_string(*nearest[0])+" "+to_string(*nearest[1]));
         
                 
@@ -587,15 +590,16 @@ public:
     double getAccumulatedError() const{
         return m_accumulated_error;
     }
-    void CalculateAccumulatedError(){
+    int CalculateAccumulatedError(){
         int maximumIndex = m_g.getMaximumIndex();
         m_accumulated_error=0.0;
         REP(i,maximumIndex){
            
             if(m_g[i]->occupied){
-               m_accumulated_error+=m_g[i]->error;
+               m_accumulated_error+=m_g[i]->error_new;
             }
         }
+        return m_accumulated_error;
     }
     void TestAgeCorrectness(){
          int maximumIndex = m_g.getMaximumIndex();
@@ -630,44 +634,47 @@ public:
         c=0; s=0;
         boost::posix_time::microseconds work(1000),waitsleep(40);
         bool waited=false;
-        Time t1,t2; TimeDuration dt;
+        Time t1,t2,t3,t4; TimeDuration dt;
 
         
         //random init (2 nodes)
         RandomInit();
         
-      
         
-        int iteration=0;
+t3= boost::posix_time::microsec_clock::local_time();
+        int iteration = 0;
         //powinien sprawdzac czy juz ma zaczac.
-        while(m_g.getNumberNodes()<m_max_nodes){
-            
+        while (m_g.getNumberNodes() < m_max_nodes) {
 
-            for (s = 0; s<m_lambda ;++s){ //global counter!!
-               // if(iteration>3) return;
+
+            for (s = 0; s < m_lambda; ++s) { //global counter!!
+                // if(iteration>3) return;
                 ++iteration;
                 GNGGraphAccessHack::pool = m_g.getPool(); //bad design
                 // boost::this_thread::sleep(boost::posix_time::microseconds(100000)); //to see the progress when the data is small
                 //dbg.push_back(-3,"GNGAlgorithm::draw example");
                 GNGExample ex = g_db->drawExample();
                 Adapt(&ex);
-               // ug.print3d();
+                // ug.print3d();
             }
-       t1=boost::posix_time::microsec_clock::local_time();
-            if(m_max_nodes>m_g.getNumberNodes()) AddNewNode();
-           if(ug.getDensity()>m_density_threshold) ResizeUniformGrid();
-     t2=boost::posix_time::microsec_clock::local_time();
-     dt=t2-t1;
-     times["resize"]+=dt.total_microseconds();
-             ++c; //epoch
-            //CalculateAccumulatedError();
+            t1 = boost::posix_time::microsec_clock::local_time();
+            if (m_max_nodes > m_g.getNumberNodes()) AddNewNode();
+            if (ug.getDensity() > m_density_threshold) ResizeUniformGrid();
+            t2 = boost::posix_time::microsec_clock::local_time();
+            dt = t2 - t1;
+            times["resize"] += dt.total_microseconds();
+            ++c; //epoch
+            //REPORT(CalculateAccumulatedError());
             //if(m_g.getNumberNodes()>800) TestAgeCorrectness();
-           // test_routine();
+            // test_routine();
             //if(iteration%1000) REPORT(ug.getDensity());
         }
+        t4 = boost::posix_time::microsec_clock::local_time();
+        dt=t4-t3;
         REPORT(times["adapt1"]);
         REPORT(times["adapt2"]);
         REPORT(times["resize"]);
+        REPORT(dt.total_microseconds()/(double)1000000);
     }
     
     

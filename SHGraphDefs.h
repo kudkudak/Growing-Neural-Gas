@@ -130,6 +130,7 @@ class GNGEdge{ public:
     int nr;
     double error;
     int age;
+    //std::list<GNGEdge>::iterator rev;
     GNGListTemplIterator rev;
     GNGEdge():error(0),age(0){}
     GNGEdge(int nr):nr(nr),error(0.0),age(0){}
@@ -138,6 +139,7 @@ class GNGEdge{ public:
 
 
 //how to implement iterators on this list? my own list rewrite? lets try it! but have to write iterator, that sucks.
+
 
 class GNGList: public GNGListTempl{ public:
 
@@ -250,6 +252,7 @@ class GNGNode{ public:
     bool occupied;
     int nextFree;
     
+    //std::list<GNGEdge> * edges;
     boost::interprocess::offset_ptr<GNGList> edges; //jest w shm mam nadzieje, chyba tak. do sprawdzenia
 };   
 

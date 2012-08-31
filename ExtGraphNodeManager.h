@@ -16,6 +16,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <list>
 
 #include "ExtMemoryManager.h"
 

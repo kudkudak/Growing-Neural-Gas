@@ -78,7 +78,7 @@ void gngDatabaseThread(){
 
         
         ++k;
-        if(k%100==0) {
+        if(k%1000==0) {
             //cout<<(gngAlgorithm->get_graph()->reportPool(false))<<endl;
             int a = gngAlgorithm->get_graph()->getNumberNodes();
             int b = myDatabase->getSize();
@@ -253,8 +253,8 @@ void initGNGServer(){
     GNGExample::N = 3;
 
     //Inits
-    double orig[3]={-2.0,-2.0,-2.0};
-    double axis[3]={2.0,2.0,2.0};
+    double orig[3]={0.0,0.0,0.0};
+    double axis[3]={1.0,1.0,1.0};
     
 
     
