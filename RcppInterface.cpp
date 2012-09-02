@@ -8,7 +8,7 @@ using namespace arma;
 using namespace Rcpp;
 
 
-DebugCollector dbg;
+DebugCollector //dbg;
 GNGGraphInfo * ggi;
 int GNGExample::N=3; 
 RcppExport SEXP GNGClient__new(){

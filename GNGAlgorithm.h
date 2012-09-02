@@ -8,6 +8,8 @@
 #ifndef GNGALGORITHM_H
 #define	GNGALGORITHM_H
 
+#include "GNGAlgorithmControl.h"
+
 #include "GNGGraph.h"
 #include "GNGDatabase.h"
 
@@ -63,6 +65,7 @@ class GNGAlgorithm { public:
     
     GNGGraph m_g; //czy nie bedzie za duzo na stosie? sprawdzic miejsce potencjalnego buga
     GNGDatabase* g_db;
+    GNGAlgorithmControl * m_control;
     
     typedef std::list<int> Node;
     
@@ -76,9 +79,9 @@ class GNGAlgorithm { public:
         
         //dbg.push_back(1,"GNGAlgorithm::LargestErrorLazy::started inserting nodes");
         //FOREACH(node, errorHeap.getLazyList()){
-
+        GNGNode * gngnode;
         FOREACH(it,errorHeap.getLazyList()){
-            GNGNode * gngnode = m_g[*it];
+            gngnode = m_g[*it];
             ////dbg.push_back(1,"GNGAlgorithm::LargestErrorLazy::inserting node "+to_string(*node)+" "+to_string(m_g[*node]->error_cycle));
            // cout<<*node<<",";
             //FixErrorNew(gngnode);
@@ -148,9 +151,7 @@ class GNGAlgorithm { public:
     void FixErrorNew(GNGNode * node){
         if(node->error_cycle==c) return;
 
-            double coef=m_betha_powers_to_n[c-node->error_cycle] ;
-       
-            node->error_new = coef*node->error_new;
+            node->error_new = m_betha_powers_to_n[c-node->error_cycle]*node->error_new;
             node->error_cycle = c;
         
     }
@@ -181,33 +182,25 @@ class GNGAlgorithm { public:
         
         largest[0]=0;
         largest[1]=0;
-        
-        int start_index=0;
-        
-        while(!m_g[start_index]->occupied) ++start_index;
-        
-        double error=m_g[start_index]->error;
-        largest[0] =m_g[start_index];
-       
-        
-        
-        
-        for(int i=start_index+1;i<=m_g.getMaximumIndex();++i){ //another idea for storing list of actual nodes?
-            
+        double error=-1.0;
+    /*
+        REP(i,m_g.getMaximumIndex()+1){
+            //cout<<m_g[i]->error<<",";
             if(m_g[i]->occupied){
-                
-                double new_error = m_g[i]->error;
-               
-                if(error<new_error){
-                    error = new_error;
-
-                    largest[0] = m_g[i];
-                }
+              
+                error = std::max(error, m_g[i]->error);
             }
         }
-        
+         REP(i,m_g.getMaximumIndex()+1){
+            //cout<<m_g[i]->error<<",";
+            if(m_g[i]->occupied){
+              
+                if(m_g[i]->error == error) largest[0] =  m_g[i];
+            }
+        }       
+       // REPORT(largest[0]->nr); REPORT(largest[0]->error);
          //dbg.push_back(2,"gngAlgorithm::LargestError::found  "+to_string(*largest[0]));
-
+*/
 
 
             if(largest[0]->edgesCount==0) //{largest[0]->error=0; return largest;} //error?
@@ -219,15 +212,7 @@ class GNGAlgorithm { public:
                 //largest[0]->error=0;
                 return largest;
                 
-                
-                largest[1]= (TwoNearestNodes(largest[0]->position))[0];
-                return largest;
-                
-                        
-                int c = __int_rnd(0,m_g.getNumberNodes());
-                while(c==largest[0]->nr || !m_g[c]->occupied) c = __int_rnd(0,m_g.getNumberNodes());
-                largest[1] = m_g[c];
-                return largest;
+   
             }
          
          
@@ -341,7 +326,7 @@ class GNGAlgorithm { public:
     void DecreaseAllErrors(){
         int maximumIndex = m_g.getMaximumIndex();
         
-        REP(i,maximumIndex){
+        REP(i,maximumIndex+1){
            
             if(m_g[i]->occupied){
                 m_g[i]->error = m_betha*m_g[i]->error;
@@ -355,13 +340,14 @@ class GNGAlgorithm { public:
     
     void SetError(GNGNode * node, double error){
         node->error = error;
+        
     }      
 public:
-    GNGAlgorithm(GNGDatabase* db, int start_number,double * boundingbox_origin, double * boundingbox_axis, double l):
-            m_g(),g_db(db),c(0),s(0) ,
-            m_max_nodes(6000),m_max_age(50),
-            m_alpha(0.9),m_betha(0.9995),m_lambda(100),
-            m_eps_v(0.09),m_eps_n(0.001),ug(boundingbox_origin, boundingbox_axis,l),
+    GNGAlgorithm(GNGDatabase* db, GNGAlgorithmControl * control, int start_number,double * boundingbox_origin, double * boundingbox_axis, double l,int max_nodes=1000):
+            m_g(),g_db(db),m_control(control),c(0),s(0) ,
+            m_max_nodes(max_nodes),m_max_age(200),
+            m_alpha(0.95),m_betha(0.9995),m_lambda(200),
+            m_eps_v(0.05),m_eps_n(0.0006),ug(boundingbox_origin, boundingbox_axis,l),
             m_density_threshold(0.1), m_grow_rate(1.5),
             errorHeap(m_g) 
     {
@@ -401,26 +387,53 @@ public:
     
     void AddNewNode(){
         using namespace std;
-        //GNGNode ** error_nodes=LargestErrorNodes();
-        GNGNode ** error_nodes_new = LargestErrorNodesLazy();
         
+        
+        
+        GNGNode ** error_nodes_new= LargestErrorNodesLazy();
+      /*  
         double max_error=-1;
-        /*
+        
         REP(i,m_g.getMaximumIndex()){
+            
             if(m_g[i]->occupied){
+                FixErrorNew(m_g[i]);
+                cout<<m_g[i]->error_new<<",";
                 max_error = std::max(max_error, m_g[i]->error_new);
             }
         }
+        cout<<endl;
         if(max_error != error_nodes_new[0]->error_new) {
-            REPORT(max_error);
+            REPORT(max_error);REPORT(error_nodes_new[0]->nr);
             REPORT(error_nodes_new[0]->error_new);
         }
+         
+        
+        max_error=-1;
+        GNGNode ** error_nodes_new2=LargestErrorNodes();
         */
+        /*
+        REP(i,m_g.getMaximumIndex()+1){
+            //cout<<m_g[i]->error<<",";
+            if(m_g[i]->occupied){
+              
+                max_error = std::max(max_error, m_g[i]->error);
+            }
+        }
+        //cout<<endl;
+        if(max_error != error_nodes_new[0]->error) {
+            REPORT(max_error)
+                ;REPORT(error_nodes_new[0]->nr);
+            REPORT(error_nodes_new[0]->error);
+        }
+        */
+         if (m_max_nodes <= m_g.getNumberNodes()){delete[] error_nodes_new; return;}
         
         double  position[GNG_DIM];
         for(int i=0;i<GNG_DIM;++i)
             position[i] = (error_nodes_new[0]->position[i] + error_nodes_new[1]->position[i])/2;
         
+       
         
         int new_node_index=m_g.newNode(&position[0]);
         
@@ -439,14 +452,16 @@ public:
         //dbg.push_back(3,"GNGAlgorith::AddNewNode::add edge beetwen "+to_string(error_nodes_new[0]->nr)+" and"+to_string(new_node_index));
         //dbg.push_back(3,"GNGAlgorith::AddNewNode::add edge beetwen "+to_string(error_nodes_new[1]->nr)+" and"+to_string(new_node_index));
         
-       //DecreaseError(error_nodes_new[0]);
+        //DecreaseError(error_nodes_new[0]);
         //DecreaseError(error_nodes_new[1]);
         
         DecreaseErrorNew(error_nodes_new[0]);
         DecreaseErrorNew(error_nodes_new[1]);       
         
-       // SetError(m_g[new_node_index],(error_nodes_new[0]->error + error_nodes_new[1]->error)/2);
+        //SetError(m_g[new_node_index],(error_nodes_new[0]->error + error_nodes_new[1]->error)/2);
         SetErrorNew(m_g[new_node_index],(error_nodes_new[0]->error + error_nodes_new[1]->error)/2);
+        
+        delete[] error_nodes_new;
     }
 
     
@@ -465,7 +480,12 @@ public:
         int * nearest_index = ug.findNearest(ex->position,2);//TwoNearestNodes(ex->position);
         
        // 
+        //GNGNode ** nearest = TwoNearestNodes(ex->position);
         GNGNode * nearest[2]={m_g[nearest_index[1]],m_g[nearest_index[0]]};
+        
+       /* if(nearest2[0]!=nearest[0] || nearest2[1]!=nearest[1]){
+            cout<<"XX\n";
+        }*/
         
         Time t2(boost::posix_time::microsec_clock::local_time());
         
@@ -475,13 +495,15 @@ public:
         
         t1=boost::posix_time::microsec_clock::local_time();
         
+       
+        
         //GNGNode ** nearest = TwoNearestNodes(ex->position);
         
       //if(m_g.getNumberNodes()>9000){ cout<<"ok\n";}
        
         //ug.print3d();
         /*
-        REP(i,m_g.getMaximumIndex()){
+        REP(i,m_g.getMaximumIndex()+1){
             if(m_g.getDist(m_g[i]->position,ex->position)<m_g.getDist(nearest[0]->position,ex->position)){
                 cout<<"XXXXXXXXXXXXXXXXXXXX\n";
                 cout<<m_g.getDist(nearest[0]->position,ex->position)<<">"<<m_g.getDist(m_g[i]->position,ex->position)<<endl;
@@ -499,7 +521,7 @@ public:
         }
 
         
-        REP(i,m_g.getMaximumIndex()){
+        REP(i,m_g.getMaximumIndex()+1){
             if(m_g[i]->occupied && m_g.getDist(m_g[i]->position,ex->position)<m_g.getDist(nearest[1]->position,ex->position) && i!=nearest[0]->nr){
                 cout<<"XXXXXXXXXXXXXXXXXXXX\n";
                 cout<<nearest[1]->nr<<" "<<nearest[0]->nr<<" "<<i<<endl;
@@ -509,14 +531,13 @@ public:
         */
         //dbg.push_back(4,"GNGAlgorith::Adapt::found nearest nodes to the drawn example "+to_string(*nearest[0])+" "+to_string(*nearest[1]));
         
-                
-            
+     
         double error=m_g.getDist(nearest[0]->position,ex->position);
       
         
         
         //dbg.push_back(3,"GNGAlgorith::Adapt::increasing error");
-        //IncreaseError(nearest[0],error);
+      //  IncreaseError(nearest[0],error);
         IncreaseErrorNew(nearest[0],error);
         
         //dbg.push_back(3,"GNGAlgorith::Adapt::accounted for the error");
@@ -533,17 +554,18 @@ public:
         {
           ug.remove(m_g[edg->nr]->position );
           for(int i=0;i<GNGExample::N;++i){
-              m_g[edg->nr]->position[i]+=m_eps_n*(ex->position[i]-m_g[edg->nr]->position[i]);
+             m_g[edg->nr]->position[i]+=m_eps_n*(ex->position[i]-m_g[edg->nr]->position[i]);
           }
           ug.insert(m_g[edg->nr]->position,edg->nr );  
         }
        
         //dbg.push_back(4,"GNGAlgorith::Adapt::position of the winner and neighbour mutated");
-       
-        if(!m_g.isEdge(nearest[0]->nr, nearest[1]->nr)){
+       if(!m_g.isEdge(nearest[0]->nr, nearest[1]->nr)){
             m_g.addUDEdge(nearest[0]->nr, nearest[1]->nr);
             //dbg.push_back(4,"GNGAlgorith::Adapt::added edge beetwen "+to_string(nearest[0]->nr)+ " and " +to_string(nearest[1]->nr));
-        }
+        }             
+                
+  
         //cout<<(*nearest[0])<<endl;
         bool BYPASS=false;
         FOREACH(edg,*(nearest[0]->edges))
@@ -572,13 +594,15 @@ public:
         }
        //  cout<<(*nearest[0])<<endl;
         
-        //DecreaseAllErrors();
+       // DecreaseAllErrors();
         DecreaseAllErrorsNew();
         
              t2=boost::posix_time::microsec_clock::local_time();   
         dt = t2-t1;
         
         times["adapt2"]+=dt.total_microseconds();
+//        delete[] nearest;
+        delete[] nearest_index;
     }  
         
 
@@ -588,10 +612,23 @@ public:
     int CalculateAccumulatedError(){
         int maximumIndex = m_g.getMaximumIndex();
         m_accumulated_error=0.0;
-        REP(i,maximumIndex){
+        REP(i,maximumIndex+1){
            
             if(m_g[i]->occupied){
-               m_accumulated_error+=m_g[i]->error_new;
+               m_accumulated_error+=m_g[i]->error;
+            }
+        }
+        return m_accumulated_error;
+    }
+
+    int CalculateAccumulatedErrorNew() {
+        int maximumIndex = m_g.getMaximumIndex();
+        m_accumulated_error = 0.0;
+
+        REP(i, maximumIndex + 1) {
+
+            if (m_g[i]->occupied) {
+                m_accumulated_error += m_g[i]->error_new;
             }
         }
         return m_accumulated_error;
@@ -599,7 +636,7 @@ public:
     void TestAgeCorrectness(){
          int maximumIndex = m_g.getMaximumIndex();
      
-        REP(i,maximumIndex){
+        REP(i,maximumIndex+1){
            
             if(m_g[i]->occupied && m_g[i]->edgesCount){
                 FOREACH(edg,*(m_g[i]->edges)){
@@ -620,8 +657,15 @@ public:
         //dbg.push_back(6,"GNGAlgorithm::Resize Uniform Grid");
         ug.new_l(ug.getCellLength()/m_grow_rate);
         int maximum_index = m_g.getMaximumIndex();
-        REP(i,maximum_index){
+        REP(i,maximum_index+1){
             if(m_g[i]->occupied) ug.insert(m_g[i]->position,m_g[i]->nr);
+        }
+    }
+
+    void checkPause() {
+        boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> lock(m_control->m_pause_mutex);
+        while (m_control->m_pause) {
+            m_control->m_pause_changed.wait(lock);
         }
     }
     
@@ -636,33 +680,36 @@ public:
         RandomInit();
         
         
-t3= boost::posix_time::microsec_clock::local_time();
+        t3= boost::posix_time::microsec_clock::local_time();
         int iteration = 0;
         //powinien sprawdzac czy juz ma zaczac.
-        while (m_g.getNumberNodes() < m_max_nodes) {
-
-
+        while (1){//(m_g.getNumberNodes() < m_max_nodes) {
+                //boost::this_thread::sleep(boost::posix_time::microseconds(50000));
+            checkPause();
             for (s = 0; s < m_lambda; ++s) { //global counter!!
                 // if(iteration>3) return;
                 ++iteration;
                 GNGGraphAccessHack::pool = m_g.getPool(); //bad design
-                // boost::this_thread::sleep(boost::posix_time::microseconds(100000)); //to see the progress when the data is small
+                 //to see the progress when the data is small
                 //dbg.push_back(-3,"GNGAlgorithm::draw example");
                 GNGExample ex = g_db->drawExample();
-                Adapt(&ex);
+                //cout<<"adapt\n";
+               
+                 Adapt(&ex);
                 // ug.print3d();
             }
             t1 = boost::posix_time::microsec_clock::local_time();
-            if (m_max_nodes > m_g.getNumberNodes()) AddNewNode();
+           AddNewNode();
             if (ug.getDensity() > m_density_threshold) ResizeUniformGrid();
             t2 = boost::posix_time::microsec_clock::local_time();
             dt = t2 - t1;
             times["resize"] += dt.total_microseconds();
             ++c; //epoch
-            //REPORT(CalculateAccumulatedError());
+            //CalculateAccumulatedError();
             //if(m_g.getNumberNodes()>800) TestAgeCorrectness();
             // test_routine();
             //if(iteration%1000) REPORT(ug.getDensity());
+            
         }
         t4 = boost::posix_time::microsec_clock::local_time();
         dt=t4-t3;
@@ -681,4 +728,3 @@ private:
 };
 
 #endif	/* GNGALGORITHM_H */
-

@@ -135,9 +135,12 @@ public:
 
 	void remove(void * ptr){	
 		HeapNode * node = reinterpret_cast<HeapNode * >(ptr);
-		
+		//delete node;
+                
 		int i = node->key;
-
+                
+                 //memory leak
+                
 		m_heap[i] = m_heap[m_size-1];
 		m_heap[i]->key = i;
 		--m_size;	
@@ -159,12 +162,16 @@ public:
 					//cout<<"moveDown("<<i<<")\n";
 				}
 		}
+                
+                delete reinterpret_cast<HeapNode * >(ptr);
 	}
 
 
 	T extractMax(){
-			HeapNode * tmp;
-			T extracted = m_heap[0]->val;
+			HeapNode * tmp=m_heap[0];
+			T extracted = tmp->val;
+                        
+                        delete tmp;
                         
 			m_heap[0] = m_heap[m_size-1];
 			--m_size; 

@@ -264,7 +264,7 @@ bool  ExtGraphNodeManager<Node,Edge,EdgeStorage>::growPool(){
         grow_mutex->lock();
         #endif
         
-        dbg.push_back(2,"ExtGraphNodeManager::growing");
+        //dbg.push_back(2,"ExtGraphNodeManager::growing");
         g_pool_nodes*=2;   
         
         Node * tmp=g_pool;

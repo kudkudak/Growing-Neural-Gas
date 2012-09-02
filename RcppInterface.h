@@ -22,11 +22,18 @@
 
 typedef  ExtGraphNodeManager<GNGNode, GNGEdge, GNGList> GraphAccess;
 
-struct GNGClient{
+struct GNGClient {
+
+
+    
     GNGGraphInfo * ggi; //czyta z shared memory w new
+    
+    
     MyMutex * grow_mutex;
     GNGDatabase * g_database;
-     GraphAccess * readGraph(){
+    
+    
+    GraphAccess * readGraph(){
         return new GraphAccess((ggi->ptr).get(),ggi->nodes,ggi->pool_nodes,ggi->first_free);
         
      }
@@ -34,6 +41,11 @@ struct GNGClient{
     vector<GNGNodeOffline> buffer;  
      
 };
+
+/**
+ * @class AlgorithmControl
+ * @brief struct used to store objects responsible for interprocess control of the algorithm (f.e. pausing)
+ */
 
 
 /*

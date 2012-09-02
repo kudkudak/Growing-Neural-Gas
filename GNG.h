@@ -8,6 +8,8 @@
 #ifndef GNGINCLUDE_H
 #define	GNGINCLUDE_H
 
+#include "GNGAlgorithmControl.h"
+
 #include "UniformGrid.h"
 
 #include "SHMemoryManager.h"

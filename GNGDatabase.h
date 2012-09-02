@@ -45,6 +45,7 @@ public:
        
     }
     
+   
     void operator= (const GNGExample & rhs){
         memcpy(
                 &position[0],rhs.position,sizeof(double)*N);
@@ -204,9 +205,11 @@ public:
 };
 class GNGDatabasePlane : public GNGDatabase{
 public:
+     
      int getSize() const{ return 100000000; }
      double m_a;
      double m_center[GNG_MAX_DIM];
+     
     GNGDatabasePlane(double * center, double a): GNGDatabase(){
         memcpy(m_center,center,sizeof(double)*GNG_DIM);
         m_a=a;
@@ -214,19 +217,15 @@ public:
     }
     
     void removeExample(GNGExample const * ex){
-    
-        
         throw 1; //not implemented
-        
-
     }
     
     GNGExample drawExample() const{
         GNGExample ret;
          
      
-        ret.position[0]=m_center[0];
-        ret.position[1]=m_a*((double)rand() / RAND_MAX)+m_center[1];
+        ret.position[1]=m_center[1];
+        ret.position[0]=m_a*((double)rand() / RAND_MAX)+m_center[0];
         ret.position[2]=m_a*((double)rand() / RAND_MAX)+m_center[2];
       
         
@@ -251,7 +250,7 @@ class GNGDatabaseSimple: public GNGDatabase
     SHGNGExampleDatabase *g_database;
    //vector<GNGExample> *g_database;
     void grow_database(){
-        //dbg.push_back(1,"GNGDatabaseSimple::resizing");
+        //dbg.push_back(1,"GNGDatabaseSmain.cpp:273:40: error: no matching function for call to ‘GNGDatabaseSimple::GNGDatabaseSimple()’imple::resizing");
         g_database->reserve(g_database->capacity()*2);
         //dbg.push_back(1,"GNGDatabaseSimple::resizing completed");
     }

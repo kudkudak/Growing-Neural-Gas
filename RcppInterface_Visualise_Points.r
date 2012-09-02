@@ -6,15 +6,15 @@ library("e1071")
 
 iteration<-0
 
-sv<-new("GNGClient")
+
 
 rgl.light()
 rgl.clear("all")
 
-
+sv<-new("GNGClient")
 while(1){
 
-Sys.sleep(3.6)
+Sys.sleep(1.6)
 
 if(sv$getNumberNodesOnline()!=0){
 
@@ -41,11 +41,11 @@ z<-c(1:nodes)
 for(i in 1:(nodes))
 {
 	node = sv$getNode(i-1) #from node matrix?
-	#print(node)
+	if(i==1) print(node)
 	x[i]=node[2]
 	y[i]=node[3]
 	z[i]=node[4]
-	
+
 	#print(node)
 	#print(cat(length(node)-3," edges"))
 	if( length(node)>4){
@@ -94,7 +94,7 @@ zscale <- 1
 #clear3d("all")
  
 # setup env:
-  clear3d(type="shapes")
+  clear3d(type="all")
   rgl.bg(color="black")
 
  
@@ -109,7 +109,7 @@ cz <- abs(z)/max(abs(z))
 errortext<-cat("Error = ",sv$getAccumulatedError(),cat="")
 
 axes3d(edges="bbox")
-rgl.points(x,y,z,radius=0.009,color=rgb(cx,cy,cz))
+
 rgl.lines(x_lines,y_lines,z_lines,color=rgb(cx,cy,cz))
 
 

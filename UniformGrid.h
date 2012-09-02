@@ -388,6 +388,7 @@ T * UniformGrid<VectorContainer,ListContainer,T>::findNearest(double *p,int n) {
 
     int * center = _calculateCell(p);
     memcpy(s_center,center,sizeof(int)*GNG_DIM);
+   
     memcpy(s_query,p,sizeof(double)*GNG_DIM);
  
 	int center_id = getIndex(center);
@@ -440,7 +441,7 @@ T * UniformGrid<VectorContainer,ListContainer,T>::findNearest(double *p,int n) {
 
 	int * ret = new int[2];
 	memcpy(ret,s_found_cells,sizeof(int)*2);
-
+        
     return ret;
 }
 
