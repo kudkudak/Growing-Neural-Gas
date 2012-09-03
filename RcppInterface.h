@@ -31,7 +31,7 @@ struct GNGClient {
     
     MyMutex * grow_mutex;
     GNGDatabase * g_database;
-    
+    GNGAlgorithmControl *control;
     
     GraphAccess * readGraph(){
         return new GraphAccess((ggi->ptr).get(),ggi->nodes,ggi->pool_nodes,ggi->first_free);
@@ -42,15 +42,6 @@ struct GNGClient {
      
 };
 
-/**
- * @class AlgorithmControl
- * @brief struct used to store objects responsible for interprocess control of the algorithm (f.e. pausing)
- */
-
-
-/*
- * makes a copy of graph structure (as armadillo matrix)
- */
 
 
 RcppExport SEXP GNGClient__new();

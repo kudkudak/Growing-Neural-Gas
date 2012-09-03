@@ -37,12 +37,7 @@ MyMutex * graph_mutex; //not used
 MyMutex * database_mutex; //not used
 
 
-int * communication_buffer;
-int GNG_DIM=3;
-//trzeba updatowac dosyc czesto
-
-
-
+int GNG_DIM;
 
 
 void gngTrainingThread(){
@@ -52,80 +47,29 @@ void gngTrainingThread(){
 }
 void gngDatabaseThread(){
     boost::posix_time::millisec workTime(1);  
-
-    
-
-    //dbg.push_back(1,"gngDatabaseThread::created GNGGraphInfo");
-    
     int k=0;
     double pos[3];
-    
-   /*
-    while((myDatabase->getSize()<54000) ){
-            double r = 1;//(double)rand()*100;
-        double alfa = (double)rand()*6.28;
-        double beta = (double)rand()*3.14;
-        pos[0] = r*cos(beta);
-        pos[1] = r*sin(beta)*cos(alfa);
-        pos[2] = r*sin(beta)*sin(alfa);
-    
-     
-       
-       myDatabase->addExample(new GNGExample(&pos[0])); //memory leak
-    }*/
+
     while(1)
     {
-       
         boost::this_thread::sleep(workTime);  
-        
 
-        
         ++k;
         if(k%1000==0) {
-            
-            //cout<<(gngAlgorithm->get_graph()->reportPool(false))<<endl;
-            int a = gngAlgorithm->get_graph()->getNumberNodes();
+            int a = gngAlgorithm->get_graph().getNumberNodes();
             int b = myDatabase->getSize();
-           // cout<<(gngAlgorithm->get_graph()->reportPool(false))<<endl;
-            cout<<"NODE 0 "<<*(gngAlgorithm->m_g[0])<<endl;
             cout << ":" << a << "," << b << " error = "<<gngAlgorithm->getAccumulatedError()<<endl;
-            
         }
-             
 
-            // cout<<gngAlgorithm->get_graph()->reportPool()<<endl;
-            //dbg.push_back(-1, "gngDatabaseThread::updatingStructure()");
-            //ggi->update();
+        if (k) {
+            grow_mutex->lock();
+            ggi->update();
+            grow_mutex->unlock();
+        }
 
-              if(k
-                      ){ grow_mutex->lock();
-                  ggi->update();grow_mutex->unlock();
-              }
-
-            //cout<<(long)(ggi->ptr).get()<<endl;
-
-            
-
-            
-        //problem with grow_mutex 
-        
-        
-
-
-
-        //dbg.push_back(-1,"gngDatabaseThread::updatingStructureSuccess()");
-     
     }
 }
 
- std::vector<GNGExample> pool;
-double dist(int a, double* b){
-	double ret=0.0;
-	for(int i=0;i<GNG_DIM;++i){
-		ret+=(pool[a].position[i]-b[i])*(pool[a].position[i]-b[i])	;
-	} 
-	return ret;
-}
 
 //uploades v to database outputs GNG_DIM*2 array with bounding box
 double * uploadOBJ(const char * filename){
@@ -164,40 +108,20 @@ double * uploadOBJ(const char * filename){
 }
 
 void initGNGServer(){
-
     typedef boost::interprocess::interprocess_mutex MyMutex;
-    //SharedMemory Setup        
 
-    shm = new 
-            
-            
-            
-            
-            
-            SHMemoryManager(200000000 * sizeof (double)); //nodes <-estimate!
+    shm = new SHMemoryManager(200000000 * sizeof (double)); //nodes <-estimate!
     shm->new_segment(220000000 * sizeof (double)); //database <-estimate!
 
-    cout << shm->get_name(1) << endl;
-    cout << shm->get_name(0) << endl;
-    //Memory
-
-    //TO-DO: q()
-    //implementation-depend : move
-
-    GNGGraph::mm = shm;
     GNGNode::mm = shm;
     GNGList::mm = shm;
     GNGList::alloc_inst = new ShmemAllocatorGNG(shm->get_segment(0)->get_segment_manager());
 
-    //Dimension
-    GNGExample::N = 3;
-
+    GNG_DIM=3;
+    
     //Inits
     double orig[3]={-4.0,-4.0,-4.0};
     double axis[3]={8.0,8.0,8.0};
-    
-
-    
     
     SHGNGExampleDatabaseAllocator alc(shm->get_segment(1)->get_segment_manager());
 
@@ -220,46 +144,38 @@ void initGNGServer(){
     axis[1] = bbox[3] - orig[1]+0.1;
     axis[2] = bbox[5] - orig[2]+0.1;
     */
-    
-     
-    
    
     myDatabase = new GNGDatabaseMeshes();//new GNGDatabasePlane();//new GNGDatabaseSimple(database_mutex, database_vec);
   
     
     
-    double c1[]={0,0.5,0,5};
+    double c1[]={0,1.0,1.0};
     double c2[]={-1,-2,-1};
-    double c3[]={-3,-3,-3};
+    double c3[]={-1,-1,-1};
+    double c4[]={1,2.10,};
     
+    GNGDatabaseLine l1(c4,4.0);
     
     GNGDatabaseSphere d1(c1, 1.0),d2(c2,1.5);
     reinterpret_cast<GNGDatabaseMeshes*>(myDatabase)->addMesh(&d1);
-    reinterpret_cast<GNGDatabaseMeshes*>(myDatabase)->addMesh(&d2);
     GNGDatabasePlane p(c3,4.5);
     reinterpret_cast<GNGDatabaseMeshes*>(myDatabase)->addMesh(&p);
-    
-    
-    //A little bit to complicated init  
-    //gngAlgorithm = new GNGAlgorithm(myDatabase, 25000, orig, axis,2.0);
-    
+    reinterpret_cast<GNGDatabaseMeshes*>(myDatabase)->addMesh(&l1);
+
     gngAlgorithmControl = shm->get_segment(1)->construct<GNGAlgorithmControl >("gngAlgorithmControl")();
     
     gngAlgorithm = new GNGAlgorithm
                 (myDatabase, gngAlgorithmControl,
-                25000, orig, axis,axis[0]/4.0,5000);
+                25000, orig, axis,axis[0]/4.0,1000);
+    
+    gngAlgorithmControl->setRunningStatus(false); //skrypt w R inicjalizuje
     
     
-
+    
     
     ggi = shm->get_segment(0)->construct< GNGGraphInfo > ("SHGraphInfo")(gngAlgorithm, shm);
+   //dbg.push_back(3,"Main::Allocated main structures");
 
-    //dbg.push_back(3,"Main::Allocated main structures");
-
-
-
-    // long a;
-    //while(1){(grow_mutex)->lock(); grow_mutex->unlock(); }
 
     boost::thread workerThread1(gngTrainingThread);
     boost::thread workerThread2(gngDatabaseThread);
@@ -275,8 +191,6 @@ void initGNGServer(){
 
 
 int main(int argc, char** argv) {
-    //uniform grid dev
-    //testUG();
     initGNGServer();
     
     return 0;

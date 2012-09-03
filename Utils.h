@@ -33,7 +33,8 @@ typedef long long LL;
 
 #include <sstream>
 #include <string>
-
+#include <map>
+#include <cmath>
 
 
 //c-like random functions

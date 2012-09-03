@@ -11,48 +11,35 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/bind.hpp>
-
-
 #include <boost/interprocess/containers/vector.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/offset_ptr.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 
-#include "SHMemoryManager.h"
 
+#include "SHMemoryManager.h"
 #include "Utils.h"
 #include "DebugCollector.h"
-
-//why not in GNGGlobals
 #include "GNGGlobals.h"
 
-extern DebugCollector dbg;
-extern int GNG_DIM;
 
-//struct-like : zeby latwo bylo przekazywac przez shm
+extern DebugCollector dbg;
 
 class GNGExample{
 public:      
-    static int N;
-    
-    
     double position[GNG_MAX_DIM];
     GNGExample(double *_position){
        
-        memcpy(&position[0],_position,sizeof(double)*N);
+        memcpy(&position[0],_position,sizeof(double)*GNG_DIM);
     }
-    GNGExample(){
-       
-    }
-    
-   
+    GNGExample(){}
+
     void operator= (const GNGExample & rhs){
-        memcpy(
-                &position[0],rhs.position,sizeof(double)*N);
+        memcpy(&position[0],rhs.position,sizeof(double)*GNG_DIM);
     }
     bool operator== (const GNGExample & rhs){
         double eps=0.00000000001;
-        REP(i,N){
+        REP(i,GNG_DIM){
             if(position[i]-rhs.position[i]<-eps || position[i]-rhs.position[i]>eps ) return false;
         }
         return true;
@@ -86,12 +73,8 @@ public:
         __init_rnd();
     }
     
-    void removeExample(GNGExample const * ex){
-    
-        
+    void removeExample(GNGExample const * ex){     
         throw 1; //not implemented
-        
-
     }
     
     void addMesh(GNGDatabase * mesh){
@@ -117,6 +100,43 @@ public:
 typedef boost::interprocess::allocator<GNGExample, boost::interprocess::managed_shared_memory::segment_manager>  SHGNGExampleDatabaseAllocator;
 typedef boost::interprocess::vector<GNGExample, SHGNGExampleDatabaseAllocator> SHGNGExampleDatabase;
 
+class GNGDatabaseLine: public GNGDatabase{
+public:
+    double m_center[GNG_MAX_DIM];
+    double m_r;
+     int getSize() const{ return 100000000; }
+    
+    GNGDatabaseLine(double *center, double r): GNGDatabase(){
+        memcpy(m_center,center,sizeof(double)*GNG_DIM);
+        m_r=r;
+        __init_rnd();
+    }
+    
+    void removeExample(GNGExample const * ex){  
+        throw 1; //not implemented
+    }
+    
+    GNGExample drawExample() const{
+        GNGExample ret;
+
+        
+        ret.position[0] =  m_center[0];
+        ret.position[1] =m_center[1];
+        ret.position[2] =((double)rand() / RAND_MAX)*m_r;
+      
+        
+        return ret;
+    }
+    
+    void addExample(GNGExample const * ex){
+     
+        throw 1;
+    }
+    
+    ~GNGDatabaseLine(){
+        
+    }
+};
  class GNGDatabaseSphere : public GNGDatabase{
 public:
     double m_center[GNG_MAX_DIM];
@@ -129,12 +149,8 @@ public:
         __init_rnd();
     }
     
-    void removeExample(GNGExample const * ex){
-    
-        
+    void removeExample(GNGExample const * ex){  
         throw 1; //not implemented
-        
-
     }
     
     GNGExample drawExample() const{
@@ -168,25 +184,17 @@ public:
      int getSize() const{ return 100000000; }
     
     GNGDatabaseRec(): GNGDatabase(){
-   
         __init_rnd();
     }
     
-    void removeExample(GNGExample const * ex){
-    
-        
+    void removeExample(GNGExample const * ex){   
         throw 1; //not implemented
-        
-
     }
     
     GNGExample drawExample() const{
         GNGExample ret;
-         
-     
-   
-        
-       ret.position[0] = ((double)rand() / RAND_MAX);
+
+        ret.position[0] = ((double)rand() / RAND_MAX);
         ret.position[1] = ((double)rand() / RAND_MAX);
         ret.position[2] = ((double)rand() / RAND_MAX);
       
@@ -222,12 +230,10 @@ public:
     
     GNGExample drawExample() const{
         GNGExample ret;
-         
      
         ret.position[1]=m_center[1];
         ret.position[0]=m_a*((double)rand() / RAND_MAX)+m_center[0];
         ret.position[2]=m_a*((double)rand() / RAND_MAX)+m_center[2];
-      
         
         return ret;
     }
@@ -248,7 +254,6 @@ class GNGDatabaseSimple: public GNGDatabase
     
     int index;
     SHGNGExampleDatabase *g_database;
-   //vector<GNGExample> *g_database;
     void grow_database(){
         //dbg.push_back(1,"GNGDatabaseSmain.cpp:273:40: error: no matching function for call to ‘GNGDatabaseSimple::GNGDatabaseSimple()’imple::resizing");
         g_database->reserve(g_database->capacity()*2);
@@ -264,40 +269,22 @@ public:
     }
     
     void removeExample(GNGExample const * ex){
-        database_mutex->lock();    
-        
-        
+        boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> sc(*database_mutex);
+
         throw 1; //not implemented
-        
-        database_mutex->unlock();
     }
     
     GNGExample drawExample() const{
-        GNGExample ret;
-         
-        database_mutex->lock();  
-        
-        //dbg.push_back(-200,"GNGDatabaseSimple:: size = "+to_string(index)+" drawing!");
-        
-        int draw = __int_rnd(0,g_database->size()-1);
-        
-        ret =  (*g_database)[draw];
-      
-        database_mutex->unlock();
-        
-        return ret;
+        boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> sc(*database_mutex);
+
+        return (*g_database)[__int_rnd(0,g_database->size()-1)];
     }
     
     void addExample(GNGExample const * ex){
-     
-        database_mutex->lock();    
-       
-       
+        boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> sc(*database_mutex);
+  
         if(g_database->size() == g_database->capacity()) grow_database();
         g_database->push_back(*ex); //operator= kopiowania, ale jest to struct wiec nie trzeba nic pisac
-        
-        
-        database_mutex->unlock();
     }
     
     ~GNGDatabaseSimple(){

@@ -8,24 +8,23 @@ using namespace arma;
 using namespace Rcpp;
 
 
-DebugCollector //dbg;
-GNGGraphInfo * ggi;
+DebugCollector dbg;
+
+
+//check what is reffered int ptr-> and implement as standalones
+
+
 int GNGExample::N=3; 
 RcppExport SEXP GNGClient__new(){
-   //GNGExample::N=3; g
-   
-    
-    
    managed_shared_memory *  mshm1= new managed_shared_memory(open_only,"SHMemoryPool_Segment1");
    managed_shared_memory *  mshm2= new managed_shared_memory(open_only,"SHMemoryPool_Segment2");
    
    MyMutex * grow_mutex = (mshm1->find< MyMutex >("grow_mutex")).first;		
    MyMutex * database_mutex = (mshm2->find< MyMutex >("database_mutex")).first;	
+   GNGAlgorithmControl * gngAlgorithmControl = (mshm2->find< GNGAlgorithmControl > ("gngAlgorithmControl")).first;
    SHGNGExampleDatabase * database_vec = (mshm2->find< SHGNGExampleDatabase >("database_vec")).first;	
    
    ScopedLock sc(*grow_mutex); 
-   
-  // grow_mutex->lock();
 
    GNGGraphInfo * ggi2 = (mshm1->find<GNGGraphInfo >("SHGraphInfo")).first; //musi byc stworzony : kolejne miejsce na blad !
    
@@ -35,15 +34,11 @@ RcppExport SEXP GNGClient__new(){
    
    gngClient->ggi = ggi2;
    gngClient->g_database = new GNGDatabaseSimple(database_mutex, database_vec);
-   
+   gngClient->control = gngAlgorithmControl;
 
-   gngClient->grow_mutex = grow_mutex;
+   gngClient->grow_mutex = grow_mutex; //grow _ mutex to GNGAlgorithmControl
 
    Rcpp::XPtr<GNGClient> ptr(gngClient,true);
-
-
-   
-   //grow_mutex->unlock();
 
    return wrap(ptr); 
 }
@@ -112,7 +107,7 @@ RcppExport SEXP GNGClient__getNumberNodesOnline(SEXP _xp){
     Rcpp::XPtr<GNGClient> ptr(_xp);
     ScopedLock sc(*ptr->grow_mutex);
     
-    GraphAccess & graph = *(ptr->readGraph());
+    GraphAccess & graph = *(ptr->readGraph()); //glupie rozwiazanie jak but
     return wrap((int)(graph.getNumberNodes()));
 }
 
@@ -166,6 +161,19 @@ RcppExport SEXP GNGClient__getNodeMatrix(SEXP _xp){
     return wrap(node_matrix);
 }
 */
+
+RcppExport SEXP GNGClient__runServer(SEXP _xp){
+	Rcpp::XPtr<GNGClient> ptr(_xp);
+	ptr->control->setRunningStatus(true);
+	return wrap(0);
+}
+
+RcppExport SEXP GNGClient__pauseServer(SEXP _xp){
+	Rcpp::XPtr<GNGClient> ptr(_xp);
+	
+	ptr->control->setRunningStatus(false);
+	return wrap(0);
+}
 
 RcppExport SEXP GNGClient__getNode(SEXP _xp, SEXP _nr){
 

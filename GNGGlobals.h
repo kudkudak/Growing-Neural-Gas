@@ -13,6 +13,7 @@
 #define GNGNODEPOOL_MODIFIED 0
 #define GNG_MAX_DIM 10
 const double EPS = 1E-9;
+extern int GNG_DIM;
 
 
 

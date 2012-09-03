@@ -15,44 +15,10 @@
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/offset_ptr.hpp>
 
-#include <list>
-
 #include "SHMemoryManager.h"
 #include "GNGDatabase.h"
+#include "GNGGlobals.h"
 
-
-/*
-struct Edge;
-
-class Node{ public:
-    static ExtMemoryManager * mm;
-    
-     void* operator new[](std::size_t size){
-         return mm->allocate(size);
-         
-     }
-     void * operator new(std::size_t size){
-         return mm->allocate(size);
-          
-     }
-     void operator delete(void * ptr){
-         mm->deallocate(ptr);
-     }
-     
-    int nr;
-    int edgesCount;
-    bool occupied;
-    int nextFree;
-    std::vector<Edge> * edges;
-};
-
-
-   
-class Edge{ public:
-    int nr;
-    Edge(int nr):nr(nr){}
-};
-   */
 
 class SHEdge{ public:
     int nr;
@@ -168,43 +134,6 @@ class GNGList: public GNGListTempl{ public:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //TODO: hack with GNGNode repair
 
 class GNGNode{ public:
@@ -226,7 +155,7 @@ class GNGNode{ public:
      
      friend std::ostream& operator<<(std::ostream& out, const GNGNode & node){
          out<<node.nr<<"("<<node.error<<")(";
-         for(int i=0;i<GNGExample::N;++i){
+         for(int i=0;i<GNG_DIM;++i){
              out<<node.position[i]<<",";
          }
          out<<")";
@@ -262,7 +191,7 @@ class GNGNodeOffline{ public:
      
      friend std::ostream& operator<<(std::ostream& out, const GNGNodeOffline & node){
          out<<node.nr<<"(";
-         for(int i=0;i<GNGExample::N;++i){
+         for(int i=0;i<GNG_DIM;++i){
              out<<node.position[i]<<",";
          }
          
@@ -273,11 +202,13 @@ class GNGNodeOffline{ public:
      
      //TODO: workaround with std::copy failure
      bool operator=(const GNGNode & rhs){
+         if(SIZE(edges)) edges.clear();
+         
          this->edgesCount = rhs.edgesCount;
          this->nr = rhs.nr;
          this->occupied = rhs.occupied;
          this->nextFree = rhs.nextFree;
-         memcpy(&position[0],&rhs.position[0],GNGExample::N*sizeof(double));
+         memcpy(&position[0],&rhs.position[0],GNG_DIM*sizeof(double));
          
          if(rhs.edgesCount==0 || rhs.edges==0) return true; //nie kopiuj
          

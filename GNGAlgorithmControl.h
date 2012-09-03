@@ -15,12 +15,31 @@
 #include <boost/interprocess/offset_ptr.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <boost/interprocess/sync/interprocess_condition.hpp>
+#include <boost/interprocess/sync/scoped_lock.hpp>
+
+#include "Utils.h"
 
 struct GNGAlgorithmControl {
     bool m_pause;
    
     boost::interprocess::interprocess_mutex m_pause_mutex;
     boost::interprocess::interprocess_condition m_pause_changed;
+    void checkPause() {
+        boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> lock(m_pause_mutex);
+
+        while (m_pause) {
+            m_pause_changed.wait(lock);
+        }
+    }
+    void setRunningStatus(bool new_value) {
+        {
+            boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> lock(m_pause_mutex);
+            m_pause = !new_value;
+        }
+
+        m_pause_changed.notify_all();
+    }    
+    
 };
 
 

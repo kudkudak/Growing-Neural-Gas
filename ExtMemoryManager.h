@@ -13,18 +13,9 @@
 
 class ExtMemoryManager{
 public:
-    
-
-   
     virtual void * allocate(std::size_t, int index=0)=0;
-    
-    //default constructor will be used
-
     virtual std::string get_name(int) const=0;
-    
-    
-    virtual bool deallocate(void * ptr,int index=0)=0;
-    
+    virtual bool deallocate(void * ptr,int index=0)=0;   
     virtual ~ExtMemoryManager(){}
 };
 

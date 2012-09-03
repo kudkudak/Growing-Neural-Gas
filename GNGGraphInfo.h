@@ -29,18 +29,17 @@ struct GNGGraphInfo{
     
     GNGGraphInfo(){}
     GNGGraphInfo(GNGAlgorithm * alg, SHMemoryManager *shm): alg(alg){
-        //ptr = shm->get_segment()->construct<PoolPtr>("SHPoolPtr")();
-        ptr = alg->get_graph()->getPool();       
+        ptr = alg->get_graph().getPool();       
     }
     
 
     void update(){
 
-        (ptr) = alg->get_graph()->getPool();
-        nodes = alg->get_graph()->getNumberNodes();
-        pool_nodes = alg->get_graph()->getPoolNodes();
-        first_free =alg->get_graph()->getFirstFree();
-        maximum_index = alg->get_graph()->getMaximumIndex();   
+        (ptr) = alg->get_graph().getPool();
+        nodes = alg->get_graph().getNumberNodes();
+        pool_nodes = alg->get_graph().getPoolNodes();
+        first_free =alg->get_graph().getFirstFree();
+        maximum_index = alg->get_graph().getMaximumIndex();   
         accumulated_error = alg->getAccumulatedError();
 
     }

@@ -9,7 +9,6 @@
 #define	DEBUGCOLLECTOR_H
 
 
-
 #include <algorithm>
 #include <iostream>
 #include <sstream>
@@ -44,16 +43,13 @@ public:
         for(int i=0;i<(int)records.size();++i){
             if(records[i].level>=cutting_level) ss<<records[i].line<<std::endl;
         }
-        
-        
-        
+
         return ss.str();
     }
     void push_back(int level, std::string line){
         #ifdef DEBUG_COLLECTOR_DEBUG
                 if(level>= DEBUG_COLLECTOR_LEVEL) std::cout<<line<<std::endl;
         #endif
-        //records.push_back(Record(level,line));
     }
 private:
 

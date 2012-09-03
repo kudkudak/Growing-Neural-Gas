@@ -4,26 +4,46 @@ library("multicore")
 library("rgl")
 library("e1071")
 
+delay<-0.5
+
 iteration<-0
 
-
-
-rgl.light()
-rgl.clear("all")
-
 sv<-new("GNGClient")
-sv$runServer()
+rgl.clear("all")
+rgl.light()
+
+
+target_number<-2
+
+print("Server paused")
 while(1){
 
-Sys.sleep(1.0)
-
+sv$runServer()
+while(sv$getNumberNodesOnline()<target_number || sv$getNumberNodesOnline()>999){
+	
+}
+target_number<-target_number+1
+sv$pauseServer()
+iteration<-iteration+1
 if(sv$getNumberNodesOnline()!=0){
 
-iteration<-iteration+1
+
 #print(cat("iteration nr ",iteration,sep=""))
 tmp<-sv$updateBuffer()
 
 print(cat(":: update of buffer successful, iteration nr ",iteration,sep=""))
+
+#not that good........
+x_lines <- c(0,0)
+y_lines <- c(0,0)
+
+z_lines <- c(0,0)
+k<-3
+m<-1
+
+x<-c(1:nodes)
+y<-c(1:nodes)
+z<-c(1:nodes)
 
 if(iteration>1){
 rm(x)
@@ -34,8 +54,8 @@ rm(y_lines)
 rm(z_lines)
 rm(nodes)
 }
-#not that good........
 nodes <- sv$getBufferSize()
+
 
 x_lines <- c(0,0)
 y_lines <- c(0,0)
@@ -51,11 +71,11 @@ z<-c(1:nodes)
 for(i in 1:(nodes))
 {
 	node = sv$getNode(i-1) #from node matrix?
-	if(i==1) print(node)
+	#print(node)
 	x[i]=node[2]
 	y[i]=node[3]
 	z[i]=node[4]
-
+	
 	#print(node)
 	#print(cat(length(node)-3," edges"))
 	if( length(node)>4){
@@ -104,7 +124,7 @@ zscale <- 1
 #clear3d("all")
  
 # setup env:
-  clear3d(type="all")
+  clear3d(type="shapes")
   rgl.bg(color="white")
 
  
@@ -119,9 +139,16 @@ cz <- abs(z)/max(abs(z))
 errortext<-cat("Error = ",sv$getAccumulatedError(),cat="")
 
 axes3d(edges="bbox")
+rgl.spheres(x,y,z,radius=0.06,color=rgb(0.2,0.2,0.2))
+rgl.lines(x_lines,y_lines,z_lines,color=rgb(0.5,0.4,0.5))
+if(iteration<10) nmbr<-paste("00",iteration,sep="")
+else if(iteration<100) nmbr<-paste("0",iteration,sep="")
+else nmbr<-iteration
 
-rgl.lines(x_lines,y_lines,z_lines,color=rgb(cx,cy,cz))
-
+filename<- paste("formation1_",nmbr,".png",sep="")
+snapshot3d(filename)
+print(filename)
+if(iteration==1) scan()
 
 }
 }
