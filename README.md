@@ -7,7 +7,7 @@ but I reckon that it is already a practical tool for data analysis.
 
 Installation
 -----------
-Because it is a very early version, building isnt straightforward. First of all you boost library installed
+Because it is a very early version, building isnt straightforward. First of all you need boost library installed
 (for now - in default directory), of course R (with installed packages "multicore" "rgl" "e1071"). Having done that"
 ```bash
     make rcpp
@@ -15,7 +15,7 @@ Because it is a very early version, building isnt straightforward. First of all 
 
 Usage
 -----
-Please consult scripts/ files, yet i have to admit some are outdated, simple sanity-check:
+Please consult scripts/ files, simple sanity-check (first run R in scripts directory)
 ```R
     source("gng.r") #load package
     GNGCreateServer() 
@@ -26,11 +26,10 @@ Please consult scripts/ files, yet i have to admit some are outdated, simple san
     #wait at least 2 seconds
     GNGVisualise() #plot points
 ```
-You should get something circa
+You should get something like
 ![screen](http://img405.imageshack.us/img405/2727/v15a.png)
 
 
 Further Work
 ------
-Clearly all the code calls for robust documentation, so it will be the next step. Also I think i should include 
-more examples
+Code needs better documentation, and more examples :)
