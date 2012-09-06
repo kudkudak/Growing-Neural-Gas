@@ -1,0 +1,6 @@
+build/
+*.so
+*.o
+*.d
+*~
+data/
