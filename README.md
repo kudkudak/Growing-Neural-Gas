@@ -9,11 +9,14 @@ Installation
 -----------
 Because it is a very early version, building isnt straightforward. First of all you boost library installed
 (for now - in default directory), of course R (with installed packages "multicore" "rgl" "e1071"). Having done that"
+```bash
     make rcpp
+```
 
 Usage
 -----
 Please consult scripts/ files, yet i have to admit some are outdated, simple sanity-check:
+```R
     source("gng.r") #load package
     GNGCreateServer() 
     #wait at least 1 second (booting)
@@ -22,6 +25,7 @@ Please consult scripts/ files, yet i have to admit some are outdated, simple san
     sv$runServer()
     #wait at least second
     GNGVisualise() #plot points
+```
 
 Further Work
 ------
