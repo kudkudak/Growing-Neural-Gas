@@ -19,13 +19,16 @@ Please consult scripts/ files, yet i have to admit some are outdated, simple san
 ```R
     source("gng.r") #load package
     GNGCreateServer() 
-    #wait at least 1 second (booting)
-    client<-new("GNGClient")
-    client$addExamples(preset="sphere",preset_size=100000) #load sphere point distribution
+    #wait at least 2 seconds (booting)
+    sv<-new("GNGClient")
+    sv$addExamples(preset="sphere",preset_size=100000) #load sphere point distribution
     sv$runServer()
-    #wait at least second
+    #wait at least 2 seconds
     GNGVisualise() #plot points
 ```
+You should get something circa
+![screen](http://img405.imageshack.us/img405/2727/v15a.png)
+
 
 Further Work
 ------
