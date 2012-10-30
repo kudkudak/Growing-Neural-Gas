@@ -9,7 +9,7 @@ provided something bad occured :)
 Alpha build, which means unfriendly building, and not fully implemented interface for the end user, 
 but I reckon that it is already consitutes a practical tool for data analysis.
 
-#Installation
+###Installation
 -----------
 Because it is a very early version, building isnt straightforward. You need to have installed libboost libraries and necessary packages in R (i.e. rgl, parallel). Now go to the reposity directory and enter:
 ```bash
