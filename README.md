@@ -1,7 +1,7 @@
 **Growing Neural Gas in R**
 ====================
 
-General
+###General
 ------
 
 Implementation of GNG algorithm in C++/Rcpp/R. This version should be stable, please e-mail me 
@@ -16,9 +16,14 @@ Because it is a very early version, building isnt straightforward. You need to h
     make rcpp
 ```
 
-#Usage
+
+Usage
 -----
-Please consult scripts/ files, simple sanity-check (first run R in scripts directory)
+
+Growing Neural Gas is a clustering algorithm. For theoretical details please see (in polish) this file [growing-neural-gas.pdf](https://www.dropbox.com/s/glol7j54qg2vnuh/praca_roczna_draft.pdf). Some of the examples:
+
+
+
 ```R
     source("gng.r") #load package
     GNGCreateServer() 
