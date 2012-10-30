@@ -4,8 +4,7 @@
 ###General
 ------
 
-Implementation of GNG algorithm in C++/Rcpp/R. This version should be stable, please e-mail me 
-provided something bad occured :)
+Implementation of GNG algorithm in C++/Rcpp/R. This algorithms is widely used for dynamic clustering problems, often occuring for example in robotics. This version should be stable.
 Alpha build, which means unfriendly building, and not fully implemented interface for the end user, 
 but I reckon that it is already consitutes a practical tool for data analysis.
 
@@ -38,7 +37,7 @@ Reconstruction of the Buddha figure from Standford Repositories
 ----
 
 * Load sample data
-```R
+```Matlab
     source("gng.r") #load package
     GNGCreateServer() 
     #wait at least 2 seconds (booting)
@@ -48,8 +47,28 @@ Reconstruction of the Buddha figure from Standford Repositories
     #wait at least 2 seconds
     GNGVisualise() #plot points
 ```
+
 And you should get something like this:
 <center><img src="http://img405.imageshack.us/img405/2727/v15a.png" width="70%" height="70%"></img></center>
 
+* Load obj file
+```R
+source("gng.r")
+GNGSetParams(max_nodes=25000)
+GNGCreateServer() #notice that servers runs in a parallel manner
+Sys.sleep(2.0)
+sv<-new("GNGClient")
+sv$loadObj("data/models/buddha2.obj") #provided you have got model here
+sv$run()
+iteration<-0
+GNGVisualise()
+sv$getAccumulatedError() #retrieve error value
+sv$getNumberNodes() #get nodes
+```
+For more scripts, please refer to the scripts directory. 
+
+#Futher work
+---
+Documentation and compiling as an R package
 
 
