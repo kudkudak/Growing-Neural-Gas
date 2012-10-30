@@ -1,4 +1,4 @@
-Growing Neural Gas in R
+**Growing Neural Gas in R**
 ----------------------
 Implementation of GNG algorithm in C++/Rcpp/R. This version should be stable, please e-mail me 
 provided something bad occured :)
