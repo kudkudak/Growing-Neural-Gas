@@ -8,6 +8,8 @@
 #ifndef GNGALGORITHM_H
 #define	GNGALGORITHM_H
 
+#include "GNGGlobals.h"
+
 #include "GNGAlgorithmControl.h"
 
 #include "GNGGraph.h"

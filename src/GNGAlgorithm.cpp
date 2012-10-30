@@ -586,7 +586,7 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
       dbg.push_back(3,"GNGAlgorithm::check size of the db "+to_string(size));
     #endif      
      boost::posix_time::millisec workTime(100); 
-cout<<"database check\n";
+
     while(g_db->getSize()<2){
        ++c;
        boost::this_thread::sleep(workTime);

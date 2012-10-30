@@ -59,9 +59,10 @@ class GNGNode{ public:
      void operator delete(void * ptr){
          
          mm->deallocate(ptr);
+
      }
-    
-     
+
+
      friend std::ostream& operator<<(std::ostream& out, const GNGNode & node){
          out<<node.nr<<"("<<node.error<<")(";
          for(int i=0;i<GNG_DIM;++i){

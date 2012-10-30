@@ -1,4 +1,4 @@
-
+GNGWriteToObj<-function(sv, output){
 
 tmp<-sv$updateBuffer()
 
@@ -6,7 +6,6 @@ nodes <- sv$getBufferSize()
 
 x_lines <- c(0,0)
 y_lines <- c(0,0)
-
 z_lines <- c(0,0)
 k<-1
 m<-1
@@ -44,16 +43,16 @@ for(i in 1:(nodes))
 }
 
 
-cat("",file="output.obj")
+cat("",file=output)
 for(i in 1:(nodes))
 {
-	cat(paste("v",x[i],y[i],z[i],"\n",sep=" "), file="output.obj",append=TRUE)
+	cat(paste("v",x[i],y[i],z[i],"\n",sep=" "), file=output,append=TRUE)
 }
 for(i in 1:(k-1))
 {
 
-	cat(paste("l",faces[i,1],faces[i,2],"\n",sep=" "), file="output.obj",append=TRUE)
+	cat(paste("l",faces[i,1],faces[i,2],"\n",sep=" "), file=output,append=TRUE)
 }
 
-
+}
 

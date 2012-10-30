@@ -1,10 +1,10 @@
-/* 
+/*
  * File:   main.cpp
  * Author: staszek
  *
  * Created on 7 sierpień 2012, 18:27
  */
-#define DEBUG
+
 #include <boost/interprocess/containers/vector.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/containers/map.hpp>
@@ -46,16 +46,16 @@ void gngTrainingThread(){
     gngAlgorithm->runAlgorithm();
 }
 void gngDatabaseThread(){
-    boost::posix_time::millisec workTime(1);  
+    boost::posix_time::millisec workTime(1);
     int k=0;
     double pos[3];
 
     while(1)
     {
-        boost::this_thread::sleep(workTime);  
+        boost::this_thread::sleep(workTime);
 
         ++k;
-  
+
 
     }
 }
@@ -87,9 +87,9 @@ double * uploadOBJ(const char * filename){
             }
            // write_array(vertex,vertex+3);
            // cout<<bbox[1]<<endl;
-            
+
         }
-        
+
         memcpy(ex.position,vertex,3*sizeof(double));
         gngDatabase->addExample(&ex);
     }
@@ -104,48 +104,40 @@ void initGNGServer(){
 
     GNGNode::mm = shm;
     GNGNode::alloc_inst = new ShmemAllocatorGNG(shm->get_segment(0)->get_segment_manager());
-    
+
     GNG_DIM=3;
 
     double orig[3]={-4.0,-4.0,-4.0};
     double axis[3]={8.0,8.0,8.0};
-    
+
     SHGNGExampleDatabaseAllocator alc(shm->get_segment(1)->get_segment_manager());
 
     SHGNGExampleDatabase * database_vec = shm->get_segment(1)->construct< SHGNGExampleDatabase > ("database_vec")(alc);
-    
+
     gngAlgorithmControl = shm->get_segment(1)->construct<GNGAlgorithmControl >("gngAlgorithmControl")();
- 
+
     gngDatabase = new GNGDatabaseSimple(&gngAlgorithmControl->database_mutex,database_vec);
-    
 
-    double * bbox = uploadOBJ("data/models/buddha2.obj");
 
-	orig[0] = bbox[0]-0.1;
-    orig[1] = bbox[2]-0.1;
-    orig[2] = bbox[4]-0.1;
-    
-    axis[0] = bbox[1] - orig[0] + 0.1;
-    axis[1] = bbox[3] - orig[1]+0.1;
-    axis[2] = bbox[5] - orig[2]+0.1;
 
-    /*
-   
+
     gngDatabase = new GNGDatabaseMeshes();//new GNGDatabasePlane();//new GNGDatabaseSimple(database_mutex, database_vec);
 
     double c1[]={0,1.0,1.0};
     double c2[]={-1,-2,-1};
     double c3[]={-1,-1,-1};
     double c4[]={1,2.10,};
-    
+
     GNGDatabaseLine l1(c4,4.0);
-    
+
     GNGDatabaseSphere d1(c1, 1.0),d2(c2,1.5);
-    reinterpre_tcast<GNGDatabaseMeshes*>(gngDatabase)->addMesh(&d1);
+    reinterpret_cast<GNGDatabaseMeshes*>(gngDatabase)->addMesh(&d1);
     GNGDatabasePlane p(c3,4.5);
     reinterpret_cast<GNGDatabaseMeshes*>(gngDatabase)->addMesh(&p);
     reinterpret_cast<GNGDatabaseMeshes*>(gngDatabase)->addMesh(&l1);
-*/
+
+
+
    cout<<"cos robie\n";
     gngGraph = shm->get_segment(0)->construct<GNGGraph>("gngGraph")(&gngAlgorithmControl->grow_mutex,25000);
     gngAlgorithm = new GNGAlgorithm
@@ -170,9 +162,9 @@ void initGNGServer(){
 
 
 int main(int argc, char** argv) {
-	
+
     initGNGServer();
-    
+
     return 0;
 }
 

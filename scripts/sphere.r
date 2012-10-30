@@ -8,7 +8,7 @@ sv<-new("GNGClient")
 set.seed(3)
 M<-matrix(0,100000,3)
 for(i in 1:100000){
-	M[i,1:3] = SpherePoint()
+	M[i,1:3] = spherePoint()+1.0
 }
 
 sv$addExamples(M)

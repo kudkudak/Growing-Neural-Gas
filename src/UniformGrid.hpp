@@ -168,8 +168,6 @@ void UniformGrid<VectorContainer, ListContainer, T>::purge(double *origin, doubl
 template<class VectorContainer, class ListContainer, class T>
 void UniformGrid<VectorContainer, ListContainer, T>::purge(double *origin, int* dim, double l) {
     m_l = l;
-    REPORT(m_l);
-
     memcpy(&m_dim[0], dim, sizeof (int) *GNG_DIM);
     memcpy(&m_origin, origin, sizeof (double) *GNG_DIM);
 
@@ -189,8 +187,6 @@ void UniformGrid<VectorContainer, ListContainer, T>::purge(double *origin, int* 
     }
 
     m_grid.resize(new_size);
-
-    REPORT(new_size);
 }
 
 

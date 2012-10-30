@@ -6,7 +6,7 @@
  */
 
 #ifndef DEBUGCOLLECTOR_H
-#define	DEBUGCOLLECTOR_H
+#define DEBUGCOLLECTOR_H
 
 
 #include <algorithm>
@@ -15,7 +15,6 @@
 #include <string>
 #include <vector>
 
-#define DEBUG_COLLECTOR_LEVEL 0
 #define DEBUG_COLLECTOR_DEBUG
 
 class DebugCollector {
@@ -32,8 +31,9 @@ class DebugCollector {
         }
     };
     std::vector<Record> records; 
+    int m_debug_level;
 public:
-    DebugCollector(){}
+    DebugCollector(int debug_level=0): m_debug_level(debug_level){}
     std::string report(int cutting_level=0){
         using namespace std;
         stringstream ss;
@@ -46,10 +46,10 @@ public:
 
         return ss.str();
     }
+
+    void set_debug_level(int debug_level){ m_debug_level = debug_level; }
     void push_back(int level, std::string line){
-        #ifdef DEBUG_COLLECTOR_DEBUG
-                if(level>= DEBUG_COLLECTOR_LEVEL) std::cout<<line<<std::endl<<std::flush;
-        #endif
+                if(level>= m_debug_level) std::cout<<line<<std::endl<<std::flush;
     }
 private:
 

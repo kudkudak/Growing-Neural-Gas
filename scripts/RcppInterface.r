@@ -46,24 +46,25 @@ spherePoint<-function(r,center){
 }
 
 GNGAddExamples<-function(x,preset,preset_size,...){
-	if(hasArg(preset)){
-		examples<-matrix(0,preset_size,3)		
-		if(preset=="sphere"){
-			for(i in 1:preset_size) examples[i,]=spherePoint()		
-		}		
-		else if(preset=="plane"){
-			for(i in 1:preset_size) examples[i,]=planePoint()		
-		}
-		.Call(GNGClient_method("addExamples"),x@pointer,examples)	
-	}
-	else{
-		.Call(GNGClient_method("addExamples"),x@pointer,...)	
-	}
+	.Call(GNGClient_method("addExamples"),x@pointer,...)			
+	#if(hasArg(preset)){
+	#	examples<-matrix(0,preset_size,3)		
+	#	if(preset=="sphere"){
+	#		for(i in 1:preset_size) examples[i,]=spherePoint()		
+	#	}		
+	#	else if(preset=="plane"){
+	#		for(i in 1:preset_size) examples[i,]=planePoint()		
+	#	}
+	#	.Call(GNGClient_method("addExamples"),x@pointer,examples)	
+	#}
+	#else{
+	#	.Call(GNGClient_method("addExamples"),x@pointer,...)	
+	#}
 }
 
 setMethod( "$", "GNGClient", function(x, name ) { 
-	if(name=="addExamples") function(...) GNGAddExamples(x,...)
-	else function(...) .Call( GNGClient_method(name) , x@pointer , ... )
+	#if(name=="addExamples") function(...) GNGAddExamples(x,...)
+	function(...) .Call( GNGClient_method(name) , x@pointer , ... )
 } )
 
 
@@ -88,12 +89,13 @@ GNGVisualise <- function(... ){
 	return(0)
 }
 
-GNGSetParams<- function(max_nodes,orig,axis,dim,uniformgrid,lazyheap){
+GNGSetParams<- function(max_nodes,orig,axis,dim,uniformgrid,lazyheap,debug_level){
 	if(hasArg(max_nodes)) .Call("GNGSet__max_nodes",max_nodes)
 	if(hasArg(dim)) .Call("GNGSet__dim",dim)
 	if(hasArg(orig) & hasArg(axis)) .Call("GNGSet__boundingbox",orig,axis)
 	if(hasArg(uniformgrid)) .Call("GNGSet__uniformgrid",uniformgrid)
 	if(hasArg(lazyheap)) .Call("GNGSet__lazyheap",lazyheap)
+	if(hasArg(debug_level)) .Call("GNGSet__debug_level",debug_level)
 	return(0)
 }
 

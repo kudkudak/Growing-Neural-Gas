@@ -98,8 +98,8 @@ void  ExtGraphNodeManager<Node,Edge,EdgeStorage>:: addUDEdge(int a, int b){
         //what is important is that you cant remove edge when buffering so grow_mutex lock is necessary
         
 
-        g_pool[a].edges.push_back(b);
-        g_pool[b].edges.push_back(a);
+        g_pool[a].edges.push_back(Edge(b));
+        g_pool[b].edges.push_back(Edge(a));
         
         
         
@@ -119,7 +119,7 @@ void  ExtGraphNodeManager<Node,Edge,EdgeStorage>::addDEdge(int a, int b){
        // GNGEdge ed(b);
         
 
-        g_pool[a].edges.push_back(b);
+        g_pool[a].edges.push_back(Edge(b));
         g_pool[a].edgesCount++;
 
     }

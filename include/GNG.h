@@ -7,6 +7,7 @@
 
 #ifndef GNGINCLUDE_H
 #define	GNGINCLUDE_H
+#include "GNGGlobals.h"
 
 #include "GNGAlgorithmControl.h"
 
@@ -26,7 +27,7 @@
 
 #include "GNGDefines.h"
 
-#include "GNGGlobals.h"
+
 
 #endif	/* GNGINCLUDE_H */
 

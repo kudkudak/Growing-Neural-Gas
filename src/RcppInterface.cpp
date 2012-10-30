@@ -129,6 +129,10 @@ RcppExport SEXP GNGSet__boundingbox(SEXP _orig, SEXP _axis){
     
     return wrap(0);
 }
+RcppExport SEXP GNGSet__debug_level(SEXP _xp) {
+    dbg.set_debug_level(as<int>(_xp));
+    return wrap(0);
+}
 RcppExport SEXP GNGSet__dim(SEXP _xp) {
     GNG_DIM = as<int>(_xp);
     return wrap(0);
@@ -360,6 +364,8 @@ RcppExport SEXP GNGClient__getNode(SEXP _xp, SEXP _nr){
 
 RcppExport SEXP GNGClient__addExamples(SEXP _xp, SEXP _examples){
     Rcpp::XPtr<GNGClient> ptr(_xp);
+    cout<<"wszedlem do metody";
+
     Rcpp::NumericMatrix examples(_examples);
     cout<<examples.nrow()<<","<<examples.ncol()<<endl;
 
