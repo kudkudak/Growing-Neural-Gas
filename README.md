@@ -1,19 +1,22 @@
 **Growing Neural Gas in R**
-----------------------
+====================
+
+General
+------
+
 Implementation of GNG algorithm in C++/Rcpp/R. This version should be stable, please e-mail me 
 provided something bad occured :)
 Alpha build, which means unfriendly building, and not fully implemented interface for the end user, 
-but I reckon that it is already a practical tool for data analysis.
+but I reckon that it is already consitutes a practical tool for data analysis.
 
-Installation
+#Installation
 -----------
-Because it is a very early version, building isnt straightforward. First of all you need boost library installed
-(for now - in default directory), of course R (with installed packages "multicore" "rgl" "e1071"). Having done that"
+Because it is a very early version, building isnt straightforward. You need to have installed libboost libraries and necessary packages in R (i.e. rgl, parallel). Now go to the reposity directory and enter:
 ```bash
     make rcpp
 ```
 
-Usage
+#Usage
 -----
 Please consult scripts/ files, simple sanity-check (first run R in scripts directory)
 ```R
@@ -30,6 +33,3 @@ You should get something like
 ![screen](http://img405.imageshack.us/img405/2727/v15a.png)
 
 
-Further Work
-------
-Code needs better documentation, and more examples :)
