@@ -1,12 +1,17 @@
 #Growing Neural Gas in R
-====================
+
 
 ###General
 ------
 
-Implementation of GNG algorithm in C++/Rcpp/R. This algorithms is widely used for dynamic clustering problems, often occuring for example in robotics. This version should be stable.
+Fast implementation of the GNG algorithm in C++/Rcpp/R (plot compares its performance with the original implementation from Fisher's paper). This algorithms is widely used for dynamic clustering problems, often occuring for example in robotics. This version should be stable.
 Alpha build, which means unfriendly building, and not fully implemented interface for the end user, 
 but I reckon that it is already consitutes a practical tool for data analysis.
+
+
+
+<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/master/screens/plot_speed.png" width="50%"></img></center>
+
 
 ###Installation
 -----------
@@ -22,19 +27,21 @@ Because it is a very early version, building isnt straightforward. You need to h
 
 Growing Neural Gas is a clustering algorithm. For theoretical details please see (in polish) this file [growing-neural-gas.pdf](https://www.dropbox.com/s/glol7j54qg2vnuh/praca_roczna_draft.pdf). Algorithm in action:
 
-Bone reconstruction from a MRI scan:
-<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/master/screens/1.png" width="70%" height="70%"></img></center>
-
-Reconstruction of the Buddha figure from Standford Repositories
-<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/master/screens/fig9_both.png" width="70%" height="70%"></img></center>
-
 <small>Plane triangulation</small>:
 <center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/master/screens/fig11.png" width="70%" height="70%"></img></center>
 
+Bone reconstruction from a MRI scan:
+<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/master/screens/1.png" width="60%"></img></center>
+
+Reconstruction of the Buddha figure from Standford Repositories
+<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/master/screens/fig9_both.png" width="70%"></img></center>
 
 
-#Scripts
-----
+
+
+
+##Scripts
+------
 
 * Load sample data
 ```Matlab
@@ -65,7 +72,8 @@ GNGVisualise()
 sv$getAccumulatedError() #retrieve error value
 sv$getNumberNodes() #get nodes
 ```
-For more scripts, please refer to the scripts directory. 
+
+For more scripts, please check the 'scripts' directory. 
 
 #Futher work
 ---
