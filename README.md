@@ -1,6 +1,6 @@
 **Growing Neural Gas in R**
 ----------------------
-**Implementation** of GNG algorithm in C++/Rcpp/R. This version should be stable, please e-mail me 
+Implementation of GNG algorithm in C++/Rcpp/R. This version should be stable, please e-mail me 
 provided something bad occured :)
 Alpha build, which means unfriendly building, and not fully implemented interface for the end user, 
 but I reckon that it is already a practical tool for data analysis.
