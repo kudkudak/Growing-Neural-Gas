@@ -1,4 +1,4 @@
-**Growing Neural Gas in R**
+#Growing Neural Gas in R
 ====================
 
 ###General
@@ -16,14 +16,28 @@ Because it is a very early version, building isnt straightforward. You need to h
     make rcpp
 ```
 
+<br>
 
-Usage
+##Examples
 -----
 
-Growing Neural Gas is a clustering algorithm. For theoretical details please see (in polish) this file [growing-neural-gas.pdf](https://www.dropbox.com/s/glol7j54qg2vnuh/praca_roczna_draft.pdf). Some of the examples:
+Growing Neural Gas is a clustering algorithm. For theoretical details please see (in polish) this file [growing-neural-gas.pdf](https://www.dropbox.com/s/glol7j54qg2vnuh/praca_roczna_draft.pdf). Algorithm in action:
+
+Bone reconstruction from a MRI scan:
+<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/master/screens/1.png" width="70%" height="70%"></img></center>
+
+Reconstruction of the Buddha figure from Standford Repositories
+<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/master/screens/fig9_both.png" width="70%" height="70%"></img></center>
+
+<small>Plane triangulation</small>:
+<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/master/screens/fig11.png" width="70%" height="70%"></img></center>
 
 
 
+#Scripts
+----
+
+* Load sample data
 ```R
     source("gng.r") #load package
     GNGCreateServer() 
@@ -34,7 +48,8 @@ Growing Neural Gas is a clustering algorithm. For theoretical details please see
     #wait at least 2 seconds
     GNGVisualise() #plot points
 ```
-You should get something like
-![screen](http://img405.imageshack.us/img405/2727/v15a.png)
+And you should get something like this:
+<center><img src="http://img405.imageshack.us/img405/2727/v15a.png" width="70%" height="70%"></img></center>
+
 
 
