@@ -11,6 +11,7 @@ DebugCollector dbg;
 int max_nodes=1000;
 bool uniformgrid=true,lazyheap=true;
 double *orig=0,*axis=0;
+int database_type=1;
 
 //check what is reffered int ptr-> and implement as standalones
 
@@ -58,8 +59,8 @@ RcppExport SEXP GNGRunServer() {
     GNGDatabase* gngDatabase;
     SHMemoryManager *shm;
 
-    shm = new SHMemoryManager(200000000 * sizeof (double)); //nodes <-estimate!
-    shm->new_segment(220000000 * sizeof (double)); //database <-estimate!
+    shm = new SHMemoryManager(500000000 * sizeof (double)); //nodes <-estimate!
+    shm->new_segment(420000000 * sizeof (double)); //database <-estimate!
 	
     GNGNode::mm = shm;
     GNGNode::alloc_inst = new ShmemAllocatorGNG(shm->get_segment(0)->get_segment_manager());
@@ -80,7 +81,9 @@ RcppExport SEXP GNGRunServer() {
     gngAlgorithmControl = shm->get_segment(1)->construct<GNGAlgorithmControl > ("gngAlgorithmControl")();
 
 
-    gngDatabase = new GNGDatabaseSimple(&gngAlgorithmControl->database_mutex, database_vec);
+
+    if(database_type==1) gngDatabase = new GNGDatabaseSimple(&gngAlgorithmControl->database_mutex, database_vec);
+    else if(database_type==2) gngDatabase = new GNGDatabaseProbabilistic(&gngAlgorithmControl->database_mutex, database_vec);
 
 
     /*
@@ -99,16 +102,13 @@ RcppExport SEXP GNGRunServer() {
     reinterpret_cast<GNGDatabaseMeshes*>(gngDatabase)->addMesh(&p);
     reinterpret_cast<GNGDatabaseMeshes*>(gngDatabase)->addMesh(&l1);
     */
-    gngGraph = shm->get_segment(0)->construct<GNGGraph > ("gngGraph")(&gngAlgorithmControl->grow_mutex, 25000);
+    gngGraph = shm->get_segment(0)->construct<GNGGraph > ("gngGraph")(&gngAlgorithmControl->grow_mutex, max_nodes);
     gngAlgorithm = new GNGAlgorithm
             (*gngGraph, gngDatabase, gngAlgorithmControl,
-            25000, orig, axis, axis[0] / 4.0, max_nodes);
+            max_nodes, orig, axis, axis[0] / 4.0, max_nodes);
     gngAlgorithm->setToggleUniformGrid(uniformgrid);
     gngAlgorithm->setToggleLazyHeap(lazyheap);
     gngAlgorithmControl->setRunningStatus(false); //skrypt w R inicjalizuje  
-    
-    cout<<"Running the loop\n";
-
     gngAlgorithm->runAlgorithm();
 
     return wrap(0);    
@@ -131,6 +131,10 @@ RcppExport SEXP GNGSet__boundingbox(SEXP _orig, SEXP _axis){
 }
 RcppExport SEXP GNGSet__debug_level(SEXP _xp) {
     dbg.set_debug_level(as<int>(_xp));
+    return wrap(0);
+}
+RcppExport SEXP GNGSet__database_type(SEXP _xp) {
+    database_type=as<int>(_xp);
     return wrap(0);
 }
 RcppExport SEXP GNGSet__dim(SEXP _xp) {
@@ -191,6 +195,8 @@ RcppExport SEXP GNGClient__new(){
    gngClient->control = gngAlgorithmControl;
   
    Rcpp::XPtr<GNGClient> ptr(gngClient,true);
+
+
 
    return wrap(ptr); 
 }
@@ -303,6 +309,15 @@ RcppExport SEXP GNGClient__runServer(SEXP _xp){
 	return wrap(0);
 }
 
+RcppExport SEXP GNGClient__terminateServer(SEXP _xp){
+	Rcpp::XPtr<GNGClient> ptr(_xp);
+
+	ptr->control->setRunningStatus(false);
+	ptr->control->terminate();
+
+	return wrap(0);
+}
+
 RcppExport SEXP GNGClient__pauseServer(SEXP _xp){
 	Rcpp::XPtr<GNGClient> ptr(_xp);
 	
@@ -324,7 +339,7 @@ RcppExport SEXP GNGClient__getNode(SEXP _xp, SEXP _nr){
     
     //cout<<edg<<endl;
     
-    Rcpp::NumericVector node(edg+3+1);
+    Rcpp::NumericVector node(edg+GNG_DIM+1);
     
     
     //memcpy?, arma position ?
@@ -339,11 +354,11 @@ RcppExport SEXP GNGClient__getNode(SEXP _xp, SEXP _nr){
     
     
     int i;
-    for(i=1;i<=3;++i) {
+    for(i=1;i<=GNG_DIM;++i) {
         node[i]=requested_node->position[i-1];
     }
 
-    i = 3;
+    i = GNG_DIM;
     
    // cout<<"pos read\n";
     
@@ -360,6 +375,55 @@ RcppExport SEXP GNGClient__getNode(SEXP _xp, SEXP _nr){
     return wrap(node);
 }
 
+RcppExport SEXP GNGClient__getNodeWithProbability(SEXP _xp, SEXP _nr){
+
+    Rcpp::XPtr<GNGClient> ptr(_xp);
+    int nr = as<int>(_nr);
+
+    int a = 1;
+
+
+    GNGNodeOffline * requested_node = &ptr->buffer[nr];
+
+    int edg = requested_node->edgesCount;
+
+    //cout<<edg<<endl;
+
+    Rcpp::NumericVector node(edg+GNG_DIM+1+1);
+
+
+    //memcpy?, arma position ?
+
+    node[0] = requested_node->occupied;
+
+    //slight change of the model
+
+   // cout<<"node read\n";
+
+    if(! requested_node->occupied) return wrap(node);
+
+
+    int i;
+    for(i=1;i<=GNG_DIM+1;++i) {
+        node[i]=requested_node->position[i-1];
+    }
+
+    i = GNG_DIM+1;
+
+   // cout<<"pos read\n";
+
+    if(edg>0){
+        FOREACH(it,requested_node->edges){
+
+           ++i;
+           node[i] = it->nr;
+          if(i==edg+3) break; //added  new edge meanwhile
+        }
+    }
+
+
+    return wrap(node);
+}
 
 
 RcppExport SEXP GNGClient__addExamples(SEXP _xp, SEXP _examples){
@@ -370,11 +434,21 @@ RcppExport SEXP GNGClient__addExamples(SEXP _xp, SEXP _examples){
     cout<<examples.nrow()<<","<<examples.ncol()<<endl;
 
     ScopedLock sc(ptr->control->grow_mutex);
-    double * pos = new double[3];
-    for(int i=0;i<examples.nrow();++i){
-        for(int j=0;j<3;++j) pos[j] = (double)(examples(i,j));
+    if(database_type==1){
+    double * pos = new double[GNG_DIM];
+      for(int i=0;i<examples.nrow();++i){
+        for(int j=0;j<GNG_DIM;++j) pos[j] = (double)(examples(i,j));
         GNGExample ex(&pos[0]);
         ptr->g_database->addExample(&ex);
+      }
+    }
+    else if(database_type==2){
+        double * pos = new double[GNG_DIM+1];
+        for(int i=0;i<examples.nrow();++i){
+            for(int j=0;j<=GNG_DIM;++j) pos[j] = (double)(examples(i,j));
+            GNGExample ex(&pos[0]);
+            ptr->g_database->addExample(&ex);
+        }
     }
     
 #ifdef DEBUG

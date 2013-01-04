@@ -89,7 +89,8 @@ GNGVisualise <- function(... ){
 	return(0)
 }
 
-GNGSetParams<- function(max_nodes,orig,axis,dim,uniformgrid,lazyheap,debug_level){
+GNGSetParams<- function(max_nodes,orig,axis,dim,uniformgrid,lazyheap,debug_level,database_type){
+	if(hasArg(database_type)) .Call("GNGSet__database_type",database_type)
 	if(hasArg(max_nodes)) .Call("GNGSet__max_nodes",max_nodes)
 	if(hasArg(dim)) .Call("GNGSet__dim",dim)
 	if(hasArg(orig) & hasArg(axis)) .Call("GNGSet__boundingbox",orig,axis)

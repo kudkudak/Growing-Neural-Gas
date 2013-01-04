@@ -159,12 +159,43 @@ void initGNGServer(){
 }
 
 
+void testDatabase(){
+    shm = new SHMemoryManager(200000000 * sizeof (double)); //nodes <-estimate!
+    shm->new_segment(220000000 * sizeof (double)); //database <-estimate!
 
+    GNGNode::mm = shm;
+    GNGNode::alloc_inst = new ShmemAllocatorGNG(shm->get_segment(0)->get_segment_manager());
+
+    GNG_DIM=3;
+
+    double orig[3]={-4.0,-4.0,-4.0};
+    double axis[3]={8.0,8.0,8.0};
+
+    SHGNGExampleDatabaseAllocator alc(shm->get_segment(1)->get_segment_manager());
+
+    SHGNGExampleDatabase * database_vec = shm->get_segment(1)->construct< SHGNGExampleDatabase > ("database_vec")(alc);
+
+    gngAlgorithmControl = shm->get_segment(1)->construct<GNGAlgorithmControl >("gngAlgorithmControl")();
+
+    gngDatabase = new GNGDatabaseProbabilistic(&gngAlgorithmControl->database_mutex,database_vec);
+
+    double * pos=new double[4];
+    for(int i=0;i<10000;++i){
+    	pos[0]=__double_rnd(0,1);
+    	pos[1]=__double_rnd(0,1);
+		pos[2]=__double_rnd(0,1);
+		pos[3]=__double_rnd(0,1);
+
+    	gngDatabase->addExample(new GNGExample(pos));
+    }
+    gngDatabase->drawExample();
+
+}
 
 int main(int argc, char** argv) {
 
-    initGNGServer();
-
+    //initGNGServer();
+	testDatabase();
     return 0;
 }
 

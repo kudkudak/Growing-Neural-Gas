@@ -1,5 +1,5 @@
 GNGWriteToObj<-function(sv, output){
-
+sv$pauseServer()
 tmp<-sv$updateBuffer()
 
 nodes <- sv$getBufferSize()
@@ -53,6 +53,6 @@ for(i in 1:(k-1))
 
 	cat(paste("l",faces[i,1],faces[i,2],"\n",sep=" "), file=output,append=TRUE)
 }
-
+sv$runServer()
 }
 

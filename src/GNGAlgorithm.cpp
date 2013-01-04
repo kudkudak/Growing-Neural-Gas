@@ -582,7 +582,6 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
     TimeDuration dt;
     #ifdef DEBUG
     int size = g_db->getSize();
-    std::cout<<"SIZE="<<size<<std::endl;
       dbg.push_back(3,"GNGAlgorithm::check size of the db "+to_string(size));
     #endif      
      boost::posix_time::millisec workTime(100); 
@@ -593,7 +592,6 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 #ifdef DEBUG
        if(c%10!=0) continue;
         int size = g_db->getSize();
-        std::cout << "SIZE=" << size << std::endl;
         dbg.push_back(2, "GNGAlgorithm::check size of the db " + to_string(size));
 #endif    
     }  RandomInit();

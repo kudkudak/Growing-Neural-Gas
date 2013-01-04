@@ -25,27 +25,27 @@
 
 extern DebugCollector dbg;
 
+
 class GNGExample{
 public:      
-    double position[GNG_MAX_DIM];
+    double position[GNG_MAX_DIM]; //TODO: zmienicna dynamiczne, bo to nie ma sensu
     GNGExample(double *_position){
        
-        memcpy(&position[0],_position,sizeof(double)*GNG_DIM);
+        memcpy(&position[0],_position,sizeof(double)*(GNG_DIM+1));
     }
     GNGExample(){}
 
     void operator= (const GNGExample & rhs){
-        memcpy(&position[0],rhs.position,sizeof(double)*GNG_DIM);
+        memcpy(&position[0],rhs.position,sizeof(double)*(GNG_DIM+1));
     }
     bool operator== (const GNGExample & rhs){
         double eps=0.00000000001;
-        REP(i,GNG_DIM){
+        REP(i,GNG_DIM+1){
             if(position[i]-rhs.position[i]<-eps || position[i]-rhs.position[i]>eps ) return false;
         }
         return true;
-    }    
+    }
 };
-
 
 //TODO: mutex dodac
 
@@ -99,6 +99,7 @@ public:
 
 typedef boost::interprocess::allocator<GNGExample, boost::interprocess::managed_shared_memory::segment_manager>  SHGNGExampleDatabaseAllocator;
 typedef boost::interprocess::vector<GNGExample, SHGNGExampleDatabaseAllocator> SHGNGExampleDatabase;
+//moglaby byc klasa a nie tak na chama
 
 class GNGDatabaseLine: public GNGDatabase{
 public:
@@ -247,6 +248,64 @@ public:
         
     }
 };
+class GNGDatabaseProbabilistic: public GNGDatabase
+{
+    mutable boost::interprocess::interprocess_mutex * database_mutex; //wazne zeby stworzone przed kreacja watkow
+
+    int index;
+    SHGNGExampleDatabase *g_database;
+    void grow_database(){
+        #ifdef DEBUG
+        dbg.push_back(1,"GNGDatabaseSmain.cpp:273:40: error: no matching function for call to ‘GNGDatabaseSimple::GNGDatabaseSimple()’imple::resizing");
+        #endif
+        g_database->reserve(g_database->capacity()*2);
+        #ifdef DEBUG
+        dbg.push_back(1,"GNGDatabaseSimple::resizing completed");
+        #endif
+    }
+public:
+    int getSize() const{ int ret; database_mutex->lock();     ret=(int)(g_database->size());  database_mutex->unlock(); return ret;}
+
+    GNGDatabaseProbabilistic( boost::interprocess::interprocess_mutex * database_mutex, SHGNGExampleDatabase * alc): database_mutex(database_mutex),g_database(alc), index(0),GNGDatabase(){
+
+        g_database->reserve(100);
+        __init_rnd();
+    }
+
+    void removeExample(GNGExample const * ex){
+        boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> sc(*database_mutex);
+
+        throw 1; //not implemented
+    }
+
+    GNGExample drawExample() const{
+        boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> sc(*database_mutex);
+
+        GNGExample ex; //casting up the tree
+        do{
+         ex=(*g_database)[__int_rnd(0,g_database->size()-1)]; //ok bo jest operator =
+         //std::cout<<"got example of prob="<<ex.position[4]<<std::endl;
+        }while(ex.position[GNG_DIM]>__double_rnd(0,1.0));
+
+
+        return ex;
+    }
+
+    void addExample(GNGExample const * ex2){
+    	//const GNGExampleProbabilistic * ex= reinterpret_cast<const GNGExampleProbabilistic*>(ex2);
+        boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> sc(*database_mutex);
+
+        if(g_database->size() == g_database->capacity()) grow_database();
+        g_database->push_back(*ex2); //operator= kopiowania, ale jest to struct wiec nie trzeba nic pisac
+    }
+
+    ~GNGDatabaseProbabilistic(){
+
+    }
+private:
+
+};
+
 
 class GNGDatabaseSimple: public GNGDatabase
 {

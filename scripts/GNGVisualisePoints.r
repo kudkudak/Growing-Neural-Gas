@@ -127,8 +127,8 @@ rgl.lines(x_lines,y_lines,z_lines,color=rgb(cx,cy,cz))
 }
 
 
-GNGVisualiseCool<-function(sv){
-
+GNGVisualiseCool<-function(sv,error_scale=1){
+sv$pauseServer()
 library("rgl")
 
 
@@ -144,8 +144,6 @@ if(sv$getNumberNodesOnline()!=0){
 iteration<-iteration+1
 #print(cat("iteration nr ",iteration,sep=""))
 tmp<-sv$updateBuffer()
-
-print(cat(":: update of buffer successful, iteration nr ",iteration,sep=""))
 
 if(iteration>1){
 rm(x)
@@ -218,16 +216,9 @@ for(i in 1:(nodes))
 	
 }
 print("::reading was succesful")
-print(cat(nodes," of nodes",cat=""))<
-print(sv$getAccumulatedError())
 
 zscale <- 1
 
-
-# clear scene:
-#clear3d("all")
- 
-# setup env:
   clear3d(type="all")
   rgl.light()
   rgl.bg(color="bisque")
@@ -242,13 +233,10 @@ print(max(abs(errors)))
 cx <- abs(errors)/max(abs(errors)) #abs(x)/max(abs(x))
 cy[1:nodes-1] <- 0.1 #abs(y)/max(abs(y)
 cz[1:nodes-1] <- 0.1 #abs(z)/max(abs(z))
-
-errortext<-cat("Error = ",sv$getAccumulatedError(),cat="")
-
 axes3d(edges="bbox")
-rgl.spheres(x,y,z,radius=cx*4, color=rgb(cx,cy,cz))
+rgl.spheres(x,y,z,radius=cx*error_scale, color=rgb(cx,cy,cz))
 rgl.lines(x_lines,y_lines,z_lines,color="bisque4")
-
+sv$runServer()
 
 
 }

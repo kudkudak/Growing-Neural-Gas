@@ -4,7 +4,7 @@
 #rcpp include flags (in readme)
 CC=g++
 CINCLUDE=-I./include -I./src -I/home/staszek/usr/include -I/usr/share/R/include -I/usr/local/lib/R/site-library/Rcpp/include -I/usr/local/lib/R/site-library/RcppArmadillo/include
-CLIBS=-O4 -lboost_system -lpthread -lrt -lboost_thread
+CLIBS=-lboost_system -lpthread -lrt -lboost_thread
 RFLAGS=$(shell Rscript scripts/generateflags.r)
 CFLAGS=-fPIC -DDEBUG 
 
@@ -24,14 +24,14 @@ OBJFILES=$(BUILD_DIR)/SHGraphDefs.o $(BUILD_DIR)/GNGAlgorithm.o $(BUILD_DIR)/SHM
  
 
 
-all: main
+all: $(OBJFILES) main.cpp
 
 
 
 #$(OBJRFILES)
 
-main:$(OBJFILES) 
-	$(CC) $(SRC_DIR)/main.cpp $(OBJFILES) -o $@  $(CFLAGS) $(CLIBS) $(CINCLUDE) 
+main.cpp:$(OBJFILES)
+	$(CC) $(SRC_DIR)/main.cpp $(OBJFILES) -o main  $(CFLAGS) $(CLIBS) $(CINCLUDE) 
 
 #build/performance/%.d:src/%.cpp
 #	$(CC) -c $< -o $@ $(CFLAGS) $(CLIBS) $(CINCLUDE) 
