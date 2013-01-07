@@ -1,0 +1,8 @@
+---terminateServer() nie niszczy wszystkiego - po stworzeniu 2 servera cos nie dziala
+---funkcje uruchamiaja znowu server - musi byc funkcja sprawdzajaca czy server idzie
+
+
+---lepsze settery i gettery 
+
+---GNGAlgorithm nie ma funkcje SETPARAMS, a powinna byc (za dlugi konstruktor - be be)
+

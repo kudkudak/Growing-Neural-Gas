@@ -142,7 +142,12 @@ public:
     
     
     GNGAlgorithm(GNGGraph & g,GNGDatabase* db, GNGAlgorithmControl * control, 
-            int start_number,double * boundingbox_origin, double * boundingbox_axis, double l,int max_nodes=1000);
+            int start_number,double * boundingbox_origin, double * boundingbox_axis, double l,int max_nodes=1000,
+
+        	int max_age=200, double alpha=0.95, double betha=0.9995, double lambda=200,
+        		double eps_v=0.05, double eps_n=0.0006
+
+    );
     double getError() const{ return m_error; }
     bool stoppingCriterion(){ return m_g.getNumberNodes()>m_max_nodes; }
     double getAccumulatedError() const {   return m_accumulated_error; }   

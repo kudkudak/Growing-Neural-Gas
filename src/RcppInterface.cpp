@@ -12,8 +12,16 @@ int max_nodes=1000;
 bool uniformgrid=true,lazyheap=true;
 double *orig=0,*axis=0;
 int database_type=1;
+int max_age=200;
+double alpha=0.95;
+double betha=0.9995;
+double lambda=200;
+double eps_v=0.05;
+double eps_n=0.0006;
 
 //check what is reffered int ptr-> and implement as standalones
+
+
 
  double * uploadOBJ(const char * filename, GNGDatabase * gngDatabase){
 	
@@ -105,7 +113,10 @@ RcppExport SEXP GNGRunServer() {
     gngGraph = shm->get_segment(0)->construct<GNGGraph > ("gngGraph")(&gngAlgorithmControl->grow_mutex, max_nodes);
     gngAlgorithm = new GNGAlgorithm
             (*gngGraph, gngDatabase, gngAlgorithmControl,
-            max_nodes, orig, axis, axis[0] / 4.0, max_nodes);
+            max_nodes, orig, axis, axis[0] / 4.0, max_nodes,
+    		max_age, alpha, betha, lambda,
+    		eps_v, eps_n
+            );
     gngAlgorithm->setToggleUniformGrid(uniformgrid);
     gngAlgorithm->setToggleLazyHeap(lazyheap);
     gngAlgorithmControl->setRunningStatus(false); //skrypt w R inicjalizuje  
@@ -114,6 +125,32 @@ RcppExport SEXP GNGRunServer() {
     return wrap(0);    
 }
 
+
+//TODO: lepsze settery i gettery (dataframe? nie wiem)
+RcppExport SEXP GNGSet__max_age(SEXP val){
+	max_age = as<int>(val);
+	return wrap(0);
+}
+RcppExport SEXP GNGSet__alpha(SEXP val){
+	alpha = as<double>(val);
+	return wrap(0);
+}
+RcppExport SEXP GNGSet__betha(SEXP val){
+	betha = as<double>(val);
+	return wrap(0);
+}
+RcppExport SEXP GNGSet__lambda(SEXP val){
+	lambda = as<double>(val);
+	return wrap(0);
+}
+RcppExport SEXP GNGSET__eps_v(SEXP val){
+	eps_v = as<double>(val);
+	return wrap(0);
+}
+RcppExport SEXP GNGSet__eps_n(SEXP val){
+	eps_n = as<double>(val);
+	return wrap(0);
+}
 
 //settery parametrów przed odpaleniem servera
 RcppExport SEXP GNGSet__boundingbox(SEXP _orig, SEXP _axis){
