@@ -19,7 +19,7 @@
 struct GNGClient {
     MyMutex * grow_mutex;
     GNGDatabase* g_database;
-    GNGAlgorithmControl *control;
+    GNGAlgorithmControl *control; //czemu nie po prostu GNGAlgorithm?
     GNGGraph * graph;
     vector<GNGNodeOffline> buffer;      
 };

@@ -5,15 +5,19 @@
  * Created on 7 sierpień 2012, 18:27
  */
 
-#include <boost/interprocess/containers/vector.hpp>
-#include <boost/interprocess/allocators/allocator.hpp>
-#include <boost/interprocess/containers/map.hpp>
-#include <boost/interprocess/offset_ptr.hpp>
-#include <boost/interprocess/sync/interprocess_mutex.hpp>
+
+
 #include <fstream>
 #include <list>
 #include <cmath>
 #include <iostream>
+  #include <iostream>                  // for std::cout
+  #include <utility>                   // for std::pair
+  #include <algorithm>                 // for std::for_each
+  #include <boost/graph/graph_traits.hpp>
+  #include <boost/graph/adjacency_list.hpp>
+  #include <boost/graph/dijkstra_shortest_paths.hpp>
+#include <boost/graph/bellman_ford_shortest_paths.hpp>
 using namespace std;
 #include "GNG.h"
 
@@ -23,6 +27,7 @@ DebugCollector dbg;
 
 using namespace std;
 using namespace boost::interprocess;
+using namespace boost;
 
 
 
@@ -39,25 +44,97 @@ int GNG_DIM;
 
 
 void gngTrainingThread(){
+	dbg.set_debug_level(100);
     while(gngDatabase->getSize()<2000);
     #ifdef DEBUG
     dbg.push_back(3,"gngTrainingThread::proceeding to algorithm");
     #endif
     gngAlgorithm->runAlgorithm();
 }
+
+
+struct Vertex{
+	int m_gngid;
+};
+struct Edge{
+
+	Edge(double w): weight(w),visited_times(0){}
+	double weight;
+	int visited_times;
+};
+
 void gngDatabaseThread(){
-    boost::posix_time::millisec workTime(1);
+    boost::posix_time::millisec workTime(5000);
     int k=0;
     double pos[3];
 
-    while(1)
+
+
+
+    boost::this_thread::sleep(workTime);
+    REPORT(gngGraph->getNumberNodes());
+
+    /*
+    //tworzenie grafug
+    GNGNode * g_pool = gngGraph->getPoolShare();
+    int maximumIndex = gngGraph->getMaximumIndex();
+    REPORT(gngGraph->getMaximumIndex());
+    //w nowej implementacji to bedzie sto razy prostsze
+    typedef adjacency_list<listS, vecS, bidirectionalS,Vertex,Edge> Graph;
+    typedef Graph::vertex_descriptor VertexID;
+    typedef Graph::edge_descriptor  EdgeID;
+
+    Graph G(maximumIndex);
     {
-        boost::this_thread::sleep(workTime);
+    	ScopedLock sc(gngAlgorithmControl->grow_mutex);
+    	ScopedLock sc2(gngAlgorithmControl->database_mutex);
 
-        ++k;
+    for(int i=0;i<=maximumIndex;++i){
+    	if(g_pool[i].occupied){
+    		FOREACH(edg,g_pool[i].edges){
 
-
+    			REPORT(g_pool[i].dist(&g_pool[edg->nr]));
+    			boost::add_edge(i,edg->nr,Edge(g_pool[i].dist(&g_pool[edg->nr])),G);
+    		}
+    	}
     }
+    }
+    boost::property_map<Graph, double Edge::*>::type
+    	weightPropertyMap = boost::get(&Edge::weight, G);
+    VertexID v0 =0;
+    std::vector<int> distance(maximumIndex+1, (std::numeric_limits < int >::max)());
+    std::vector<std::size_t> parent(maximumIndex+1);
+    for (int i = 0; i < maximumIndex; ++i) parent[i] = i;
+    distance[v0] = 0;
+
+
+    typedef graph_traits<Graph>::edge_iterator edge_iter;
+    typedef graph_traits<Graph>::out_edge_iterator out_edge_iter;
+    std::pair<edge_iter, edge_iter> ep;
+    edge_iter ei, ei_end;
+    for (tie(ei, ei_end) = edges(G); ei != ei_end; ++ei){
+    	G[*ei].visited_times=0;
+    }
+
+    out_edge_iter out_i, out_end;
+    for (boost::tie(out_i, out_end) = boost::out_edges(v0, G);
+               out_i != out_end; ++out_i) {
+    	VertexID v1=boost::source(*out_i,G); //bo iterator //moze byc tez target(*out_i,G)
+    	G[v1].m_gngid=0;
+    }
+
+    bool r = bellman_ford_shortest_paths
+        (G, int (maximumIndex), weight_map(weightPropertyMap).distance_map(&distance[0]).
+         predecessor_map(&parent[0]));
+
+    REPORT(r);
+
+    FOREACH(dist, distance){
+    	REPORT(*dist);
+    }
+
+	*/
+
 }
 
 
@@ -194,8 +271,8 @@ void testDatabase(){
 
 int main(int argc, char** argv) {
 
-    //initGNGServer();
-	testDatabase();
+    initGNGServer();
+	//testDatabase();
     return 0;
 }
 

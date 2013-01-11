@@ -90,36 +90,23 @@ RcppExport SEXP GNGRunServer() {
 
 
 
-    if(database_type==1) gngDatabase = new GNGDatabaseSimple(&gngAlgorithmControl->database_mutex, database_vec);
-    else if(database_type==2) gngDatabase = new GNGDatabaseProbabilistic(&gngAlgorithmControl->database_mutex, database_vec);
+    if(database_type==1)
+    	gngDatabase = new GNGDatabaseSimple(&gngAlgorithmControl->database_mutex, database_vec);
+    else if(database_type==2)
+    	gngDatabase = new GNGDatabaseProbabilistic(&gngAlgorithmControl->database_mutex, database_vec);
 
 
-    /*
-    gngDatabase = new GNGDatabaseMeshes();//new GNGDatabasePlane();//new GNGDatabaseSimple(database_mutex, database_vec);
-
-    double c1[]={0,1.0,1.0};
-    double c2[]={-1,-2,-1};
-    double c3[]={-1,-1,-1};
-    double c4[]={1,2.10,};
-    
-    GNGDatabaseLine l1(c4,4.0);
-    
-    GNGDatabaseSphere d1(c1, 1.0),d2(c2,1.5);
-    reinterpret_cast<GNGDatabaseMeshes*>(gngDatabase)->addMesh(&d1);
-    GNGDatabasePlane p(c3,4.5);
-    reinterpret_cast<GNGDatabaseMeshes*>(gngDatabase)->addMesh(&p);
-    reinterpret_cast<GNGDatabaseMeshes*>(gngDatabase)->addMesh(&l1);
-    */
     gngGraph = shm->get_segment(0)->construct<GNGGraph > ("gngGraph")(&gngAlgorithmControl->grow_mutex, max_nodes);
     gngAlgorithm = new GNGAlgorithm
             (*gngGraph, gngDatabase, gngAlgorithmControl,
             max_nodes, orig, axis, axis[0] / 4.0, max_nodes,
-    		max_age, alpha, betha, lambda,
+    		max_age, alpha, betha, lambda, //params for the algorithm
     		eps_v, eps_n
             );
     gngAlgorithm->setToggleUniformGrid(uniformgrid);
     gngAlgorithm->setToggleLazyHeap(lazyheap);
     gngAlgorithmControl->setRunningStatus(false); //skrypt w R inicjalizuje  
+
     gngAlgorithm->runAlgorithm();
 
     return wrap(0);    
@@ -412,7 +399,7 @@ RcppExport SEXP GNGClient__getNode(SEXP _xp, SEXP _nr){
     return wrap(node);
 }
 
-RcppExport SEXP GNGClient__getNodeWithProbability(SEXP _xp, SEXP _nr){
+RcppExport SEXP GNGClient__getNodeWithParam(SEXP _xp, SEXP _nr){
 
     Rcpp::XPtr<GNGClient> ptr(_xp);
     int nr = as<int>(_nr);

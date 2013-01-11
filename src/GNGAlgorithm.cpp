@@ -170,8 +170,8 @@ void GNGAlgorithm::AddNewNode() {
         return;
     }
 
-    double position[GNG_DIM];
-    for (int i = 0; i < GNG_DIM; ++i)
+    double position[GNG_DIM+1]; //param
+    for (int i = 0; i <= GNG_DIM; ++i) //param
         position[i] = (error_nodes_new[0]->position[i] + error_nodes_new[1]->position[i]) / 2;
 
 
@@ -303,7 +303,7 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
     dbg.push_back(3,"GNGAlgorith::Adapt::accounted for the error");
     #endif
     if(m_toggle_uniformgrid) ug.remove(nearest[0]->position);
-    for (int i = 0; i < GNG_DIM; ++i) {
+    for (int i = 0; i <= GNG_DIM; ++i) {
         nearest[0]->position[i] += m_eps_v * (ex->position[i] - nearest[0]->position[i]);
     }
     if(m_toggle_uniformgrid) ug.insert(nearest[0]->position, nearest[0]->nr);
@@ -312,7 +312,7 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
     if (nearest[0]->edgesCount)
         FOREACH(edg, (nearest[0]->edges)) {
         if(m_toggle_uniformgrid) ug.remove(m_g[edg->nr].position);
-        for (int i = 0; i < GNG_DIM; ++i) {
+        for (int i = 0; i <= GNG_DIM; ++i) { //param accounting
             m_g[edg->nr].position[i] += m_eps_n * (ex->position[i] - m_g[edg->nr].position[i]);
         }
        if(m_toggle_uniformgrid)  ug.insert(m_g[edg->nr].position, edg->nr);
@@ -609,6 +609,7 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
     int iteration = 0;
     while (1) {//(m_g.getNumberNodes() < m_max_nodes) {
         m_control->checkPause();
+
         for (s = 0; s < m_lambda; ++s) { //global counter!!
             // if(iteration>3) return;
              

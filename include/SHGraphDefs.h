@@ -19,6 +19,8 @@
 #include "GNGDatabase.h"
 #include "GNGGlobals.h"
 
+#include <cmath>
+
 
 
 class GNGEdge;
@@ -48,6 +50,10 @@ class GNGEdge{ public:
 class GNGNode{ public:
     static ExtMemoryManager * mm;
     static ShmemAllocatorGNG * alloc_inst;
+
+    /*
+    * Hack for memory be allocated to in SHM space (g_pool)
+    */
      void* operator new[](std::size_t size){
          return mm->allocate(size);
          
@@ -62,6 +68,14 @@ class GNGNode{ public:
 
      }
 
+     double dist(GNGNode * node){ //dist doesnt account for param
+    	 using namespace std;
+    	 double ret=0;
+    	 REP(i,GNG_DIM){
+    		 ret+=(this->position[i]-node->position[i])*(this->position[i]-node->position[i]);
+    	 }
+    	 return sqrt(ret);
+     }
 
      friend std::ostream& operator<<(std::ostream& out, const GNGNode & node){
          out<<node.nr<<"("<<node.error<<")(";
@@ -110,7 +124,7 @@ class GNGNodeOffline{ public:
      }
 
      
-     //TODO: workaround with std::copy failure
+
      bool operator=(const GNGNode & rhs){
          if(SIZE(edges)) edges.clear();
          
@@ -118,7 +132,7 @@ class GNGNodeOffline{ public:
          this->nr = rhs.nr;
          this->occupied = rhs.occupied;
          this->nextFree = rhs.nextFree;
-         memcpy(&position[0],&rhs.position[0],GNG_DIM*sizeof(double));
+         memcpy(&position[0],&rhs.position[0],(GNG_DIM+1)*sizeof(double)); //param copy
          
          if(rhs.edgesCount==0 || SIZE(rhs.edges)==0) return true; //nie kopiuj
          

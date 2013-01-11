@@ -6,7 +6,7 @@ CC=g++
 CINCLUDE=-I./include -I./src -I/home/staszek/usr/include -I/usr/share/R/include -I/usr/local/lib/R/site-library/Rcpp/include -I/usr/local/lib/R/site-library/RcppArmadillo/include
 CLIBS=-lboost_system -lpthread -lrt -lboost_thread
 RFLAGS=$(shell Rscript scripts/generateflags.r)
-CFLAGS=-fPIC -DDEBUG 
+CFLAGS=-fPIC -O3 #-DDEBUG
 
 
 BUILD_DIR=build/performance

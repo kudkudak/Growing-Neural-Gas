@@ -3,6 +3,25 @@
 
 
 ---lepsze settery i gettery 
+---distance hack? 
+---loop unwrapping
+--porzadne gettery i settery
 
+
+
+--<FERIE>--
 ---GNGAlgorithm nie ma funkcje SETPARAMS, a powinna byc (za dlugi konstruktor - be be)
+---iterator po wierzcholkach grafu? (nextNode in Node, so can traverse list in effective manner)
+--bigdeal: (ferie?) zrezygnowac z g_pool[i] i przeniesc wszystko do pamieci lokalnej.
+--gettery i settery przez IPC z boosta jakies (ale wtedy musi byc listener jakis)
+--getter powinien zwrocic graf z boosta z vertex_info. genialne rozwiazanie
+--ExtGraphNodeManager trafia szlag caly (duzo przebudowy)
+--IPC-message-queue
 
+
+
+
+
+---odczytywanie z igraphu
+---rysowanie z igraphu
+---zapisywanie do pliku igraphu

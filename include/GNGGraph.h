@@ -93,7 +93,7 @@ public:
          
         int i = super::newNode();
 
-        memcpy(&(super::g_pool + i)->position[0], position, sizeof (double) *GNG_DIM);
+        memcpy(&(super::g_pool + i)->position[0], position, sizeof (double) *(GNG_DIM+1)); //param
         g_pool[i].error = 0.0;
         g_pool[i].error_cycle = 0;
         g_pool[i].error_new = 0.0;
