@@ -441,7 +441,7 @@ RcppExport SEXP GNGClient__getNodeWithParam(SEXP _xp, SEXP _nr){
 
            ++i;
            node[i] = it->nr;
-          if(i==edg+3) break; //added  new edge meanwhile
+          if(i==edg+4) break; //added  new edge meanwhile
         }
     }
 

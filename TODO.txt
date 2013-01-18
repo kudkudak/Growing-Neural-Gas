@@ -25,3 +25,16 @@
 ---odczytywanie z igraphu
 ---rysowanie z igraphu
 ---zapisywanie do pliku igraphu
+
+
+
+
+
+
+
+---problem z lukami bufferze
+---wiele GNG naraz?
+
+
+
+--GNGConvertToIGraph problem
