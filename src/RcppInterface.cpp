@@ -1,5 +1,7 @@
+
 #include "RcppInterface.h"
 #include <fstream>
+
 
 using namespace boost::interprocess;
 using namespace std;
@@ -17,13 +19,14 @@ double alpha=0.95;
 double betha=0.9995;
 double lambda=200;
 double eps_v=0.05;
+int memory_bound;
 double eps_n=0.0006;
 
 //check what is reffered int ptr-> and implement as standalones
 
+#undef DEBUG
 
-
- double * uploadOBJ(const char * filename, GNGDatabase * gngDatabase){
+double * uploadOBJ(const char * filename, GNGDatabase * gngDatabase){
 	
 
     GNGExample ex;
@@ -59,17 +62,30 @@ double eps_n=0.0006;
     write_array(bbox,bbox+6);
     return bbox;
 }
- 
+RcppExport SEXP GNGGetServerID(){
+	managed_shared_memory interserver_variables(open_or_create,"GNGInterServerSegment", 65536);
+	int *ptr = interserver_variables.find_or_construct<int>("GNG__serverCount") ();
+	return wrap(*ptr);
+}
 RcppExport SEXP GNGRunServer() {
+	managed_shared_memory interserver_variables(open_or_create,"GNGInterServerSegment", 65536);
+	int *ptr = interserver_variables.find_or_construct<int>("GNG__serverCount") ();
+	SHMemoryManager::COUNTER = *ptr;
+
+
     GNGAlgorithmControl * gngAlgorithmControl;
     GNGAlgorithm * gngAlgorithm;
     GNGGraph * gngGraph;
     GNGDatabase* gngDatabase;
     SHMemoryManager *shm;
 
-    shm = new SHMemoryManager(500000000 * sizeof (double)); //nodes <-estimate!
-    shm->new_segment(420000000 * sizeof (double)); //database <-estimate!
+    shm = new SHMemoryManager(memory_bound); //nodes <-estimate!
+    shm->new_segment(memory_bound); //database <-estimate!
 	
+    *ptr = SHMemoryManager::COUNTER;
+
+    cout<<"New GNG__serverCount = "<<*ptr<<endl;
+
     GNGNode::mm = shm;
     GNGNode::alloc_inst = new ShmemAllocatorGNG(shm->get_segment(0)->get_segment_manager());
 
@@ -109,11 +125,15 @@ RcppExport SEXP GNGRunServer() {
 
     gngAlgorithm->runAlgorithm();
 
-    return wrap(0);    
+    return wrap(0);
 }
 
 
 //TODO: lepsze settery i gettery (dataframe? nie wiem)
+RcppExport SEXP GNGSet__memory_bound(SEXP val){
+	memory_bound = as<int>(val);
+	return wrap(0);
+}
 RcppExport SEXP GNGSet__max_age(SEXP val){
 	max_age = as<int>(val);
 	return wrap(0);
@@ -202,9 +222,16 @@ RcppExport SEXP GNGClient__loadObj(SEXP _xp,SEXP _name) {
     return wrap(0);
 }
 
-RcppExport SEXP GNGClient__new(){
-   managed_shared_memory *  mshm1= new managed_shared_memory(open_only,"SHMemoryPool_Segment1");
-   managed_shared_memory *  mshm2= new managed_shared_memory(open_only,"SHMemoryPool_Segment2");
+RcppExport SEXP GNGClient__new(SEXP val_id){
+   int id = as<int>(val_id);
+
+   cout<<"Opening "+id<<"\n";
+
+   int id_tmp1 = id+1;
+   int id_tmp2 = id+2;
+
+   managed_shared_memory *  mshm1= new managed_shared_memory(open_only,("SHMemoryPool_Segment"+to_string<int>(id_tmp1)).c_str());
+   managed_shared_memory *  mshm2= new managed_shared_memory(open_only,("SHMemoryPool_Segment"+to_string<int>(id_tmp2)).c_str());
 
    GNGAlgorithmControl * gngAlgorithmControl = (mshm2->find< GNGAlgorithmControl > ("gngAlgorithmControl")).first;
    GNGGraph * gngGraph = (mshm1->find< GNGGraph >("gngGraph")).first;		

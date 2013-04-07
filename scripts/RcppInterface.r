@@ -11,8 +11,9 @@ GNGClient_method <- function(name){
 }
 setClass("GNGClient",representation(pointer="externalptr"))
 setMethod("initialize",
-"GNGClient",function(.Object,...) {
-	.Object@pointer <- .Call(GNGClient_method("new"),...)
+"GNGClient",function(.Object, ...) {
+    
+	.Object@pointer <- .Call(GNGClient_method("new"), ...)
 	.Object
 }
 )
@@ -73,9 +74,15 @@ createGNGServer <- function(... ){
 	return(0)
 }
 
+tmp<-function(...){
+	.Call("GNGRunServer",...)
+	rm(list=ls(all=TRUE))
+}
+
 GNGCreateServer <- function(... ){
-	parallel(.Call("GNGRunServer",...))
-	return(0)
+	ch<-parallel(tmp(...))
+	
+	return(list(ch = ch, server_id = .Call("GNGGetServerID")))
 }
 
 GNGVisualiseStepAnimation <- function(step,pause,... ){
@@ -91,15 +98,17 @@ GNGVisualise <- function(... ){
 
 GNGSetParams<- function(max_nodes,orig,axis,dim,uniformgrid,lazyheap,debug_level,database_type,
 	max_age=200, alpha=0.95, betha=0.9995, lambda=200,
-		eps_v=0.05, eps_n=0.0006){
+		eps_v=0.05, eps_n=0.0006, memory_bound = 500000){
 	if(hasArg(database_type)) .Call("GNGSet__database_type",database_type)
 	if(hasArg(max_nodes)) .Call("GNGSet__max_nodes",max_nodes)
 	if(hasArg(dim)) .Call("GNGSet__dim",dim)
 	if(hasArg(orig) & hasArg(axis)) .Call("GNGSet__boundingbox",orig,axis)
 	if(hasArg(uniformgrid)) .Call("GNGSet__uniformgrid",uniformgrid)
 	if(hasArg(lazyheap)) .Call("GNGSet__lazyheap",lazyheap)
-	if(hasArg(debug_level)) .Call("GNGSet__debug_level",debug_level)
-	.Call("GNGSet__max_age",max_age)
+	if(hasArg(debug_level)) .Call("GNGSet__debug_level",debug_level) 
+	if(hasArg(memory_bound)) .Call("GNGSet__memory_bound",memory_bound)
+	
+    .Call("GNGSet__max_age",max_age)
 	.Call("GNGSet__alpha",alpha)
 	.Call("GNGSet__betha",betha)
 	.Call("GNGSet__lambda",lambda)	

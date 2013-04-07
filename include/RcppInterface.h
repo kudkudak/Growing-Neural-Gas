@@ -7,14 +7,15 @@
 
 #ifndef RCPPINTERFEJS_H
 #define	RCPPINTERFEJS_H
-
+#undef DEBUG
 
 
 #include <Rcpp.h>
 #include <RcppArmadillo.h>
 
 #include "GNG.h"
-
+#include "Utils.h"
+#undef DEBUG
 
 struct GNGClient {
     MyMutex * grow_mutex;
@@ -26,7 +27,7 @@ struct GNGClient {
 
 
 
-RcppExport SEXP GNGClient__new();
+RcppExport SEXP GNGClient__new(SEXP);
 RcppExport SEXP GNGClient__getNumberNodes(SEXP _xp);
 RcppExport SEXP GNGClient__getNode(SEXP _xp,SEXP _nr);
 RcppExport SEXP GNGClient__addExamples(SEXP _xp, SEXP _examples);

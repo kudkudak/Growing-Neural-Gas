@@ -1,3 +1,4 @@
+library("multicore")
 GNGVisualiseAnimation<-function(sv,step,count){
 
 library("rgl")
@@ -242,3 +243,33 @@ sv$runServer()
 }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+LearningCurve<-function(client, iterations){
+	iteration<-0
+	errors<-c(0)
+	while(1){
+		iteration<-iteration+1
+		Sys.sleep(0.5)
+		errors[iteration] <- client$getAccumulatedError()
+		plot(errors,type="l")
+	}
+	return(TRUE)
+}
+
+GNGLearningCurve<-function(client, iterations){
+	parallel(LearningCurve())
+}
+
+
+
+

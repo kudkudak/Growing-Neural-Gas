@@ -31,7 +31,7 @@
 
 
 class SHMemoryManager:public ExtMemoryManager {
-    static int COUNTER;
+
     static const int SHMEMORYPOOL_DEFAULT_SIZE=10000;
     
     std::vector<std::string> m_names; 
@@ -42,7 +42,7 @@ class SHMemoryManager:public ExtMemoryManager {
     SHMemoryManager(const SHMemoryManager& orig){}
     
     std::string generate_name();
-public:
+public: static int COUNTER;
     void new_segment(std::size_t min_size);
     
     SHMemoryManager(std::size_t target_size=-1);

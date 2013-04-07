@@ -1,7 +1,8 @@
 source("gng.r")
 
-GNGSetParams(max_nodes=25000, dim=3, orig=c(-1,-1,-1), axis=c(2,2,2), uniformgrid=FALSE, lazyheap=FALSE)
-parallel(createGNGServer())
+GNGSetParams(max_nodes=25000, dim=3, orig=c(-1,-1,-1), axis=c(2,2,2), 
+database_type=1)
+ch<-GNGCreateServer()
 
 Sys.sleep(2.0)
 sv<-new("GNGClient")
@@ -37,3 +38,5 @@ while(sv$getNumberNodesOnline()<end_goal){
  
   }
 }
+
+kill(ch)
