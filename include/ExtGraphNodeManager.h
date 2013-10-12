@@ -4,10 +4,8 @@
  *
  * Created on 10 sierpień 2012, 15:48
  */
-
 #ifndef EXTGRAPHNODEMANAGER_H
 #define	EXTGRAPHNODEMANAGER_H
-
 #define COMPILE_WITH_GROW_MUTEX
 
 #include "ExtMemoryManager.h"
@@ -18,15 +16,17 @@
 
 extern DebugCollector dbg;
 
-/*
- * Node musi miec pole nr (int),bool,int i edges (klasa z operatorem[], generalnie vector)
- * Node musi miec domyslny konstruktor
- * Node musi dac sie wypisac
+/*!
+ * @brief This class implements graph stored in pool memory.
+ * What's unique, is that this pool memory can be implemented
+ * afterwards in an arbitrary way. 
+ * Node class has to implement new operators if it wants to change
+ * memory management. 
+ * 
+ * @note EdgeStorage has to implement iterator (EdgeStorage::iterator)
  * 
  * 
- * Idea: niezalezne od implementacji dzielonej pamieci - moze byc w koncu inna (np do pliku)
  */
-
 template<class Node, class Edge, class EdgeStorage>
 class ExtGraphNodeManager {
     
@@ -34,12 +34,12 @@ protected:
     typedef typename EdgeStorage::iterator EdgeIterator;
 
     Node *  g_pool; 
-    
     int m_first_free,m_nodes,m_maximum_index,g_pool_nodes;
 
     /**
-     * @brief this will grow (populate) the pool, but ! is called by encapsulating class !
-     * @return 
+     * @brief This will grow (populate) the pool, but is called by the encapsulating function. 
+     * 
+     * @return Has the operation succeeded
      */
     bool growPool();
     bool poolIsFull(){
@@ -48,13 +48,17 @@ protected:
     
     ExtGraphNodeManager(const ExtGraphNodeManager& orig){}
 public:
+    /** For debugging purposes, prints pool
+     */
     std::string reportPool(bool sorted=false);
  
     
     ExtGraphNodeManager(int start_number);
     ExtGraphNodeManager(){}
-    ExtGraphNodeManager(Node * _g_pool, int _m_nodes, int _g_pool_nodes, int _m_first_free):
-        g_pool(_g_pool),m_nodes(_m_nodes),g_pool_nodes(_g_pool_nodes),m_first_free(_m_first_free),m_maximum_index(0)
+    ExtGraphNodeManager(Node * _g_pool, int _m_nodes, 
+            int _g_pool_nodes, int _m_first_free):
+        g_pool(_g_pool),m_nodes(_m_nodes),g_pool_nodes(_g_pool_nodes),
+        m_first_free(_m_first_free),m_maximum_index(0)
     {}
     
     int newNode();

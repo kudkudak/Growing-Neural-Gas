@@ -212,7 +212,7 @@ int UniformGrid<VectorContainer, ListContainer, T>::insert(double *p, T x) {
 template<class VectorContainer, class ListContainer, class T >
 
 
-T * UniformGrid<VectorContainer, ListContainer, T>::findNearest(double *p, int n) { //returns indexes (values whatever)
+T * UniformGrid<VectorContainer, ListContainer, T>::findNearest(const double *p, int n) { //returns indexes (values whatever)
     s_search_query = n;
     
     #ifdef DEBUG

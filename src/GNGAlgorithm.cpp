@@ -7,10 +7,10 @@
 
 #include "GNGAlgorithm.h"
 using namespace std;
-GNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
-    GNGNode ** largest = new GNGNode*[2];
+SHGNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
+    SHGNGNode ** largest = new SHGNGNode*[2];
 
-    GNGNode * gngnode;
+    SHGNGNode * gngnode;
 
     FOREACH(it, errorHeap.getLazyList()) {
         gngnode = &m_g[*it];
@@ -26,7 +26,7 @@ GNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
         #ifdef DEBUG
         dbg.push_back(1,"GNGAlgorithm::LargestErrorLazy::found max "+to_string(max.i));
         #endif
-        GNGNode * gngnode = &m_g[max.i];
+        SHGNGNode * gngnode = &m_g[max.i];
         
 
         if (gngnode->error_cycle != c) {
@@ -62,9 +62,10 @@ GNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
 }
 
 
-GNGNode * GNGGraphAccessHack::pool = 0;
+SHGNGNode * GNGGraphAccessHack::pool = 0;
 
-GNGAlgorithm::GNGAlgorithm(GNGGraph & g, GNGDatabase* db, GNGAlgorithmControl * control, int start_number, double * boundingbox_origin,
+GNGAlgorithm::GNGAlgorithm(SHGNGGraph & g, GNGDatabase* db,
+        GNGAlgorithmControl * control, int start_number, double * boundingbox_origin,
 		double * boundingbox_axis, double l, int max_nodes,
 
 		int max_age, double alpha, double betha, double lambda,
@@ -98,8 +99,8 @@ void GNGAlgorithm::RandomInit() {
     int index=0;
     while (ex2 == ex1 && index<100){++index; ex2 = g_db -> drawExample();}
 
-    m_g.newNode(ex1.position);
-    m_g.newNode(ex2.position);
+    m_g.newNode(ex1.getPositionPtr());
+    m_g.newNode(ex2.getPositionPtr());
  
    if(m_toggle_uniformgrid) {
         ug.insert(m_g[0].position, 0);
@@ -119,7 +120,7 @@ void GNGAlgorithm::AddNewNode() {
     dbg.push_back(4, "GNGAlgorith::AddNewNode::start search");
 #endif 
 
-    GNGNode ** error_nodes_new;
+    SHGNGNode ** error_nodes_new;
      if(m_toggle_lazyheap) error_nodes_new= LargestErrorNodesLazy();
      else error_nodes_new = LargestErrorNodes();
 #ifdef DEBUG
@@ -227,9 +228,9 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
     #ifdef DEBUG
     dbg.push_back(4,"GNGAlgorith::Adapt::commence search");
     #endif
-     GNGNode * nearest[2];
+     SHGNGNode * nearest[2];
     if(m_toggle_uniformgrid){
-        int * nearest_index = ug.findNearest(ex->position, 2); //TwoNearestNodes(ex->position);
+        int * nearest_index = ug.findNearest(ex->getPositionPtr(), 2); //TwoNearestNodes(ex->position);
 
          if(!nearest_index || nearest_index[0] == nearest_index[1]) return; //something went wrong
     
@@ -240,7 +241,7 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
          delete[] nearest_index;
     }
     else{
-        GNGNode ** tmp = TwoNearestNodes(ex->position);
+        SHGNGNode ** tmp = TwoNearestNodes(ex->getPositionPtr());
         nearest[0]=tmp[0];
         nearest[1] = tmp[1];
         delete[] tmp;
@@ -291,7 +292,7 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
     dbg.push_back(4,"GNGAlgorith::Adapt::found nearest nodes to the drawn example "+to_string(*nearest[0])+" "+to_string(*nearest[1]));
     #endif
 
-    double error = m_g.getDist(nearest[0]->position, ex->position);
+    double error = m_g.getDist(nearest[0]->position, ex->getPositionPtr());
 
     #ifdef DEBUG
     dbg.push_back(3,"GNGAlgorith::Adapt::increasing error");
@@ -304,7 +305,7 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
     #endif
     if(m_toggle_uniformgrid) ug.remove(nearest[0]->position);
     for (int i = 0; i <= GNG_DIM; ++i) {
-        nearest[0]->position[i] += m_eps_v * (ex->position[i] - nearest[0]->position[i]);
+        nearest[0]->position[i] += m_eps_v * (ex->getPositionPtr()[i] - nearest[0]->position[i]);
     }
     if(m_toggle_uniformgrid) ug.insert(nearest[0]->position, nearest[0]->nr);
 
@@ -458,8 +459,8 @@ void GNGAlgorithm::ResizeUniformGrid() {
     }
 }
 
-GNGNode ** GNGAlgorithm::LargestErrorNodes() {
-        GNGNode ** largest = new GNGNode*[2];
+SHGNGNode ** GNGAlgorithm::LargestErrorNodes() {
+        SHGNGNode ** largest = new SHGNGNode*[2];
         
         largest[0]=0;
         largest[1]=0;
@@ -520,9 +521,10 @@ GNGNode ** GNGAlgorithm::LargestErrorNodes() {
         return largest;
 }
 
-GNGNode ** GNGAlgorithm::TwoNearestNodes(double * position) { //to the example
-
-    GNGNode ** nearest = new GNGNode*[2];
+SHGNGNode ** GNGAlgorithm::TwoNearestNodes(const double * position) { //to the example
+    
+    //no unique_ptr in this C++, nearest is returned!
+    SHGNGNode** nearest = new SHGNGNode*[2];
 
     nearest[0] = 0;
     nearest[1] = 0;

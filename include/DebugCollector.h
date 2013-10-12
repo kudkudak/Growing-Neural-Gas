@@ -16,6 +16,7 @@
 #include <vector>
 
 #define DEBUG_COLLECTOR_DEBUG
+#define DEBUG_ERROR_LEVEL 5
 
 class DebugCollector {
     

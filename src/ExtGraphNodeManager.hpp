@@ -6,10 +6,6 @@
  */
 
 
-
-
-
-
 template<class Node, class Edge, class EdgeStorage >
 bool  ExtGraphNodeManager<Node,Edge,EdgeStorage>::isEdge(int a, int b){
         
@@ -40,7 +36,8 @@ void  ExtGraphNodeManager<Node,Edge,EdgeStorage>::removeRevEdge(int a,EdgeIterat
     }
      
 template<class Node, class Edge, class EdgeStorage >
-typename ExtGraphNodeManager<Node,Edge,EdgeStorage>::EdgeIterator  ExtGraphNodeManager<Node,Edge,EdgeStorage>::removeEdge(int a, int b){
+typename ExtGraphNodeManager<Node,Edge,EdgeStorage>::EdgeIterator 
+ExtGraphNodeManager<Node,Edge,EdgeStorage>::removeEdge(int a, int b){
 
         
         FOREACH(edg,g_pool[a].edges){
@@ -91,13 +88,6 @@ typename ExtGraphNodeManager<Node,Edge,EdgeStorage>::EdgeIterator  ExtGraphNodeM
     }
 template<class Node, class Edge, class EdgeStorage >
 void  ExtGraphNodeManager<Node,Edge,EdgeStorage>:: addUDEdge(int a, int b){
-        //no self loops !! - important for correctness//
- 
-        
-        
-        //what is important is that you cant remove edge when buffering so grow_mutex lock is necessary
-        
-
         g_pool[a].edges.push_back(Edge(b));
         g_pool[b].edges.push_back(Edge(a));
         
@@ -131,7 +121,7 @@ template<class Node, class Edge, class EdgeStorage >
 bool  ExtGraphNodeManager<Node,Edge,EdgeStorage>::growPool(){
       
         
-        #ifdef DEBUG
+    #ifdef DEBUG
     dbg.push_back(2,"ExtGraphNodeManager::growing");
     #endif
         g_pool_nodes*=2;   
@@ -169,7 +159,7 @@ bool  ExtGraphNodeManager<Node,Edge,EdgeStorage>::growPool(){
         
         #ifdef DEBUG
         dbg.push_back(3,"ExtGraphNodeManager::m_free="+to_string(m_first_free));
-     #endif
+        #endif
         
         #ifdef DEBUG
         dbg.push_back(2,"ExtGraphNodeManager::completed");
@@ -292,8 +282,8 @@ bool ExtGraphNodeManager<Node,Edge,EdgeStorage>::deleteNode(int x) {
    if(g_pool[x].occupied) {
         --m_nodes;
         g_pool[x].edgesCount = 0;
-        g_pool[x ].occupied = false;
-        g_pool[x ].nextFree = m_first_free;
+        g_pool[x].occupied = false;
+        g_pool[x].nextFree = m_first_free;
 
         //deletion is unfortunately linear - see to it?
 

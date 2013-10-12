@@ -68,7 +68,7 @@ RcppExport SEXP GNGGetServerID(){
 	return wrap(*ptr);
 }
 RcppExport SEXP GNGRunServer() {
-	managed_shared_memory interserver_variables(open_or_create,"GNGInterServerSegment", 65536);
+        managed_shared_memory interserver_variables(open_or_create,"GNGInterServerSegment", 65536);
 	int *ptr = interserver_variables.find_or_construct<int>("GNG__serverCount") ();
 	SHMemoryManager::COUNTER = *ptr;
 
@@ -321,22 +321,18 @@ RcppExport SEXP GNGClient__updateBuffer(SEXP _xp){
 }
 
 RcppExport SEXP GNGClient__getNumberNodesOnline(SEXP _xp){
-    
-    
-    
     Rcpp::XPtr<GNGClient> ptr(_xp);
     ScopedLock sc(ptr->control->grow_mutex);
     
-   
     return wrap((int)(ptr->graph->getNumberNodes()));
 }
 
+/*!
+ *
+ */
 RcppExport SEXP GNGClient__getBufferSize(SEXP _xp){
-
     Rcpp::XPtr<GNGClient> ptr(_xp);
-    
-    return wrap((int)(ptr->buffer.size()));
-    
+    return wrap((int)(ptr->buffer.size()));    
 }
 
 RcppExport SEXP GNGClient__getNumberNodes(SEXP _xp){

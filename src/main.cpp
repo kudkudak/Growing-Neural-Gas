@@ -5,21 +5,17 @@
  * Created on 7 sierpień 2012, 18:27
  */
 
-
-
 #include <fstream>
 #include <list>
 #include <cmath>
 #include <iostream>
-  #include <iostream>                  // for std::cout
-  #include <utility>                   // for std::pair
-  #include <algorithm>                 // for std::for_each
-  #include <boost/graph/graph_traits.hpp>
-  #include <boost/graph/adjacency_list.hpp>
-  #include <boost/graph/dijkstra_shortest_paths.hpp>
-#include <boost/graph/bellman_ford_shortest_paths.hpp>
-using namespace std;
+#include <vector>
+#include <iostream>   
+#include <utility>   
+#include <algorithm>  
 #include "GNG.h"
+
+using namespace std;
 
 
 
@@ -29,22 +25,21 @@ using namespace std;
 using namespace boost::interprocess;
 using namespace boost;
 
-
-
 typedef boost::interprocess::interprocess_mutex MyMutex;
+
 
 GNGAlgorithmControl * gngAlgorithmControl;
 GNGAlgorithm * gngAlgorithm;
-GNGGraph * gngGraph;
+SHGNGGraph * gngGraph;
 GNGDatabase* gngDatabase;
 SHMemoryManager *shm;
 
 
-int GNG_DIM;
-
+//Global variables
+int GNG_DIM, GNG_EX_DIM;
 
 void gngTrainingThread(){
-	dbg.set_debug_level(100);
+    dbg.set_debug_level(100);
     while(gngDatabase->getSize()<2000);
     #ifdef DEBUG
     dbg.push_back(3,"gngTrainingThread::proceeding to algorithm");
@@ -140,7 +135,7 @@ void gngDatabaseThread(){
 
 //uploades v to database outputs GNG_DIM*2 array with bounding box
 double * uploadOBJ(const char * filename){
-    GNGExample ex;
+    GNGExample ex(3);
     ifstream ifs;
     ifs.open(filename);
     double vertex[3];
@@ -167,8 +162,8 @@ double * uploadOBJ(const char * filename){
 
         }
 
-        memcpy(ex.position,vertex,3*sizeof(double));
-        gngDatabase->addExample(&ex);
+    
+        gngDatabase->addExample(new GNGExample(vertex,3));
     }
     write_array(bbox,bbox+6);
     return bbox;
@@ -179,8 +174,8 @@ void initGNGServer(){
     shm = new SHMemoryManager(200000000 * sizeof (double)); //nodes <-estimate!
     shm->new_segment(220000000 * sizeof (double)); //database <-estimate!
 
-    GNGNode::mm = shm;
-    GNGNode::alloc_inst = new ShmemAllocatorGNG(shm->get_segment(0)->get_segment_manager());
+    SHGNGNode::mm = shm;
+    SHGNGNode::alloc_inst = new ShmemAllocatorGNG(shm->get_segment(0)->get_segment_manager());
 
     GNG_DIM=3;
 
@@ -188,12 +183,15 @@ void initGNGServer(){
     double axis[3]={8.0,8.0,8.0};
 
     SHGNGExampleDatabaseAllocator alc(shm->get_segment(1)->get_segment_manager());
-
-    SHGNGExampleDatabase * database_vec = shm->get_segment(1)->construct< SHGNGExampleDatabase > ("database_vec")(alc);
+    SHGNGExampleDatabase * database_vec = 
+            shm->get_segment(1)->construct< SHGNGExampleDatabase > ("database_vec")(alc);
 
     gngAlgorithmControl = shm->get_segment(1)->construct<GNGAlgorithmControl >("gngAlgorithmControl")();
 
-    gngDatabase = new GNGDatabaseSimple(&gngAlgorithmControl->database_mutex,database_vec);
+    gngDatabase = new GNGDatabaseSimple
+            <SHGNGExampleDatabase, 
+            boost::interprocess::interprocess_mutex>(&gngAlgorithmControl->database_mutex,database_vec, 
+    GNG_DIM);
 
 
 
@@ -213,14 +211,12 @@ void initGNGServer(){
     reinterpret_cast<GNGDatabaseMeshes*>(gngDatabase)->addMesh(&p);
     reinterpret_cast<GNGDatabaseMeshes*>(gngDatabase)->addMesh(&l1);
 
-
-
-   cout<<"cos robie\n";
-    gngGraph = shm->get_segment(0)->construct<GNGGraph>("gngGraph")(&gngAlgorithmControl->grow_mutex,25000);
+    gngGraph = shm->get_segment(0)->construct<SHGNGGraph>("gngGraph")(&gngAlgorithmControl->grow_mutex,25000);
     gngAlgorithm = new GNGAlgorithm
                 (*gngGraph,gngDatabase, gngAlgorithmControl,
                 25000, orig, axis,axis[0]/4.0,10000);
-	cout<<"DZIALAM\n";
+
+    
     gngAlgorithmControl->setRunningStatus(true); //skrypt w R inicjalizuje
     gngAlgorithm->setToggleLazyHeap(false);
     gngAlgorithm->setToggleUniformGrid(false);
@@ -240,38 +236,115 @@ void testDatabase(){
     shm = new SHMemoryManager(200000000 * sizeof (double)); //nodes <-estimate!
     shm->new_segment(220000000 * sizeof (double)); //database <-estimate!
 
-    GNGNode::mm = shm;
-    GNGNode::alloc_inst = new ShmemAllocatorGNG(shm->get_segment(0)->get_segment_manager());
+    SHGNGNode::mm = shm;
+    SHGNGNode::alloc_inst = new ShmemAllocatorGNG(shm->get_segment(0)->get_segment_manager());
 
     GNG_DIM=3;
 
     double orig[3]={-4.0,-4.0,-4.0};
     double axis[3]={8.0,8.0,8.0};
 
-    SHGNGExampleDatabaseAllocator alc(shm->get_segment(1)->get_segment_manager());
+    SHGNGExampleDatabaseAllocator
+    alc(shm->get_segment(1)->get_segment_manager());
 
-    SHGNGExampleDatabase * database_vec = shm->get_segment(1)->construct< SHGNGExampleDatabase > ("database_vec")(alc);
+    SHGNGExampleDatabase * database_vec = 
+            shm->get_segment(1)->construct< SHGNGExampleDatabase > ("database_vec")(alc);
 
     gngAlgorithmControl = shm->get_segment(1)->construct<GNGAlgorithmControl >("gngAlgorithmControl")();
 
-    gngDatabase = new GNGDatabaseProbabilistic(&gngAlgorithmControl->database_mutex,database_vec);
+    gngDatabase = new GNGDatabaseProbabilistic<
+        SHGNGExampleDatabase, 
+        boost::interprocess::interprocess_mutex
+            
+    >
+    (&gngAlgorithmControl->database_mutex,database_vec, GNG_DIM);
 
     double * pos=new double[4];
     for(int i=0;i<10000;++i){
     	pos[0]=__double_rnd(0,1);
     	pos[1]=__double_rnd(0,1);
-		pos[2]=__double_rnd(0,1);
-		pos[3]=__double_rnd(0,1);
+        pos[2]=__double_rnd(0,1);
+        pos[3]=__double_rnd(0,1);
 
-    	gngDatabase->addExample(new GNGExample(pos));
+
+    	gngDatabase->addExample(new GNGExample(pos, 4));
     }
-    gngDatabase->drawExample();
+    GNGExample ex = gngDatabase->drawExample();
+    REPORT(ex);
 
+
+
+
+}
+
+void testDatabaseLocal(){
+
+    GNG_DIM=3;
+    GNG_EX_DIM=4;
+
+    double orig[3]={-4.0,-4.0,-4.0};
+    double axis[3]={8.0,8.0,8.0};
+
+
+    std::vector<GNGExample> g_database;
+    
+    shm = new SHMemoryManager(200000000 * sizeof (double)); //nodes <-estimate!
+    shm->new_segment(220000000 * sizeof (double)); //database <-estimate!
+    
+    gngAlgorithmControl = shm->get_segment(1)->construct<GNGAlgorithmControl >("gngAlgorithmControl")();
+
+    gngDatabase = new GNGDatabaseProbabilistic<std::vector<GNGExample> ,boost::mutex>
+            (&gngAlgorithmControl->database_mutex_thread, &g_database, 3);
+   
+    double * pos=new double[4];
+    for(int i=0;i<10000;++i){
+    	pos[0]=__double_rnd(0,1);
+    	pos[1]=__double_rnd(0,1);
+        pos[2]=__double_rnd(0,1);
+        pos[3]=__double_rnd(0,1);
+        GNGExample * ex = new GNGExample(pos,4);
+    	gngDatabase->addExample(ex);
+        
+        
+        delete ex;
+    }
+    REPORT("success");
+    GNGExample ex = gngDatabase->drawExample();
+    REPORT(ex);
+
+
+
+
+}
+
+void testSharedGraph(){
+    
+    shm = new SHMemoryManager(200000000 * sizeof (double)); //nodes <-estimate!
+    shm->new_segment(220000000 * sizeof (double)); //database <-estimate!
+
+    
+    SHGNGNode::mm = shm;
+    SHGNGNode::alloc_inst = 
+            new ShmemAllocatorGNG(shm->get_segment(0)->get_segment_manager());
+    
+    REPORT(SHGNGNode::size());
+    
+    gngAlgorithmControl = shm->get_segment(1)->construct<GNGAlgorithmControl >("gngAlgorithmControl")();
+    gngGraph = 
+            shm->get_segment(0)->construct<SHGNGGraph>("gngGraph")
+            (&gngAlgorithmControl->grow_mutex,25000);
+    
+    
 }
 
 int main(int argc, char** argv) {
 
-    initGNGServer();
+ 
+
+    
+        testDatabaseLocal();
+
+//    initGNGServer();
 	//testDatabase();
     return 0;
 }

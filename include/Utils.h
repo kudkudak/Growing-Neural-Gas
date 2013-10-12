@@ -30,7 +30,7 @@ typedef long long LL;
 #define ST first
 #define ND second
 
-#define REPORT(x) cout<<#x<<"="<<(x)<<endl;
+#define REPORT(x) cout<<#x<<"="<<(x)<<endl<<flush;
 
 #include <sstream>
 #include <string>

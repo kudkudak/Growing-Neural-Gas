@@ -8,6 +8,8 @@
 #ifndef GNGALGORITHM_H
 #define	GNGALGORITHM_H
 
+#include <memory>
+
 #include "GNGGlobals.h"
 
 #include "GNGAlgorithmControl.h"
@@ -24,26 +26,17 @@
 typedef boost::posix_time::ptime Time;
 typedef boost::posix_time::time_duration TimeDuration;
 
-//when reading - adding new edges
-//bad design hack
-struct GNGGraphAccessHack{
-    static GNGNode * pool;
-    static double dist(int index, double *position){
-        double x=0.0;
-        //arma!
-        REP(i,GNG_DIM){
-            x+=(pool[index].position[i] - position[i])*(pool[index].position[i] - position[i]);
-        }
-        return x;
-    }
-};
 
 
 
 
-
-
-
+/**
+ * The main class of the implementation dealing with computations.
+ * It should be agnostic of inner working (memory management etc.) of the graph and database.
+ * Also should not be concerned with locking logic.
+ * 
+ * @note TODO: Implement GNG on GPU.
+ */
 class GNGAlgorithm { 
     typedef std::list<int> Node;
     
@@ -67,7 +60,7 @@ class GNGAlgorithm {
   
     int s,c;
     
-    GNGGraph & m_g; 
+    SHGNGGraph & m_g; 
     GNGDatabase* g_db;
     GNGAlgorithmControl * m_control;
  
@@ -75,22 +68,32 @@ class GNGAlgorithm {
     GNGLazyErrorHeap errorHeap;
 
     
-    GNGNode ** LargestErrorNodesLazy();
-    GNGNode ** LargestErrorNodes();
-    GNGNode ** TwoNearestNodes(double * position); 
+    SHGNGNode ** LargestErrorNodesLazy();
+    
+    SHGNGNode ** LargestErrorNodes();
+    
+    /**
+     * @brief Return two closest nodes (neurons) to the given example
+     * @param[in] position Vector of coordinates of the example 
+     */
+    SHGNGNode ** TwoNearestNodes(const double * position); 
+    
     void RandomInit(); 
+    
     void AddNewNode();
+    
     void Adapt(GNGExample * ex);
-     void ResizeUniformGrid();
+    
+    void ResizeUniformGrid();
      
     
-    void IncreaseErrorNew(GNGNode * node, double error){
+    void IncreaseErrorNew(SHGNGNode * node, double error){
         FixErrorNew(node);        
         node->error_new+=m_betha_powers[m_lambda-s]*error;
         errorHeap.updateLazy(node->nr);
     }
     
-    void FixErrorNew(GNGNode * node){
+    void FixErrorNew(SHGNGNode * node){
         if(node->error_cycle==c) return;
 
         node->error_new = m_betha_powers_to_n[c - node->error_cycle] * node->error_new;
@@ -101,21 +104,21 @@ class GNGAlgorithm {
         return;
     }
     
-    void DecreaseErrorNew(GNGNode * node){
+    void DecreaseErrorNew(SHGNGNode * node){
         FixErrorNew(node);
         node->error_new = m_alpha*node->error_new;
         //cout<<node->error_new<<" ?? "<<node->error<<" after decrease\n";
         errorHeap.updateLazy(node->nr);
     }
     
-    void SetErrorNew(GNGNode * node, double error){
+    void SetErrorNew(SHGNGNode * node, double error){
         node->error_new = error;
         node->error_cycle = c;
         errorHeap.insertLazy(node->nr);
     }
 
     
-    void IncreaseError(GNGNode * node, double error){
+    void IncreaseError(SHGNGNode * node, double error){
         node->error+=error;
     }
 
@@ -128,11 +131,11 @@ class GNGAlgorithm {
         }
     }
     
-    void DecreaseError(GNGNode * node){
+    void DecreaseError(SHGNGNode * node){
         node->error = m_alpha*node->error;
     }
-    
-    void SetError(GNGNode * node, double error){
+            
+    void SetError(SHGNGNode * node, double error){
         node->error = error;
     }      
 public:
@@ -141,7 +144,7 @@ public:
     void setMaxNodes(int value){m_max_nodes = value;}
     
     
-    GNGAlgorithm(GNGGraph & g,GNGDatabase* db, GNGAlgorithmControl * control, 
+    GNGAlgorithm(SHGNGGraph & g,GNGDatabase* db, GNGAlgorithmControl * control, 
             int start_number,double * boundingbox_origin, double * boundingbox_axis, double l,int max_nodes=1000,
 
         	int max_age=200, double alpha=0.95, double betha=0.9995, double lambda=200,
@@ -151,7 +154,7 @@ public:
     double getError() const{ return m_error; }
     bool stoppingCriterion(){ return m_g.getNumberNodes()>m_max_nodes; }
     double getAccumulatedError() const {   return m_accumulated_error; }   
-    const GNGGraph & get_graph(){ return m_g; }
+    const SHGNGGraph & get_graph(){ return m_g; }
     
     void resetUniformGrid(double * orig, double *axis, double l) {
         ug.purge(orig,axis,l);
@@ -176,4 +179,28 @@ private:
     
 };
 
+
+
+
+/**Design hack for passing distance function dist(index, position)*/
+struct GNGGraphAccessHack{
+    static SHGNGNode * pool;
+    static double dist(int index, double *position){
+        double x=0.0;
+        //arma!
+        REP(i,GNG_DIM){
+            x+=(pool[index].position[i] - position[i])*(pool[index].position[i] - position[i]);
+        }
+        return x;
+    }
+};
+
+
+
+
+
+
 #endif	/* GNGALGORITHM_H */
+
+
+

@@ -12,9 +12,12 @@
 
 #define GNGNODEPOOL_MODIFIED 0
 #define GNG_MAX_DIM 10
-const double EPS = 1E-9;
-extern int GNG_DIM;
+#define GNG_MAX_DIMENSION 100 /**< Maximum dimensionality of GNG - important for speed issues 
+if SH based model is used (whole graph in SH) */
 
+const double EPS = 1E-9;
+extern int GNG_DIM; /**< Dimensionality of GNG instance (first GNG_DIM from GNG_EX_DIM is taken for calculation)*/
+extern int GNG_EX_DIM; /**< Dimensionality of GNG example (can have more dimensions)*/
 
 
 #endif	/* GNGGLOBALS_H */

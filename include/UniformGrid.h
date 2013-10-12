@@ -73,7 +73,7 @@ public:
 
         return value;
     }
-    int * calculateCell(double *p) {
+    int * calculateCell(const double *p) {
         //int * m_tmp_int = new int[GNG_DIM];
         for (int i = 0; i < GNG_DIM; ++i) {
             m_tmp_int[i] = (int) ((p[i] - m_origin[i]) / m_l);
@@ -140,7 +140,7 @@ public:
     bool remove(double *p);
     T find(double *p);
 
-    T * findNearest(double *p, int n = 2);
+    T * findNearest(const double *p, int n = 2);
 
     void setDistFunction(double (*dist_fnc)(T, double*)) {
         m_dist_fnc = dist_fnc;

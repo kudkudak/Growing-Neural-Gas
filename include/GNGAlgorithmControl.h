@@ -17,6 +17,8 @@
 #include <boost/interprocess/sync/interprocess_condition.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 
+#include <boost/thread/thread.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include <boost/thread.hpp>
 #include <boost/date_time.hpp>
@@ -34,19 +36,32 @@
 
 #include <stdlib.h>
 #include "Utils.h"
-typedef boost::interprocess::interprocess_mutex MyMutex;
+
+
+/**
+ * This struct is carrying all the objects needed for interprocess and inner (between threads)
+ * communication.
+ *
+ */
 struct GNGAlgorithmControl {
-    bool m_pause;
-    bool m_terminate;
-    MyMutex grow_mutex,database_mutex;
+    bool m_pause; /**< Is the algorithm paused? */ 
+    bool m_terminate; /**< Has the algorithm(server) terminated? */
+    boost::interprocess::interprocess_mutex grow_mutex; /**< Mutex locked when the graph pool is expanded @see ExtGraphNodeManager */
+    boost::interprocess::interprocess_mutex database_mutex;
+    
+    boost::mutex grow_mutex_thread; /**< Grow mutex used, when the graph is not stored in shared memory, but in local memory*/
+    boost::mutex database_mutex_thread;
+    
     boost::interprocess::interprocess_mutex m_pause_mutex;
     boost::interprocess::interprocess_condition m_pause_changed;
-    void checkPause() {using namespace std;
+    
+    void checkPause() {
+        using namespace std;
         boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> lock(m_pause_mutex);
-
+        
         while (m_pause) {
         	if(m_terminate) exit(EXIT_SUCCESS);
-            m_pause_changed.wait(lock);
+                m_pause_changed.wait(lock);
         }
     }
     void setRunningStatus(bool new_value) {
@@ -60,7 +75,7 @@ struct GNGAlgorithmControl {
     
     void terminate(){
     	using namespace boost::interprocess;
-    	shared_memory_object::remove("SHMemoryPool_Segment1");
+    	shared_memory_object::remove("SHMemoryPool_Segment1"); //TODO: error with multiservers
     	shared_memory_object::remove("SHMemoryPool_Segment2");
     	m_terminate=true;
     }
