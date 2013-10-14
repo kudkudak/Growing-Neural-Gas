@@ -1,5 +1,6 @@
-#Growing Neural Gas in R
+#Growing Neural Gas in R - package to be included in GMuM.R project.
 
+Currently under heavy rewritting.
 
 ###General
 ------
