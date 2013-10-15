@@ -6,6 +6,7 @@
  */
 
 #include "GNGAlgorithm.h"
+
 using namespace std;
 SHGNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
     SHGNGNode ** largest = new SHGNGNode*[2];
@@ -404,27 +405,29 @@ int GNGAlgorithm::CalculateAccumulatedError() {
     int maximumIndex = m_g.getMaximumIndex();
     m_accumulated_error = 0.0;
 
-    REP(i, maximumIndex + 1) {
+    if(this->m_toggle_lazyheap){
+        int maximumIndex = m_g.getMaximumIndex();
+        m_accumulated_error = 0.0;
 
-        if (m_g[i].occupied) {
-            m_accumulated_error += m_g[i].error;
+        REP(i, maximumIndex + 1) {
+
+            if (m_g[i].occupied) {
+                m_accumulated_error += m_g[i].error_new;
+            }
         }
-    }
-    return m_accumulated_error;
-}
+        return m_accumulated_error;
+    }else{
+        REP(i, maximumIndex + 1) {
 
-int GNGAlgorithm::CalculateAccumulatedErrorNew() {
-    int maximumIndex = m_g.getMaximumIndex();
-    m_accumulated_error = 0.0;
-
-    REP(i, maximumIndex + 1) {
-
-        if (m_g[i].occupied) {
-            m_accumulated_error += m_g[i].error_new;
+            if (m_g[i].occupied) {
+                m_accumulated_error += m_g[i].error;
+            }
         }
+        return m_accumulated_error;
     }
-    return m_accumulated_error;
-}
+ }
+
+
 
 void GNGAlgorithm::TestAgeCorrectness() {
     int maximumIndex = m_g.getMaximumIndex();
@@ -588,7 +591,7 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
     Time t1, t2, t3, t4;
     TimeDuration dt;
     #ifdef DEBUG
-    int size = g_db->getSize();
+      int size = g_db->getSize();
       dbg.push_back(3,"GNGAlgorithm::check size of the db "+to_string(size));
     #endif      
      boost::posix_time::millisec workTime(100); 

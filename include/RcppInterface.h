@@ -15,7 +15,7 @@
 
 #include "GNG.h"
 #include "Utils.h"
-#undef DEBUG
+
 
 struct GNGClient {
     MyMutex * grow_mutex;

@@ -56,5 +56,7 @@ private:
 
 };
 
+extern DebugCollector dbg;
+
 #endif	/* DEBUGCOLLECTOR_H */
 

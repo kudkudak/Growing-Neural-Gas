@@ -151,7 +151,7 @@ public:
         		double eps_v=0.05, double eps_n=0.0006
 
     );
-    double getError() const{ return m_error; }
+   
     bool stoppingCriterion(){ return m_g.getNumberNodes()>m_max_nodes; }
     double getAccumulatedError() const {   return m_accumulated_error; }   
     const SHGNGGraph & get_graph(){ return m_g; }
@@ -169,7 +169,7 @@ public:
     
 
     int CalculateAccumulatedError();
-    int CalculateAccumulatedErrorNew() ;
+
     void TestAgeCorrectness();  
    
     void runAlgorithm();

@@ -39,11 +39,14 @@
 
 
 /**
- * This struct is carrying all the objects needed for interprocess and inner (between threads)
- * communication.
  *
+ * Class responsible for handling communication between main core and clients. It adds examples, pauses algorithm, stores references to
+ * main mutexes, etc. It is used in server.
+ * 
+ * 
  */
-struct GNGAlgorithmControl {
+class GNGAlgorithmControl {
+public:
     bool m_pause; /**< Is the algorithm paused? */ 
     bool m_terminate; /**< Has the algorithm(server) terminated? */
     boost::interprocess::interprocess_mutex grow_mutex; /**< Mutex locked when the graph pool is expanded @see ExtGraphNodeManager */
@@ -54,6 +57,8 @@ struct GNGAlgorithmControl {
     
     boost::interprocess::interprocess_mutex m_pause_mutex;
     boost::interprocess::interprocess_condition m_pause_changed;
+
+    //used gng_database, gng_graph, etc.
     
     void checkPause() {
         using namespace std;
