@@ -84,6 +84,12 @@ std::string to_string(T& x){
     return ss.str();
 }
 
-
+struct BasicException : public std::exception
+{
+   std::string s;
+   BasicException(std::string ss) : s(ss) {}
+   ~BasicException() throw () {} // Updated
+   const char* what() const throw() { return s.c_str(); }
+};
 
 #endif	/* UTILS_H */
