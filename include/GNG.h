@@ -41,6 +41,7 @@
 #include "GNGDefines.h"
 
 
+GNGServer * gngServer;
 
 #endif	/* GNGINCLUDE_H */
 

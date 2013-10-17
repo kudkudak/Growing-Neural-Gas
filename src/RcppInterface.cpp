@@ -15,7 +15,7 @@ bool uniformgrid=true,lazyheap=true;
 double *orig=0,*axis=0;
 int database_type=1;
 int max_age=200;
-double alpha=0.95;
+double alpha=0.95;get
 double betha=0.9995;
 double lambda=200;
 double eps_v=0.05;

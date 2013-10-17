@@ -71,11 +71,35 @@ public:
     int serverId;
     
     
+    /** Get default configuration of GNG Server */
     static GNGConfiguration getDefaultConfiguration(){
         GNGConfiguration default_configuration;
+     
+        default_configuration.orig.push_back(0.0);
+        default_configuration.orig.push_back(0.0);
+        default_configuration.orig.push_back(0.0);
+        
+        default_configuration.axis.push_back(1.0);
+        default_configuration.axis.push_back(1.0);
+        default_configuration.axis.push_back(1.0);  '
+            
+        default_configuration.serverId = 0;
+        default_configuration.gngDim = 3;
+        default_configuration.databaseType = DatabaseSimple;
+        default_configuration.max_nodes=1000;       
+        default_configuration.uniformgrid_optimization=true; 
+        default_configuration.lazyheap_optimization=true;       
+        default_configuration.max_age=200;        
+        default_configuration.alpha=0.95;     
+        default_configuration.beta=0.9995;      
+        default_configuration.lambda=200;
+        default_configuration.eps_v=0.05;
+        default_configuration.eps_n=0.0006;   
+        
         return default_configuration;
     }
     
+    /**Validate server configuration. *Not working now**/
     bool checkCorrectness(){
         GNGConfiguration empty_configuration;
         return gngDim!=empty_configuration.gngDim && 
@@ -83,7 +107,7 @@ public:
                 databaseType != empty_configuration.databaseType;
     }
     
-    
+    /**Python like update of configuration*/
     void updateConfiguration(GNGConfiguration update){
         //python dictionary is missing! 
         GNGConfiguration empty_configuration;
@@ -120,18 +144,38 @@ struct SHGNGMessage{
 /** Handles communication with server through different communication channels */
 class GNGClient{
     GNGClient(){}
+    std::string process_identifier;
 public:
-    GNGClient(std::string process_identifier){}
+    GNGClient(std::string process_identifier): process_identifier(process_identifier){
+    
+    
+    }
 };
 
 /** Holds together all logic and objects.*/
 class GNGServer{
     int listening_daemon_sleep_time;
+    static GNGConfiguration current_configuration;
+    static boost::mutex static_lock;
+    
 public:
+    
+    static void setConfiguration(GNGConfiguration configuration){
+        GNGServer::current_configuration = configuration;
+    }    
+    static GNGServer& getInstance(){
+        boost::mutex::scoped_lock sc(static_lock);
+        static GNGServer gngServer(current_configuration);
+        return gngServer;
+    }
+    
     /**OBSOLETE: Create GNGServer (and fill it manually after that)*/
     GNGServer(): listening_daemon_sleep_time(50){}
     /**Construct GNGServer using configuration*/
-    GNGServer(GNGConfiguration configuration): listening_daemon_sleep_time(50){}
+    GNGServer(GNGConfiguration configuration): listening_daemon_sleep_time(50){
+        
+        
+    }
     
     boost::interprocess::interprocess_mutex communication_bufor_mutex; /** Locking communication bufor in interprocess communication */
     
@@ -181,11 +225,8 @@ public:
     
     
 };
-
-
-
-GNGServer * gngServer;
-
+GNGConfiguration GNGServer::current_configuration = GNGConfiguration::getDefaultConfiguration();
+boost::mutex GNGServer::static_lock;
 
 
 
@@ -217,6 +258,8 @@ void gngDatabaseThread(){
     int k=0;
     double pos[3];
 
+    GNGClient gngClient("Server0");
+    
 
     while(true){
        boost::this_thread::sleep(workTime);
@@ -372,7 +415,7 @@ void testDatabase(){
 
 }
 
-void testDatabaseLocal(){
+void testLocal(){
     gngServer =new GNGServer();
     
     #ifdef DEBUG
@@ -397,12 +440,12 @@ void testDatabaseLocal(){
     
     SHGNGNode::mm =  gngServer->shm;
     SHGNGNode::alloc_inst = new ShmemAllocatorGNG(gngServer->shm->get_segment(0)->get_segment_manager());
-    REPORT("success");
+
      gngServer->gngAlgorithmControl = gngServer->shm->get_segment(1)->construct<GNGAlgorithmControl >("gngAlgorithmControl")();
 
      gngServer->gngDatabase = new GNGDatabaseProbabilistic<std::vector<GNGExample> ,boost::mutex>
             (&gngServer->gngAlgorithmControl->database_mutex_thread, &g_database, 3);
-   REPORT("success");
+  
     double * pos=new double[4];
     for(int i=0;i<10000;++i){
     	pos[0]=__double_rnd(0,1);
@@ -415,7 +458,7 @@ void testDatabaseLocal(){
         
         delete ex;
     }
-    REPORT("success");
+    REPORT("success database creation");
     GNGExample ex = gngServer->gngDatabase->drawExample();
     REPORT(ex);
 
@@ -429,23 +472,32 @@ void testDatabaseLocal(){
     gngServer->gngAlgorithmControl->setRunningStatus(true); //skrypt w R inicjalizuje
     gngServer->gngAlgorithm->setToggleLazyHeap(false);
     gngServer->gngAlgorithm->setToggleUniformGrid(false);
-    REPORT("success");
+    REPORT("success running main threads");
     boost::thread workerThread1(gngTrainingThread);
+//    boost::thread workerThread3(boost::bind(&GNGServer::runSHListeningDaemon, gngServer));
     boost::thread workerThread2(gngDatabaseThread);
 
     workerThread1.join();
     workerThread2.join();
-
+//    workerThread3.join();
 
 }
 
+void SHMemoryManager_test_named_segments(){
+
+
+    SHMemoryManager sh("Server0",1000000*sizeof(double));
+    
+    sh.new_named_segment("Segment1")
+
+}
 
 int main(int argc, char** argv) {
 
  
 
-    
-        testDatabaseLocal();
+    //
+        testLocal();
 
 //    initGNGServer();
 	//testDatabase();

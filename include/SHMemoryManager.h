@@ -11,6 +11,7 @@
 #include <cstdlib> //std::system
 #include <cstddef>
 
+#include <map>
 
 #include <boost/thread.hpp>
 #include <boost/date_time.hpp>
@@ -37,16 +38,26 @@ class SHMemoryManager:public ExtMemoryManager {
     std::vector<std::string> m_names; 
     
     std::vector<boost::interprocess::managed_shared_memory*> m_segments;
+    std::map<std::string, boost::interprocess::managed_shared_memory*> m_segments_name_map;
+    
+    
+    
+    
     boost::interprocess::managed_shared_memory * m_current_segment;
     
     SHMemoryManager(const SHMemoryManager& orig){}
     
     std::string generate_name();
     std::string process_identifier;
-public: static int COUNTER;
+public: 
+    
+    static int COUNTER;
+    
     void new_segment(std::size_t min_size);
     
-
+    /**Create new SHMemoryManager object. 
+     * @note This doesn't create first segment !
+     */
     SHMemoryManager(std::string process_identifier, std::size_t target_size=-1);
  
     void * allocate(std::size_t,int index=0);
@@ -80,8 +91,10 @@ public: static int COUNTER;
     std::string get_name(int index=0) const;  
     
     bool deallocate(void * ptr,int index =0);
-    virtual ~SHMemoryManager(){
         
+    
+    
+    virtual ~SHMemoryManager(){
         FOREACH(seg,m_names) boost::interprocess::shared_memory_object::remove(seg->c_str());
     }
 private:
