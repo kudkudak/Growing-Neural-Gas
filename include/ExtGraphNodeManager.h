@@ -8,7 +8,7 @@
 #define	EXTGRAPHNODEMANAGER_H
 #define COMPILE_WITH_GROW_MUTEX
 
-#include "ExtMemoryManager.h"
+#include "MemoryAllocator.h"
 #include "SHGraphDefs.h"
 #include "Utils.h"
 #include "DebugCollector.h"

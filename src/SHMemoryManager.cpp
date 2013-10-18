@@ -11,7 +11,8 @@ using namespace boost::interprocess;
 
 
 
-
+   
+ 
 
 
 bool SHMemoryManager::deallocate(void * ptr, std::string segment_name) {

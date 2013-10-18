@@ -29,7 +29,7 @@
                 
 
 #include "Utils.h"
-#include "ExtMemoryManager.h"
+#include "MemoryAllocator.h"
 
 
 /* @brief Shared memory manager.
@@ -85,7 +85,7 @@ public:
 
     /** Retrieve named constructed segment */
     boost::interprocess::managed_shared_memory * get_named_segment(std::string name){
-        return m_segments[name];
+        return m_segments[SHMemoryManager::generate_name(this->process_identifier, name)];
     }   
 
 

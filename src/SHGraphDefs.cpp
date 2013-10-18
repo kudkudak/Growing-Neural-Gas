@@ -8,6 +8,6 @@
 #include "SHGraphDefs.h"
 
 
-ExtMemoryManager * SHGNGNode::mm = 0;
+MemoryAllocator * SHGNGNode::mm = 0;
 ShmemAllocatorGNG * SHGNGNode::alloc_inst = 0;
 

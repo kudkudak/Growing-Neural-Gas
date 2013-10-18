@@ -85,7 +85,7 @@ class SHGNGEdge{ public:
 class SHGNGNode: public GNGNode
 { 
 public:
-    static ExtMemoryManager * mm;
+    static MemoryAllocator * mm;
     static ShmemAllocatorGNG * alloc_inst;
     int nextFree;
 

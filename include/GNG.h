@@ -34,13 +34,16 @@
 #include "GNGAlgorithm.h"
 
 #include "ExtGraphNodeManager.h"
-#include "ExtMemoryManager.h"
+#include "MemoryAllocator.h"
 
 #include "DebugCollector.h"
 
+
 #include "GNGDefines.h"
 
-
+#include "GNGConfiguration.h"
+#include "GNGServer.h"
+#include "GNGClient.h"
 
 #endif	/* GNGINCLUDE_H */
 
