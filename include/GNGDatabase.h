@@ -71,8 +71,8 @@ public:
     bool operator==(const GNGExample & ex) const{
         if(this->getLength()!=ex.getLength()) return false;
         for(int i;i<this->getLength();++i){
-            if(getPositionPtr()[i]-ex.getPositionPtr()[i]<-EPS || 
-                    getPositionPtr()[i]-ex.getPositionPtr()[i]>EPS ) 
+            if(getPositionPtr()[i]-ex.getPositionPtr()[i]<-10e-10 || 
+                    getPositionPtr()[i]-ex.getPositionPtr()[i]>10e-10 ) 
                 return false;
         }
         return true;
@@ -89,6 +89,15 @@ public:
         return dim;
     }
     
+    
+    int getDoubleEncodingLength() const{
+        return dim;
+    }
+    
+    const double * getDoubleEncoding() const{
+        return &this->position[0];
+    }
+    
     /** Get double[] interpretation of GNGExample */
     const double  * getPositionPtr() const{
         return &this->position[0];
@@ -96,18 +105,27 @@ public:
 };
 
 
-
+/** Example used by GNGDatabaseProbabilistic*/
 class GNGExampleProbabilistic : public GNGExample{
 public:
-    GNGExampleProbabilistic(const double * vect, int dim):GNGExample(dim+1){
-        memcpy(&this->position[0],vect,sizeof(double)*(this->getLength())+1); //TODO: +1 failure
+    GNGExampleProbabilistic(const double * vect, int _dim):GNGExample(_dim+1){
+        memcpy(&this->position[0],vect,sizeof(double)*(_dim+1)); //TODO: +1 failure
+        
+        dim = _dim;
     }
-    GNGExampleProbabilistic(int dim):GNGExample(dim+1){
-        this->position[dim]=1.0;
+    GNGExampleProbabilistic(int _dim):GNGExample(_dim+1){
+        this->position[_dim]=1.0;
+        
+        dim = _dim;
     }      
     double getProbability() const{
         return this->position[dim];
     }
+    
+    
+    int getDoubleEncodingLength() const{
+        return dim+1;
+    }    
 };
 
 /** Database for growing neural gas interface

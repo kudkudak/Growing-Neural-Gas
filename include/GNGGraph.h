@@ -87,15 +87,20 @@ public:
     }
 
     int newNode(double const *position) {
+
          if (super::poolIsFull()) {
+             
                  boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+                 REPORT("growin27");
                  super::growPool(); 
                  g_pool_share = super::getPool();
+                
          }
          
         int i = super::newNode();
 
-        memcpy(&(super::g_pool + i)->position[0], position, sizeof (double) *(GNG_DIM+1)); //param
+        memcpy(&(super::g_pool + i)->position[0], position, sizeof (double) *(GNG_DIM)); //param
+
         g_pool[i].error = 0.0;
         g_pool[i].error_cycle = 0;
         g_pool[i].error_new = 0.0;

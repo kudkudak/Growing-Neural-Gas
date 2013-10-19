@@ -113,28 +113,47 @@
 // 
 // }
 // 
-BoostSHMemoryAllocator * boostSHMemoryAllocator;
+
  void testLocal() {
-    dbg.set_debug_level(10);
+    dbg.set_debug_level(7);
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
+    
     config.databaseType = GNGConfiguration::DatabaseProbabilistic;
     config.graph_storage = GNGConfiguration::SharedMemory;
+    
     GNGServer::setConfiguration(config); 
     
-    double * vect = new double[4*10000];
-    for (int i = 0; i < 10000; ++i) {
-        vect[0+(i-1)*4] = __double_rnd(0, 1);
-        vect[1+(i-1)*4] = __double_rnd(0, 1);
-        vect[2+(i-1)*4] = __double_rnd(0, 1);
-        vect[3+(i-1)*4] = __double_rnd(0, 1);
+    double * vect = new double[4*1000];
+    for (int i = 0; i < 1000; ++i) {
+        
+        vect[0+(i)*4] = __double_rnd(0, 1);
+        vect[1+(i)*4] = __double_rnd(0, 1);
+        vect[2+(i)*4] = __double_rnd(0, 1);
+        vect[3+(i)*4] = __double_rnd(0, 1);
+        
     }
     
-    
+  
     GNGServer::getInstance().run();
     
-    REPORT("running");
+    dbg.push_back(12, "Server running");
     
-    while(1); //no join because no join
+    GNGClient gngClient("Server0", GNGServer::getInstance().getCurrentConfiguration());
+    
+    dbg.push_back(12, "Client constructed");
+    
+    gngClient.addExamples(&vect[0], 1000, 4);
+    delete[] vect;
+    
+    dbg.push_back(12, "Completed testLocal()");
+    
+     boost::posix_time::millisec workTime(500);
+
+    while(true){
+       boost::this_thread::sleep(workTime);
+       REPORT(GNGServer::getInstance().getGraph()->getNumberNodes()); 
+//       REPORT(GNGServer::getInstance().getAlgorithm()->CalculateAccumulatedError());
+    }
  
  }
 

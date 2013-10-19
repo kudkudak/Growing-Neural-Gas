@@ -31,6 +31,7 @@ public:
         DatabaseSimple,
         DatabaseProbabilistic
     };
+    int message_bufor_size;
     /**Maximum number of nodes*/
     int max_nodes;//=1000;
     /**Uniform grid optimization*/
@@ -68,6 +69,8 @@ public:
     static GNGConfiguration getDefaultConfiguration(){
         GNGConfiguration default_configuration;
      
+        default_configuration.message_bufor_size = 10000*sizeof(double);
+        
         default_configuration.orig.push_back(0.0);
         default_configuration.orig.push_back(0.0);
         default_configuration.orig.push_back(0.0);
@@ -80,10 +83,10 @@ public:
         default_configuration.dim = 3;
         default_configuration.databaseType = DatabaseSimple;
         default_configuration.max_nodes=1000;       
-        default_configuration.uniformgrid_optimization=true; 
-        default_configuration.graph_memory_bound = 100000*sizeof(double);
+        default_configuration.uniformgrid_optimization=false; 
+        default_configuration.graph_memory_bound = 200000*sizeof(double);
         
-        default_configuration.lazyheap_optimization=true;       
+        default_configuration.lazyheap_optimization=false;       
         default_configuration.max_age=200;        
         default_configuration.alpha=0.95;     
         default_configuration.beta=0.9995;      

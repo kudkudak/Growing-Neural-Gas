@@ -50,21 +50,19 @@ struct Edge{
 	int visited_times;
 };
 
-void gngDatabaseThread(){
-    boost::posix_time::millisec workTime(500);
-    int k=0;
-    double pos[3];
-
-    GNGClient gngClient("Server0");
-    
-
-    while(true){
-       boost::this_thread::sleep(workTime);
-       REPORT(gngServer->getGraph()->getNumberNodes()); 
-       REPORT(gngServer->getAlgorithm()->CalculateAccumulatedError());
-    }
-
-}
+//void gngDatabaseThread(){
+//    boost::posix_time::millisec workTime(500);
+//    int k=0;
+//    double pos[3];
+//
+//
+//    while(true){
+//       boost::this_thread::sleep(workTime);
+//       REPORT(gngServer->getGraph()->getNumberNodes()); 
+//       REPORT(gngServer->getAlgorithm()->CalculateAccumulatedError());
+//    }
+//
+//}
 
 
 double * uploadOBJ(const char * filename){
@@ -105,8 +103,9 @@ double * uploadOBJ(const char * filename){
 #include "informal_tests/test_database.cpp"
 
 int main(int argc, char** argv) {
+
     testLocal();
- 
+
 
     //
 

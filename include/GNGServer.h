@@ -36,7 +36,7 @@ class GNGServer{
     int listening_daemon_sleep_time;
     static GNGConfiguration current_configuration;
     static boost::mutex static_lock;
-    static const int DEFAULT_MESSAGE_BUFOR = 1000000;
+    static int START_NODES; //TODO: change to 1000!
 
     /**Construct GNGServer using configuration*/
     GNGServer(GNGConfiguration configuration): listening_daemon_sleep_time(50){
@@ -45,6 +45,7 @@ class GNGServer{
         #ifdef DEBUG
              dbg.push_back(10, "GNGServer()::constructing GNGServer");
         #endif
+
         GNG_DIM = current_configuration.dim;
 
        
@@ -65,8 +66,10 @@ class GNGServer{
             SHGNGNode::alloc_inst = new ShmemAllocatorGNG(this->shm->get_named_segment("GraphStorage")->get_segment_manager());
         }
        
-        this->shm->new_named_segment("MessageBufor",DEFAULT_MESSAGE_BUFOR * sizeof (double)); 
-
+        this->shm->new_named_segment("MessageBufor",current_configuration.message_bufor_size); 
+        this->message_bufor_mutex = this->shm->get_named_segment("MessageBufor")->construct<boost::interprocess::interprocess_mutex>("MessageBuforMutex")();
+        
+        
         this->gngAlgorithmControl = std::auto_ptr<GNGAlgorithmControl>(
                 this->shm->get_named_segment("MessageBufor")->construct<GNGAlgorithmControl >("gngAlgorithmControl")()
                 );
@@ -85,7 +88,7 @@ class GNGServer{
         if(current_configuration.graph_storage == GNGConfiguration::SharedMemory){
             
             this->gngGraph = std::auto_ptr<SHGNGGraph>(this->shm->get_named_segment("GraphStorage")->
-                    construct<SHGNGGraph>("gngGraph")(&this->gngAlgorithmControl->grow_mutex,250));
+                    construct<SHGNGGraph>("gngGraph")(&this->gngAlgorithmControl->grow_mutex,GNGServer::START_NODES));
             #ifdef DEBUG
                  dbg.push_back(10, "GNGServer()::constructed shared graph");
             #endif
@@ -146,21 +149,30 @@ class GNGServer{
     std::auto_ptr<SHGNGGraph> gngGraph;
     std::auto_ptr<GNGDatabase> gngDatabase;
     std::auto_ptr<SHMemoryManager> shm;
-    
+    /** 
+     * Locking communication bufor in interprocess communication
+     * Deallocated in destructor 
+     **/
+    boost::interprocess::interprocess_mutex * message_bufor_mutex; 
+
     /*Section : protocol handling messages regardless of the source*/
   
     void _handle_AddExamples(double * examples, int count){
         //Handle coding
         if(current_configuration.databaseType==GNGConfiguration::DatabaseProbabilistic)
             for(int i=0;i<count;++i){
-                GNGExampleProbabilistic ex(&examples[(i-1)*(current_configuration.dim+1)],current_configuration.dim); //decoding
+                GNGExampleProbabilistic ex(&examples[i*(current_configuration.dim+1)],current_configuration.dim); //decoding
                 this->getDatabase()->addExample(&ex);       
             }
         else if(current_configuration.databaseType==GNGConfiguration::DatabaseSimple)
              for(int i=0;i<count;++i){
-                GNGExampleProbabilistic ex(&examples[(i-1)*current_configuration.dim],current_configuration.dim); //decoding
+                GNGExampleProbabilistic ex(&examples[i*current_configuration.dim],current_configuration.dim); //decoding
                 this->getDatabase()->addExample(&ex);       
-            }           
+            }       
+        else{
+            dbg.push_back(100,"Not supported database type" );
+            throw BasicException("Not supported database type");
+        }
     }
     
 public:
@@ -170,6 +182,9 @@ public:
     static void setConfiguration(GNGConfiguration configuration){
         GNGServer::current_configuration = configuration;
     }   
+    static GNGConfiguration getCurrentConfiguration(){
+        return GNGServer::current_configuration;
+    }
     
     /** Get singleton of GNGServer (thread safe) */
     static GNGServer& getInstance(){
@@ -180,7 +195,6 @@ public:
     
 
     
-    boost::interprocess::interprocess_mutex communication_bufor_mutex; /** Locking communication bufor in interprocess communication */
 
     //TODO: const reference not dandling pointer
     
@@ -208,9 +222,9 @@ public:
         #endif       
         //TODO: add pause checking
         while(true){
-           communication_bufor_mutex.lock();
+           message_bufor_mutex->lock();
            
-           SHGNGMessage * current_message = this->getSHM()->get_named_segment("MessageBufor")->find<SHGNGMessage>("current_message").first;
+           SHGNGMessage * current_message = this->getSHM()->get_named_segment("MessageBufor")->find_or_construct<SHGNGMessage>("current_message")();
            int state = current_message->state;
            if(state == SHGNGMessage::Waiting){
                 int type = current_message->type;
@@ -221,17 +235,27 @@ public:
 
                 if(type == SHGNGMessage::AddExamples){
                     SHGNGMessageAddExamples * message_params = this->
-                            getSHM()->get_named_segment("MessageBufor")->find<SHGNGMessageAddExamples>("message_params").first;
+                            getSHM()->get_named_segment("MessageBufor")->find<SHGNGMessageAddExamples>("current_message_params").first;
+                    
+                    
+                    if(!message_params){
+                        dbg.push_back(100, "GNGServer::runSHListeningDaemon not found message" );
+                        throw BasicException("GNGServer::runSHListeningDaemon not found message");
+                    }
                     
                     //note - this is quite specific coding 
                     double * examples = this->
                             getSHM()->get_named_segment("MessageBufor")->find<double>(message_params->pointer_reference_name.c_str()).first;
                     
-
+                    if(!examples){
+                        dbg.push_back(100, "GNGServer::runSHListeningDaemon not found examples to add" );
+                        throw BasicException("GNGServer::runSHListeningDaemon not found examples to add");
+                    }
+                    
                     _handle_AddExamples(examples, message_params->count);
                     
-                    this->
-                            getSHM()->get_named_segment("MessageBufor")->deallocate(examples);
+                    this-> getSHM()->get_named_segment("MessageBufor")->destroy_ptr(examples);
+                    this-> getSHM()->get_named_segment("MessageBufor")->destroy_ptr(message_params);
                     
                 }
                 
@@ -239,14 +263,14 @@ public:
                 current_message->state = SHGNGMessage::Processed;
            }
           
-           communication_bufor_mutex.unlock();
+           message_bufor_mutex->unlock();
             
            boost::this_thread::sleep(boost::posix_time::millisec(this->listening_daemon_sleep_time)); 
         }
     }
     
     ~GNGServer(){
-        //Nothing to do here
+        this->shm->get_named_segment("MessageBufor")->destroy_ptr(this->message_bufor_mutex);
     }
     
 };

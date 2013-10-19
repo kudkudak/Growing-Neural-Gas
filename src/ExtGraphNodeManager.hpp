@@ -122,7 +122,7 @@ bool  ExtGraphNodeManager<Node,Edge,EdgeStorage>::growPool(){
       
         
     #ifdef DEBUG
-    dbg.push_back(2,"ExtGraphNodeManager::growing");
+    dbg.push_back(8,"ExtGraphNodeManager::growing");
     #endif
         g_pool_nodes*=2;   
         
@@ -134,16 +134,22 @@ bool  ExtGraphNodeManager<Node,Edge,EdgeStorage>::growPool(){
         memcpy(g_pool,tmp, sizeof(Node)*(g_pool_nodes)/2);
        
         m_first_free=g_pool_nodes/2;
-        
+        #ifdef DEBUG
+        dbg.push_back(8,"ExtGraphNodeManager::copied old nodes");
+        #endif        
         
         //naprawa pointerow
         
         for(int i=0;i<(g_pool_nodes/2);++i){
+            REPORT(i);
             if(g_pool[i].occupied){
                 g_pool[i].edges = tmp[i].edges; //kopiowanie krawedzi
             }
         }
         
+        #ifdef DEBUG
+        dbg.push_back(8,"ExtGraphNodeManager::copy fine");
+        #endif   
         
         for(int i=m_first_free;i<g_pool_nodes;++i) {
             g_pool[i].occupied = false;
@@ -155,14 +161,18 @@ bool  ExtGraphNodeManager<Node,Edge,EdgeStorage>::growPool(){
             else g_pool[i].nextFree = -1;           
         }
         
+        #ifdef DEBUG
+        dbg.push_back(8,"ExtGraphNodeManager::all pointer corrected");
+        #endif 
+        
         delete tmp;
         
         #ifdef DEBUG
-        dbg.push_back(3,"ExtGraphNodeManager::m_free="+to_string(m_first_free));
+        dbg.push_back(8,"ExtGraphNodeManager::m_free="+to_string(m_first_free));
         #endif
         
         #ifdef DEBUG
-        dbg.push_back(2,"ExtGraphNodeManager::completed");
+        dbg.push_back(8,"ExtGraphNodeManager::completed");
         #endif
 
         return true;

@@ -8,8 +8,9 @@
 #ifndef GNGDEFINES_H
 #define	GNGDEFINES_H
 
-
-
+#include "GNGGraph.h"
+#include <boost/interprocess/managed_shared_memory.hpp>
+#include<string>
 
 typedef boost::interprocess::interprocess_mutex MyMutex;
 typedef boost::interprocess::offset_ptr< SHGNGNode  > PoolPtr;
@@ -21,10 +22,12 @@ typedef boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex
  */
 struct SHGNGMessage{
     enum State{
+        NoState,
         Waiting,
         Processed
     };
     enum Type{
+        NoType,
         AddExamples, /**Interprocess:vector of GNGExample*/
         Request /**String, @note: for subset of request we can create more efficient communication protocol*/
     };
