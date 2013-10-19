@@ -25,10 +25,26 @@ struct SHGNGMessage{
         Processed
     };
     enum Type{
-        GNGExample, /**Interprocess:vector of GNGExample*/
-        GNGConfiguration, /**Struct GNGConfiguration*/
+        AddExamples, /**Interprocess:vector of GNGExample*/
         Request /**String, @note: for subset of request we can create more efficient communication protocol*/
     };
+
+   
+    int state;
+    int type;
+};
+
+/** Filled struct to pass add example SHGNGMessage
+ * @note All post message memory managment is held by server (if there is need of course)
+ * 
+ * count - number of examples
+ * dim - number of dimensions for example
+ * pointer_reference_name - pointer name to look up in shared memory
+ */
+struct SHGNGMessageAddExamples{
+    int count;
+    int dim;
+    std::string pointer_reference_name;
 };
 
 #endif	/* GNGDEFINES_H */

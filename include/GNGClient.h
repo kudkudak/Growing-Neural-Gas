@@ -8,6 +8,9 @@
 #ifndef GNGCLIENT_H
 #define	GNGCLIENT_H
 
+#include "GNGConfiguration.h"
+
+
 /** Handles communication with server through different communication channels */
 class GNGClient{
     GNGClient(){}
@@ -16,6 +19,11 @@ public:
     GNGClient(std::string process_identifier): process_identifier(process_identifier){
     
     
+    }
+    
+    
+    void addExamples(GNGConfiguration::DatabaseType databaseType, double * examples_encoding){
+        
     }
 };
 

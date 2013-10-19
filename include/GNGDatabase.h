@@ -36,8 +36,15 @@ typedef boost::interprocess::vector<GNGExample, SHGNGExampleDatabaseAllocator>  
  * 
  * Every database is casting its examples to this type, because it contains all the information needed by algorithm (position). All the
  * extensions are hidden from the algorithm (like probability).
+ * 
+ * Every GNGExample can be created from double[] vector, and should be possible to be interpreted as double[] vector (by getPositionPtr),
+ * which is in GNGExample O(1), but take longer for more sophisticated GNGExample classes
+ * 
  */
-struct GNGExample{
+class GNGExample{
+    
+protected:
+    GNGExample(){}
     int dim;
 public:
     GNGExample(const double * vect, int _dim):position(_dim), dim(_dim){ 
@@ -82,15 +89,26 @@ public:
         return dim;
     }
     
-    /** Hack, TODO: replace by [] operator */
+    /** Get double[] interpretation of GNGExample */
     const double  * getPositionPtr() const{
         return &this->position[0];
     }   
-    
-    
-
 };
 
+
+
+class GNGExampleProbabilistic : public GNGExample{
+public:
+    GNGExampleProbabilistic(const double * vect, int dim):GNGExample(dim+1){
+        memcpy(&this->position[0],vect,sizeof(double)*(this->getLength())+1); //TODO: +1 failure
+    }
+    GNGExampleProbabilistic(int dim):GNGExample(dim+1){
+        this->position[dim]=1.0;
+    }      
+    double getProbability() const{
+        return this->position[dim];
+    }
+};
 
 /** Database for growing neural gas interface
  * 
@@ -180,7 +198,7 @@ public:
     /**Construct GNGDatabaseProbabilistic
      *
      * @param database_mutex Mutex used for inner synchronization
-     * @param alc Object implementing vector functionality used for storage (note: creator should destruct it)
+     * @param alc Object implementing vector functionality used for storage (note: creator should destruct it) of *GNGExampleProbabilistic*
      * @param dim Dimensionality of object (note: without "probability dim")
      *
      */
@@ -198,23 +216,24 @@ public:
     GNGExample drawExample() const{
         database_mutex->lock();
         
-        GNGExample ex(this->getDim()+1); //casting up the tree
+        GNGExampleProbabilistic * ex; //casting up the tree
         do{ //rejection sampling
-         ex=(*g_database)[__int_rnd(0,g_database->size()-1)]; 
-        }while(ex.position[this->getDim()]>__double_rnd(0,1.0));
+         ex=&(*g_database)[__int_rnd(0,g_database->size()-1)]; 
+        }while(ex->position[this->getDim()]>__double_rnd(0,1.0));
 
 
         database_mutex->unlock();
-        return ex;
+        return GNGExample(&ex->position[0],this->getDim());
     }
 
-    void addExample(const GNGExample  * ex2){
+    void addExample(const GNGExample  * ex2){  
+        if(ex2->getLength() != this->getDim()) throw invalid_argument("Wrong example dimensionality");
         
-        if(ex2->getLength() != this->getDim() + 1) throw invalid_argument("Wrong example dimensionality");
+        const GNGExampleProbabilistic * ex2_casted = reinterpret_cast<const GNGExampleProbabilistic*>(ex2);
         
         database_mutex->lock();
         if(g_database->size() == g_database->capacity()) grow_database();
-        g_database->push_back(*ex2); //operator= kopiowania, ale jest to struct wiec nie trzeba nic pisac
+        g_database->push_back(*ex2_casted); //operator= kopiowania, ale jest to struct wiec nie trzeba nic pisac
         database_mutex->unlock();
     }
 private:

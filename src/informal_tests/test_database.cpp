@@ -120,16 +120,16 @@ BoostSHMemoryAllocator * boostSHMemoryAllocator;
     config.databaseType = GNGConfiguration::DatabaseProbabilistic;
     config.graph_storage = GNGConfiguration::SharedMemory;
     GNGServer::setConfiguration(config); 
-    double * pos = new double[4];
+    
+    double * vect = new double[4*10000];
     for (int i = 0; i < 10000; ++i) {
-        pos[0] = __double_rnd(0, 1);
-        pos[1] = __double_rnd(0, 1);
-        pos[2] = __double_rnd(0, 1);
-        pos[3] = __double_rnd(0, 1);
-        GNGExample * ex = new GNGExample(pos, 4);
-        GNGServer::getInstance().getDatabase()->addExample(ex);
-        delete ex;
+        vect[0+(i-1)*4] = __double_rnd(0, 1);
+        vect[1+(i-1)*4] = __double_rnd(0, 1);
+        vect[2+(i-1)*4] = __double_rnd(0, 1);
+        vect[3+(i-1)*4] = __double_rnd(0, 1);
     }
+    
+    
     GNGServer::getInstance().run();
     
     REPORT("running");

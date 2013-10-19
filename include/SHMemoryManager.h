@@ -118,6 +118,7 @@ public:
     
     bool deallocate(void * ptr, std::string segment_name);   
     
+    
     virtual ~SHMemoryManager(){
         #ifdef DEBUG
         dbg.push_back(10, "Removing segments");
