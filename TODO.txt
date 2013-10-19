@@ -1,3 +1,9 @@
+--Modern TODO:
+* GNGServer: move uniformgrid,lazyheap to parameters list
+* GNGServer: move l argument inside
+
+
+
 ---terminateServer() nie niszczy wszystkiego - po stworzeniu 2 servera cos nie dziala
 ---funkcje uruchamiaja znowu server - musi byc funkcja sprawdzajaca czy server idzie
 

@@ -17,10 +17,17 @@
  */
 class GNGConfiguration{
 public:
-    GNGConfiguration(): gngDim(-1), databaseType(None), serverId(-1){}
+    GNGConfiguration(): dim(-1), serverId(-1){}
+
+
+    enum GraphNodeStorage{
+        NoneGraphNodeStorage,
+        SharedMemory,
+        Local
+    } graph_storage;
     
     enum DatabaseType{
-        None,
+        NoneDatabaseType,
         DatabaseSimple,
         DatabaseProbabilistic
     };
@@ -44,17 +51,18 @@ public:
     /**Epsilion v*/
     double eps_v;//=0.05;
     /**Memory bound*/
-    int memory_bound;
+    int graph_memory_bound;
     /**Epsilion n*/
     double eps_n;//=0.0006;   
     
     /**Dimensionality of examples*/
-    int gngDim;
+    int dim;
     /**Type of used database*/
     DatabaseType databaseType;
     /**Id of the server*/
     int serverId;
     
+   
     
     /** Get default configuration of GNG Server */
     static GNGConfiguration getDefaultConfiguration(){
@@ -69,10 +77,12 @@ public:
         default_configuration.axis.push_back(1.0);  
             
         default_configuration.serverId = 0;
-        default_configuration.gngDim = 3;
+        default_configuration.dim = 3;
         default_configuration.databaseType = DatabaseSimple;
         default_configuration.max_nodes=1000;       
         default_configuration.uniformgrid_optimization=true; 
+        default_configuration.graph_memory_bound = 100000*sizeof(double);
+        
         default_configuration.lazyheap_optimization=true;       
         default_configuration.max_age=200;        
         default_configuration.alpha=0.95;     

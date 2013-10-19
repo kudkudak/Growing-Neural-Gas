@@ -23,10 +23,6 @@
 #include <boost/thread.hpp>
 #include <boost/date_time.hpp>
 
-typedef boost::posix_time::ptime Time;
-typedef boost::posix_time::time_duration TimeDuration;
-
-
 
 
 
@@ -38,7 +34,56 @@ typedef boost::posix_time::time_duration TimeDuration;
  * @note TODO: Implement GNG on GPU.
  */
 class GNGAlgorithm { 
-    typedef std::list<int> Node;
+public:
+
+    /** Run main loop of the algorithm*/
+    void runAlgorithm();  
+    
+    /**Construct main algorithm object, that will hold mid-results
+     * @param g SHGNGGraph object implementing graph interface
+     * @param db GNGDatbase object 
+     * @param control GNGAlgorithmControl object (*warning*: will become obsolete in near future)
+     * @param boundingbox_origin Starting point for reference system
+     * @param boundingbox_axis Axis lengths for reference system
+     * @param l Starting box size for uniform grid. Advised to be set to axis[0]/4 (TODO: move to the end of parameters list)
+     * @param max_nodes Maximum number of nodes
+     * @param max_age Maximum age of edge
+     * @param alpha See original paper(TODO: add description)
+     * @param betha See original paper (TODO: add description)
+     * @param lambda Every lambda new vertex is added
+     * @param eps_v See original paper(TODO: add description)
+     * @param eps_n See original paper (TODO: add description)
+     */
+    GNGAlgorithm(SHGNGGraph & g,GNGDatabase* db, GNGAlgorithmControl * control, 
+        double * boundingbox_origin, double * boundingbox_axis, double l,int max_nodes=1000,
+        int max_age=200, double alpha=0.95, double betha=0.9995, double lambda=200,
+        double eps_v=0.05, double eps_n=0.0006);
+   
+    bool stoppingCriterion(){ return m_g.getNumberNodes()>m_max_nodes; }
+    double getAccumulatedError() const {   return m_accumulated_error; }   
+    const SHGNGGraph & get_graph(){ return m_g; }
+    
+    void resetUniformGrid(double * orig, double *axis, double l) {
+        ug.purge(orig,axis,l);
+        int maximum_index = m_g.getMaximumIndex();
+
+        REP(i, maximum_index + 1) {
+            if (m_g[i].occupied) ug.insert(m_g[i].position, m_g[i].nr);
+        }       
+    }
+    
+    
+    
+    void setToggleUniformGrid(bool value){ m_toggle_uniformgrid=value;}
+    void setToggleLazyHeap(bool value){ m_toggle_lazyheap=value;}
+    void setMaxNodes(int value){m_max_nodes = value;}
+    
+    int CalculateAccumulatedError();
+    void TestAgeCorrectness();  
+     
+    virtual ~GNGAlgorithm(){}
+private:
+   typedef std::list<int> Node;
     
     double m_error; //error of the network
     int m_lambda; //lambda parameter
@@ -137,46 +182,7 @@ class GNGAlgorithm {
             
     void SetError(SHGNGNode * node, double error){
         node->error = error;
-    }      
-public:
-    void setToggleUniformGrid(bool value){ m_toggle_uniformgrid=value;}
-    void setToggleLazyHeap(bool value){ m_toggle_lazyheap=value;}
-    void setMaxNodes(int value){m_max_nodes = value;}
-    
-    
-    GNGAlgorithm(SHGNGGraph & g,GNGDatabase* db, GNGAlgorithmControl * control, 
-            int start_number,double * boundingbox_origin, double * boundingbox_axis, double l,int max_nodes=1000,
-
-        	int max_age=200, double alpha=0.95, double betha=0.9995, double lambda=200,
-        		double eps_v=0.05, double eps_n=0.0006
-
-    );
-   
-    bool stoppingCriterion(){ return m_g.getNumberNodes()>m_max_nodes; }
-    double getAccumulatedError() const {   return m_accumulated_error; }   
-    const SHGNGGraph & get_graph(){ return m_g; }
-    
-    void resetUniformGrid(double * orig, double *axis, double l) {
-        ug.purge(orig,axis,l);
-        int maximum_index = m_g.getMaximumIndex();
-
-        REP(i, maximum_index + 1) {
-            if (m_g[i].occupied) ug.insert(m_g[i].position, m_g[i].nr);
-        }       
-    }
-    
-    
-    
-
-    int CalculateAccumulatedError();
-
-    void TestAgeCorrectness();  
-   
-    void runAlgorithm();
-   
-    virtual ~GNGAlgorithm(){}
-private:
-    
+    }          
 };
 
 
@@ -195,7 +201,8 @@ struct GNGGraphAccessHack{
     }
 };
 
-
+typedef boost::posix_time::ptime Time;
+typedef boost::posix_time::time_duration TimeDuration;
 
 
 

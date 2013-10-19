@@ -38,6 +38,7 @@ public:
 
 class BoostSHMemoryAllocator : public MemoryAllocator{
     BoostSHMemoryAllocator(){}
+//    size_t allocated;
     boost::interprocess::managed_shared_memory * msm_ptr;
 public:
     BoostSHMemoryAllocator(boost::interprocess::managed_shared_memory * msm_ptr): msm_ptr(msm_ptr){
@@ -48,12 +49,18 @@ public:
                 (msm_ptr->allocate(size));
         if (!ptr) 
             throw BasicException("Memory allocation error");
+        
+//        
+//        this->allocated += size;
+//        
         return ptr;
     }
 
 
     bool deallocate(void * ptr) {
         msm_ptr->deallocate(ptr);
+        
+        
         //TODO: any error handling ? why no documentation..
         return true;
     }

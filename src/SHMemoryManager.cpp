@@ -29,7 +29,7 @@ bool SHMemoryManager::deallocate(void * ptr, std::string segment_name) {
 SHMemoryManager::SHMemoryManager(std::string process_identifier = "Server0"):
 process_identifier(process_identifier){
     #ifdef DEBUG
-        dbg.push_back(10, "SHMemoryManager::SHMemoryManager object creation success");
+        dbg.push_back(10, "SHMemoryManager::SHMemoryManager object creation success of "+process_identifier);
     #endif    
 }
 

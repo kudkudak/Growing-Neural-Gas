@@ -66,9 +66,8 @@ SHGNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
 SHGNGNode * GNGGraphAccessHack::pool = 0;
 
 GNGAlgorithm::GNGAlgorithm(SHGNGGraph & g, GNGDatabase* db,
-        GNGAlgorithmControl * control, int start_number, double * boundingbox_origin,
+        GNGAlgorithmControl * control, double * boundingbox_origin,
 		double * boundingbox_axis, double l, int max_nodes,
-
 		int max_age, double alpha, double betha, double lambda,
 		double eps_v, double eps_n
 ) :

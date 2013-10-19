@@ -105,9 +105,12 @@ public:
         //TODO: add throwing error that such segment exists (or flag overwrite
         //in function params)
     	boost::interprocess::shared_memory_object::remove(segment_name.c_str());
+        
 
     	boost::interprocess::managed_shared_memory *  segment = new boost::interprocess::managed_shared_memory(create_only, segment_name.c_str(), min_size);
-
+        #ifdef DEBUG
+             dbg.push_back(6, "SHMemoryManager()::constructed segment "+segment_name);
+        #endif
     	this->m_segments[segment_name] = segment; 
     }
    

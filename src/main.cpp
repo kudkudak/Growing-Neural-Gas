@@ -38,14 +38,6 @@ GNGServer * gngServer;
 //Global variables
 int GNG_DIM, GNG_EX_DIM;
 
-void gngTrainingThread(){
-    dbg.set_debug_level(10);
-    while(gngServer->gngDatabase->getSize()<2000);
-    #ifdef DEBUG
-    dbg.push_back(3,"gngTrainingThread::proceeding to algorithm");
-    #endif
-    gngServer->gngAlgorithm->runAlgorithm();
-}
 
 
 struct Vertex{
@@ -68,8 +60,8 @@ void gngDatabaseThread(){
 
     while(true){
        boost::this_thread::sleep(workTime);
-       REPORT(gngServer->gngGraph->getNumberNodes()); 
-       REPORT(gngServer->gngAlgorithm->CalculateAccumulatedError());
+       REPORT(gngServer->getGraph()->getNumberNodes()); 
+       REPORT(gngServer->getAlgorithm()->CalculateAccumulatedError());
     }
 
 }
@@ -104,7 +96,7 @@ double * uploadOBJ(const char * filename){
         }
 
     
-        gngServer->gngDatabase->addExample(new GNGExample(vertex,3));
+        gngServer->getDatabase()->addExample(new GNGExample(vertex,3));
     }
     write_array(bbox,bbox+6);
     return bbox;

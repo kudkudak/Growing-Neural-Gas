@@ -15,6 +15,8 @@
 #include <boost/interprocess/offset_ptr.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 
+#include <boost/shared_ptr.hpp>
+
 #include "SHMemoryManager.h"
 #include "Utils.h"
 #include "DebugCollector.h"
@@ -154,7 +156,7 @@ class GNGDatabaseProbabilistic: public GNGDatabase
     /** Pointer to storage vector. Note that it is a pointer, because we can choose quite strange storage policy (file-based, network-based),
      * and it is convenient to be able to specify it by passing object that is already configured and constructed.
      */
-    VectorStorage * g_database;
+    boost::shared_ptr<VectorStorage> g_database;
     void grow_database(){
         #ifdef DEBUG
         dbg.push_back(1,"GNGDatabaseSimple::resizing");
@@ -174,7 +176,15 @@ public:
         return ret;
     }
 
-    GNGDatabaseProbabilistic(Mutex * database_mutex, VectorStorage* alc, int dim): 
+    
+    /**Construct GNGDatabaseProbabilistic
+     *
+     * @param database_mutex Mutex used for inner synchronization
+     * @param alc Object implementing vector functionality used for storage (note: creator should destruct it)
+     * @param dim Dimensionality of object (note: without "probability dim")
+     *
+     */
+    GNGDatabaseProbabilistic(Mutex * database_mutex, boost::shared_ptr<VectorStorage> alc, int dim): 
     database_mutex(database_mutex),index(0), g_database(alc) , GNGDatabase(dim){
         g_database->reserve(100);
         __init_rnd();
