@@ -52,16 +52,17 @@ void  UniformGrid<VectorContainer, ListContainer, T>::new_l(double l) {
 template<class VectorContainer, class ListContainer, class T>
 void UniformGrid<VectorContainer, ListContainer, T>::scanCell(int k, double* query) {
     double dist_candidate;
-   
     FOREACH(node, m_grid[k]){
-
+   
         dist_candidate = m_dist_fnc(*node, query);
 
+        
         if (s_found_cells_dist[0] <0 || dist_candidate <= s_found_cells_dist[0]) {
             s_found_cells_dist[0] = dist_candidate;
             s_found_cells[0] = *node;
 
             for (int j = 1; j < s_search_query; ++j) {
+
                 if (s_found_cells_dist[j] <0 || dist_candidate <= s_found_cells_dist[j]) {
                     std::swap(s_found_cells[j], s_found_cells[j - 1]);
                     std::swap(s_found_cells_dist[j], s_found_cells_dist[j - 1]);
@@ -167,11 +168,12 @@ void UniformGrid<VectorContainer, ListContainer, T>::purge(double *origin, doubl
 
 template<class VectorContainer, class ListContainer, class T>
 void UniformGrid<VectorContainer, ListContainer, T>::purge(double *origin, int* dim, double l) {
+
     m_l = l;
     memcpy(&m_dim[0], dim, sizeof (int) *GNG_DIM);
     memcpy(&m_origin, origin, sizeof (double) *GNG_DIM);
 
-    write_array(m_dim, m_dim + GNG_DIM);
+    write_array(m_dim, m_dim + GNG_DIM); //to jest ten cout
 
     m_density = 0.0;
     m_density_threshold = 0.1;
@@ -186,7 +188,12 @@ void UniformGrid<VectorContainer, ListContainer, T>::purge(double *origin, int* 
         new_size *= m_dim[i];
     }
 
+#ifdef DEBUG
+    dbg.push_back(3, "UniformGrid::purge new size "+to_string<int>(new_size));
+#endif
+    
     m_grid.resize(new_size);
+ 
 }
 
 
@@ -214,6 +221,7 @@ template<class VectorContainer, class ListContainer, class T >
 
 T * UniformGrid<VectorContainer, ListContainer, T>::findNearest(double *p, int n) { //returns indexes (values whatever)
     s_search_query = n;
+
     
     #ifdef DEBUG
     dbg.push_back(2,"UniformGird:: search for "+write_cnt_str(p,p+GNG_DIM));
@@ -237,13 +245,13 @@ T * UniformGrid<VectorContainer, ListContainer, T>::findNearest(double *p, int n
     #endif
 
     if(!_inside(center_id)) {
-#ifdef DEBUG
-        dbg.push_back(5, "UniformGird:: search for " + write_cnt_str(p, p + GNG_DIM));
-#endif
+        #ifdef DEBUG
+                dbg.push_back(5, "UniformGird:: search for " + write_cnt_str(p, p + GNG_DIM));
+        #endif
             #ifdef DEBUG
-    dbg.push_back(5,"UniformGird:: search for "+to_string(center_id));
-    #endif
-        return 0;
+             dbg.push_back(5,"UniformGird:: search for "+to_string(center_id));
+             #endif
+       return 0;
     
     }
     double border, border_squared, tmp;
@@ -251,10 +259,14 @@ T * UniformGrid<VectorContainer, ListContainer, T>::findNearest(double *p, int n
     s_found_cells[0] = s_found_cells[1] = -1;
 
     //REP(i,10000) TMP[i]=false;
-
+    #ifdef DEBUG
+    dbg.push_back(0,"UniformGird:: initializing serach");
+    #endif
     //init of the search
     scanCell(center_id, s_query);
-
+    #ifdef DEBUG
+    dbg.push_back(0,"UniformGird:: initializing serach");
+    #endif
 
     for (int i = 0; i < GNG_DIM; ++i) {
         tmp = abs((p[i] - m_origin[i] - center[i] * m_l)) < abs((p[i] - m_origin[i] - (center[i] + 1) * m_l)) ?
@@ -263,6 +275,9 @@ T * UniformGrid<VectorContainer, ListContainer, T>::findNearest(double *p, int n
         // cout << tmp << endl;
         if (border > tmp || i == 0) border = tmp;
     }
+    #ifdef DEBUG
+    dbg.push_back(0,"UniformGird:: initializing serach");
+    #endif
 
     border_squared = border*border;
 
@@ -272,13 +287,14 @@ T * UniformGrid<VectorContainer, ListContainer, T>::findNearest(double *p, int n
     #endif
 
     s_radius = 0;
-#ifdef DEBUG
-        dbg.push_back(2, "UniformGird:: scanned straightforward cell proceeding to crawling");
-#endif
+    #ifdef DEBUG
+            dbg.push_back(2, "UniformGird:: scanned straightforward cell proceeding to crawling");
+    #endif
     while
         (
             !searchSuccessful(border_squared)
             ) {
+        
         ++s_radius;
         border += m_l;
         border_squared = border*border;
@@ -286,9 +302,9 @@ T * UniformGrid<VectorContainer, ListContainer, T>::findNearest(double *p, int n
 
         if (!scanCorners()) break; //false if no cells to check (no cell checked)
     }
-#ifdef DEBUG
-        dbg.push_back(2, "UniformGird:: scanning done");
-#endif
+    #ifdef DEBUG
+            dbg.push_back(2, "UniformGird:: scanning done");
+    #endif
 
 
     int * ret = new int[2];

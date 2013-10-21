@@ -24,19 +24,17 @@
 typedef boost::posix_time::ptime Time;
 typedef boost::posix_time::time_duration TimeDuration;
 
-//when reading - adding new edges
-//bad design hack
-struct GNGGraphAccessHack{
-    static GNGNode * pool;
-    static double dist(int index, double *position){
-        double x=0.0;
-        //arma!
-        REP(i,GNG_DIM){
-            x+=(pool[index].position[i] - position[i])*(pool[index].position[i] - position[i]);
-        }
-        return x;
+//typedef double (*fptr)(int, double*);
+//fptr get_dist_hack();
+extern GNGNode * global_pool;
+inline double dist(int index, double * position){
+    double x=0.0;
+    //arma!
+    REP(i,GNG_DIM){
+        x+=(global_pool[index].position[i] - position[i])*(global_pool[index].position[i] - position[i]);
     }
-};
+    return x;    
+}
 
 
 

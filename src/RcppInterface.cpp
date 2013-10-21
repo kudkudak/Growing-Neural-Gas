@@ -113,10 +113,10 @@ RcppExport SEXP GNGRunServer() {
     	gngDatabase = new GNGDatabaseProbabilistic(&gngAlgorithmControl->database_mutex, database_vec);
 
 
-    gngGraph = shm->get_segment(0)->construct<GNGGraph > ("gngGraph")(&gngAlgorithmControl->grow_mutex, max_nodes);
+    gngGraph = shm->get_segment(0)->construct<GNGGraph > ("gngGraph")(&gngAlgorithmControl->grow_mutex, max_nodes); //TODO: max_nodes tutaj !! inaczej bylby blad : poprawic
     gngAlgorithm = new GNGAlgorithm
             (*gngGraph, gngDatabase, gngAlgorithmControl,
-            max_nodes, orig, axis, axis[0] / 4.0, max_nodes,
+            max_nodes, orig, axis, axis[0], max_nodes,
     		max_age, alpha, betha, lambda, //params for the algorithm
     		eps_v, eps_n
             );

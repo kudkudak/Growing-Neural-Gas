@@ -16,7 +16,14 @@ GNGConvertToIGraphAnyDim<-function(sv, dim){
 	#adjlist
 	graph.adjlist(adjlist)
 }
-
+GNGVisualiseIGraph<-function(g, subgraph_v){
+ 	g<-as.undirected(g)
+	
+	L<-cbind(V(g)$x, V(g)$y)
+	l = fastgreedy.community(as.undirected(g))
+ 	col<-rainbow(length(l))
+ 	plot.igraph(g,vertex.size=3.0,vertex.label=NA,vertex.color=col[membership(l)],layout=L)
+}
 GNGConvertToIGraph<-function(sv){
 	sv$pauseServer()
 	sv$updateBuffer()

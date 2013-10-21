@@ -7,6 +7,8 @@
 
 #include "GNGAlgorithm.h"
 using namespace std;
+GNGNode * global_pool;
+
 GNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
     GNGNode ** largest = new GNGNode*[2];
 
@@ -62,7 +64,7 @@ GNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
 }
 
 
-GNGNode * GNGGraphAccessHack::pool = 0;
+//GNGNode * GNGGraphAccessHack::pool = 0;
 
 GNGAlgorithm::GNGAlgorithm(GNGGraph & g, GNGDatabase* db, GNGAlgorithmControl * control, int start_number, double * boundingbox_origin,
 		double * boundingbox_axis, double l, int max_nodes,
@@ -78,18 +80,20 @@ m_density_threshold(0.1), m_grow_rate(1.5),
 errorHeap(m_g) {
     m_toggle_uniformgrid=m_toggle_lazyheap=true;
     
- 
+    global_pool = m_g.getPool();
     
-    //m_g.init(start_number);
-    GNGGraphAccessHack::pool = m_g.getPool();
-    ug.setDistFunction(GNGGraphAccessHack::dist);
+    ug.setDistFunction(dist);
+
+    
     m_betha_powers_size = m_lambda * 10;
     m_betha_powers = new double[m_betha_powers_size];
     REP(i, m_betha_powers_size) m_betha_powers[i] = std::pow(m_betha, (double) (i));
 
     m_betha_powers_to_n = new double[m_max_nodes * 2];
     REP(i, m_max_nodes * 2) m_betha_powers_to_n[i] = std::pow(m_betha, m_lambda * (double) (i));
-
+    
+    
+    
 }
 
 void GNGAlgorithm::RandomInit() {
@@ -627,7 +631,8 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
             // if(iteration>3) return;
              
             ++iteration;
-            GNGGraphAccessHack::pool = m_g.getPool(); //bad design
+//            GNGGraphAccessHack::pool = m_g.getPool(); //bad design
+            global_pool = m_g.getPool();
             #ifdef DEBUG
             dbg.push_back(0,"GNGAlgorithm::draw example");
             #endif
