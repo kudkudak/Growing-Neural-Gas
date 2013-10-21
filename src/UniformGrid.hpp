@@ -40,8 +40,8 @@ void UniformGrid<VectorContainer, ListContainer, T>::print3d() {
 
 template<class VectorContainer, class ListContainer, class T>
 void  UniformGrid<VectorContainer, ListContainer, T>::new_l(double l) {
-    double *org = new double[3];
-    double *axis = new double[3];
+    double *org = new double[GNG_DIM];
+    double *axis = new double[GNG_DIM];
     memcpy(org, m_origin, GNG_DIM * sizeof (double));
     memcpy(axis, m_axis, GNG_DIM * sizeof (double));
     purge(org, axis, l);

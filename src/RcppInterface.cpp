@@ -21,6 +21,7 @@ double lambda=200;
 double eps_v=0.05;
 int memory_bound;
 double eps_n=0.0006;
+int utility_option = 0;
 
 //check what is reffered int ptr-> and implement as standalones
 
@@ -119,6 +120,12 @@ RcppExport SEXP GNGRunServer() {
     		max_age, alpha, betha, lambda, //params for the algorithm
     		eps_v, eps_n
             );
+    
+    
+    REPORT(uniformgrid);
+    REPORT(lazyheap);
+    
+    
     gngAlgorithm->setToggleUniformGrid(uniformgrid);
     gngAlgorithm->setToggleLazyHeap(lazyheap);
     gngAlgorithmControl->setRunningStatus(false); //skrypt w R inicjalizuje  

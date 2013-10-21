@@ -135,7 +135,7 @@ library("rgl")
 
 iteration<-0
 
-clear3d(type="all")
+rgl.clear()
 rgl.light()
 
 
@@ -157,6 +157,8 @@ rm(nodes)
 }
 #not that good........
 nodes <- sv$getBufferSize()
+print(nodes)
+
 
 x_lines <- c(0,0)
 y_lines <- c(0,0)
@@ -220,9 +222,9 @@ print("::reading was succesful")
 
 zscale <- 1
 
-  clear3d(type="all")
+  rgl.clear()
   rgl.light()
-  rgl.bg(color="bisque")
+  #rgl.bg(color="bisque")
 
  
 cx <- c(1:(nodes-1))
@@ -251,8 +253,24 @@ sv$runServer()
 
 
 
+GNGVisualiseIGraph<-function(g,radius=0.45,CM){
 
 
+}
+
+
+
+EvaluateError<-function(client, iterations){
+	iteration<-0
+	error<-0
+	while(1){
+		iteration<-iteration+1
+		Sys.sleep(0.5)
+		error<- error+client$getAccumulatedError()
+		if(iteration>iterations) break
+	}
+	return(error/iterations)
+}
 
 LearningCurve<-function(client, iterations){
 	iteration<-0
@@ -262,6 +280,7 @@ LearningCurve<-function(client, iterations){
 		Sys.sleep(0.5)
 		errors[iteration] <- client$getAccumulatedError()
 		plot(errors,type="l")
+		if(iteration>iterations) break
 	}
 	return(TRUE)
 }
@@ -269,7 +288,4 @@ LearningCurve<-function(client, iterations){
 GNGLearningCurve<-function(client, iterations){
 	parallel(LearningCurve())
 }
-
-
-
 

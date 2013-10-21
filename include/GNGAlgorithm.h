@@ -47,6 +47,8 @@ struct GNGGraphAccessHack{
 class GNGAlgorithm { 
     typedef std::list<int> Node;
     
+    int m_utility_option;
+    
     double m_error; //error of the network
     int m_lambda; //lambda parameter
     double m_eps_v, m_eps_n; //epsilon of the winner and of the neighbour
@@ -65,7 +67,34 @@ class GNGAlgorithm {
     
     double m_density_threshold,m_grow_rate;
   
+    
+    
     int s,c;
+    
+    
+public:
+    enum UtilityOptions{
+        None,
+        BasicUtility
+    };
+private:
+    
+    //!!! Note: this code is not optimal and is inserted only for research purposes
+    //TODO: optimize
+    vector<double> m_local_utility;
+    
+    double get_utility(int i){
+        if(i+1>m_local_utility.size()) throw "Illegal utility access";
+        return m_local_utility[i];
+    }
+    
+    void set_utility(int i, double u){
+        if(i+1>m_local_utility.size()) m_local_utility.resize(2*m_local_utility.size());
+        m_local_utility[i] = u;
+    }
+    
+    
+       
     
     GNGGraph & m_g; 
     GNGDatabase* g_db;
@@ -136,6 +165,14 @@ class GNGAlgorithm {
         node->error = error;
     }      
 public:
+    void setUtilityOption(int option){
+        m_utility_option = option;
+        if(m_utility_option !=0 && (m_toggle_uniformgrid==true || m_toggle_lazyheap==true)) throw "Exception"; //todo: poprawic
+        if(option != 0){
+            m_local_utility.clear();
+            m_local_utility.resize(100);
+        }
+    }
     void setToggleUniformGrid(bool value){ m_toggle_uniformgrid=value;}
     void setToggleLazyHeap(bool value){ m_toggle_lazyheap=value;}
     void setMaxNodes(int value){m_max_nodes = value;}

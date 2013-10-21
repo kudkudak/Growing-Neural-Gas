@@ -78,6 +78,8 @@ m_density_threshold(0.1), m_grow_rate(1.5),
 errorHeap(m_g) {
     m_toggle_uniformgrid=m_toggle_lazyheap=true;
     
+ 
+    
     //m_g.init(start_number);
     GNGGraphAccessHack::pool = m_g.getPool();
     ug.setDistFunction(GNGGraphAccessHack::dist);
@@ -293,6 +295,15 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
 
     double error = m_g.getDist(nearest[0]->position, ex->position);
 
+    if(this->m_utility_option == BasicUtility){
+        #ifdef DEBUG
+                dbg.push_back(4, "GNGAlgorithm::Adapt::setting utility");
+        #endif
+        double error_2 = m_g.getDist(nearest[1]->position, ex->position);
+        
+        this->set_utility(nearest[0]->nr, this->get_utility(nearest[0]->nr)+error_2 - error);
+    }
+    
     #ifdef DEBUG
     dbg.push_back(3,"GNGAlgorith::Adapt::increasing error");
     #endif
@@ -382,10 +393,10 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
 
         }
     }
-            #ifdef DEBUG
-            dbg.push_back(3,"GNGAlgorith::Adapt::Scan completed");
-            #endif
-     if(!m_toggle_lazyheap) DecreaseAllErrors();
+    #ifdef DEBUG
+    dbg.push_back(3,"GNGAlgorith::Adapt::Scan completed");
+    #endif
+     
     //DecreaseAllErrorsNew();
 
     t2 = boost::posix_time::microsec_clock::local_time();
@@ -599,11 +610,13 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
         int size = g_db->getSize();
         dbg.push_back(2, "GNGAlgorithm::check size of the db " + to_string(size));
 #endif    
-    }  RandomInit();
+    } 
+     RandomInit();
      c=0;
   
             #ifdef DEBUG
             dbg.push_back(3,"GNGAlgorithm::init successful, starting the loop");
+            dbg.push_back(3,"GNGAlgorithm::"+to_string<int>(GNG_DIM)+" dimensionality");
             #endif    
     t3 = boost::posix_time::microsec_clock::local_time();
     int iteration = 0;
@@ -613,7 +626,7 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
         for (s = 0; s < m_lambda; ++s) { //global counter!!
             // if(iteration>3) return;
              
-           ++iteration;
+            ++iteration;
             GNGGraphAccessHack::pool = m_g.getPool(); //bad design
             #ifdef DEBUG
             dbg.push_back(0,"GNGAlgorithm::draw example");
@@ -621,15 +634,23 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
             GNGExample ex = g_db->drawExample();
             
             Adapt(&ex);
+            if(!m_toggle_lazyheap && s!=m_lambda-1) DecreaseAllErrors();
+            
             // ug.print3d();
         }
+        
+        
+        #ifdef DEBUG
+       dbg.push_back(1,"GNGAlgorithm::add new node");
+       #endif       
         t1 = boost::posix_time::microsec_clock::local_time();
         AddNewNode();
-        if (ug.getDensity() > m_density_threshold) ResizeUniformGrid();
+        if (ug.getDensity() > m_density_threshold && m_toggle_uniformgrid) ResizeUniformGrid();
         t2 = boost::posix_time::microsec_clock::local_time();
         dt = t2 - t1;
         times["resize"] += dt.total_microseconds();
         ++c; //epoch
+        if(!m_toggle_lazyheap) DecreaseAllErrors();
    
 
     }

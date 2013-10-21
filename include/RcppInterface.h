@@ -10,7 +10,7 @@
 #undef DEBUG
 
 
-#include <Rcpp.h>
+
 #include <RcppArmadillo.h>
 
 #include "GNG.h"

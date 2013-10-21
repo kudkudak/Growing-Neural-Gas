@@ -34,6 +34,7 @@
 
 #include <stdlib.h>
 #include "Utils.h"
+extern DebugCollector dbg;
 typedef boost::interprocess::interprocess_mutex MyMutex;
 struct GNGAlgorithmControl {
     bool m_pause;
@@ -45,8 +46,14 @@ struct GNGAlgorithmControl {
         boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> lock(m_pause_mutex);
 
         while (m_pause) {
-        	if(m_terminate) exit(EXIT_SUCCESS);
-            m_pause_changed.wait(lock);
+        	if(m_terminate) {
+#ifdef DEBUG
+                    dbg.push_back(100,"GNGAlgorithmicControl::killing server");
+#endif
+                    exit(EXIT_SUCCESS);
+                
+                }
+                    m_pause_changed.wait(lock);
         }
     }
     void setRunningStatus(bool new_value) {
