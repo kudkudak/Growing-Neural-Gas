@@ -40,14 +40,13 @@ GNGConvertToIGraph<-function(sv){
 	k<-0
 	for(i in (1:(sv$getBufferSize()))){
 		
-		node<-sv$getNodeWithParam(i-1) #indexing
+		node<-sv$getNode(i-1) #indexing
 		if(node[1]==0) print("ERRRRRRRRRRRROR")		
 		x_pos[i,1]<-node[2]
 		y_pos[i,1]<-node[3]
 		z_pos[i,1]<-node[4]
-		density[i,1]<-node[5]
-		if(length(node)>6){
-			for(j in  (6: (length(node)-1)  )     ){ #-1 bo error jes
+		if(length(node)>4){
+			for(j in  (5: (length(node))  )     ){ #-1 bo error jes
 				if(node[j]==-1) {
 					print(node[j])
 					print(i)				

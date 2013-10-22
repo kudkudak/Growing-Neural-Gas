@@ -39,6 +39,7 @@ public:
     }
     
     double getAccumulatedErrorShare(){
+        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         GNGNode * nodes = getPoolShare();
         double error=0.0;
         REP(i,m_maximum_index+1){

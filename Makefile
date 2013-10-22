@@ -4,9 +4,9 @@
 #rcpp include flags (in readme)
 CC=g++
 CINCLUDE=-I./include -I./src -I/home/staszek/usr/include -I/usr/share/R/include -I/usr/local/lib/R/site-library/Rcpp/include -I/usr/local/lib/R/site-library/RcppArmadillo/include
-CLIBS= -O2 -lboost_system -lpthread -lrt -lboost_thread
+CLIBS=  -lboost_system -lpthread -lrt -lboost_thread
 RFLAGS=$(shell Rscript scripts/generateflags.r)
-CFLAGS=-fPIC #-DDEBUG
+CFLAGS=-fPIC -DDEBUG
 
 
 BUILD_DIR=build/performance

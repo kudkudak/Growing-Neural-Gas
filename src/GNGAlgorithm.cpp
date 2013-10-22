@@ -372,21 +372,26 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
             int nr = edg->nr;
             edg = m_g.removeEdge(nearest[0]->nr, edg);
             if (edg == nearest[0]->edges.end()) break;
-            BYPASS = true;
+            BYPASS = true; //foreach will add one anyway
             if (m_g[nr].edgesCount == 0) {
-                          #ifdef DEBUG
-            dbg.push_back(6,"GNGAlgorith:: remove node because no edges");
-            #endif
-               if(m_toggle_uniformgrid)  ug.remove(m_g[nr].position);
+                #ifdef DEBUG
+                dbg.push_back(6,"GNGAlgorith:: remove node because no edges");
+                #endif
+                if(m_toggle_uniformgrid)  ug.remove(m_g[nr].position);
+                #ifdef DEBUG
+
+                dbg.push_back(8,"GNGAlgorithm::Adapt() Erasing node "+to_string<int>(nr));
+                dbg.push_back(8, "GNGAlgorithm::Adapt()  First coordinate "+to_string<double>(m_g[nr].position[0]));
+                 #endif
                 m_g.deleteNode(nr);
             }
             if (m_g[nearest[0]->nr].edgesCount == 0) {
-                                          #ifdef DEBUG
-            dbg.push_back(6,"GNGAlgorith:: remove node because no edges");
-            #endif
-                if(m_toggle_uniformgrid) ug.remove(m_g[nearest[0]->nr].position);
-                m_g.deleteNode(nearest[0]->nr);
-                break;
+                 #ifdef DEBUG
+                dbg.push_back(6,"GNGAlgorithm::Adapt() remove node because no edges");
+                #endif
+                    if(m_toggle_uniformgrid) ug.remove(m_g[nearest[0]->nr].position);
+                    m_g.deleteNode(nearest[0]->nr);
+                    break;
             }
             #ifdef DEBUG
             dbg.push_back(3,"GNGAlgorith::Adapt::Removal completed");
@@ -642,6 +647,17 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
             if(!m_toggle_lazyheap && s!=m_lambda-1) DecreaseAllErrors();
             
             // ug.print3d();
+        
+            #ifdef DEBUG
+                for (int i = 0; i <= m_g.getMaximumIndex(); ++i) { //another idea for storing list of actual nodes?
+
+                       if (m_g[i].occupied && m_g[i].edgesCount ==0) {
+                           REPORT("Error at "+to_string<int>(i));
+                       }
+                }
+
+
+            #endif
         }
         
         
