@@ -16,12 +16,13 @@ double *orig=0,*axis=0;
 int database_type=1;
 int max_age=200;
 double alpha=0.95;
-double betha=0.9995;
+double betha=0.9995; //INNA DEFINICJA NIZ W BOORU.NET!
 double lambda=200;
 double eps_v=0.05;
 int memory_bound;
 double eps_n=0.0006;
-int utility_option = 0;
+int utility_option = GNGAlgorithm::None;
+double utility_k = 2.0;
 
 //check what is reffered int ptr-> and implement as standalones
 
@@ -128,6 +129,7 @@ RcppExport SEXP GNGRunServer() {
     
     gngAlgorithm->setToggleUniformGrid(uniformgrid);
     gngAlgorithm->setToggleLazyHeap(lazyheap);
+    gngAlgorithm->setUtilityOption(utility_option,utility_k);
     gngAlgorithmControl->setRunningStatus(false); //skrypt w R inicjalizuje  
 
     gngAlgorithm->runAlgorithm();
@@ -135,6 +137,16 @@ RcppExport SEXP GNGRunServer() {
     return wrap(0);
 }
 
+
+RcppExport SEXP GNGSet__utility_option(SEXP val){
+	utility_option = as<int>(val);
+	return wrap(0);
+}
+
+RcppExport SEXP GNGSet__utility_k(SEXP val){
+	utility_k = as<double>(val);
+	return wrap(0);
+}
 
 //TODO: lepsze settery i gettery (dataframe? nie wiem)
 RcppExport SEXP GNGSet__memory_bound(SEXP val){
@@ -273,7 +285,7 @@ RcppExport SEXP GNGClient__getAccumulatedError(SEXP _xp) {
 
     
     //alg nie w ggi ale dobra
-    return wrap(ptr->graph->getAccumulatedErrorShare());
+    return wrap(ptr->graph->getAccumulatedErrorShare(uniformgrid));
 }
 
 RcppExport SEXP GNGClient__updateBuffer(SEXP _xp){

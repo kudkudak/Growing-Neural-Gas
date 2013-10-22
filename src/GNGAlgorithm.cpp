@@ -76,8 +76,9 @@ m_g(g), g_db(db), m_control(control), c(0), s(0),
 m_max_nodes(max_nodes), m_max_age(max_age),
 m_alpha(alpha), m_betha(betha), m_lambda(lambda),
 m_eps_v(eps_v), m_eps_n( eps_n), ug(boundingbox_origin, boundingbox_axis, l),
-m_density_threshold(0.1), m_grow_rate(1.5),
-errorHeap(m_g) {
+m_density_threshold(0.1), m_grow_rate(1.5), 
+errorHeap(m_g), m_local_utility(10,0)
+{
     m_toggle_uniformgrid=m_toggle_lazyheap=true;
     
     global_pool = m_g.getPool();
@@ -116,6 +117,9 @@ void GNGAlgorithm::RandomInit() {
         SetErrorNew(&m_g[0], 0.0);
         SetErrorNew(&m_g[1], 0.0);
     }
+    
+    set_utility(0,0.001);
+    set_utility(1,0.001);
 }
 
 void GNGAlgorithm::AddNewNode() {
@@ -188,7 +192,7 @@ void GNGAlgorithm::AddNewNode() {
 
     #ifdef DEBUG
     dbg.push_back(4,"GNGAlgorith::AddNewNode::added "+to_string(m_g[new_node_index]));
-#endif
+    #endif
     m_g.removeEdge(error_nodes_new[0]->nr, error_nodes_new[1]->nr);
 
     #ifdef DEBUG
@@ -216,6 +220,10 @@ void GNGAlgorithm::AddNewNode() {
         DecreaseErrorNew(error_nodes_new[0]);
         DecreaseErrorNew(error_nodes_new[1]);    
         SetErrorNew(&m_g[new_node_index], (error_nodes_new[0]->error_new + error_nodes_new[1]->error_new) / 2);
+    }
+    
+    if(this->m_utility_option == BasicUtility){
+        this->set_utility(new_node_index, 0.5*(get_utility(error_nodes_new[0]->nr)+get_utility(error_nodes_new[1]->nr)));
     }
 
 
@@ -299,6 +307,7 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
 
     double error = m_g.getDist(nearest[0]->position, ex->position);
 
+
     if(this->m_utility_option == BasicUtility){
         #ifdef DEBUG
                 dbg.push_back(4, "GNGAlgorithm::Adapt::setting utility");
@@ -373,7 +382,7 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
             edg = m_g.removeEdge(nearest[0]->nr, edg);
             if (edg == nearest[0]->edges.end()) break;
             BYPASS = true; //foreach will add one anyway
-            if (m_g[nr].edgesCount == 0) {
+            if (m_g[nr].edgesCount == 0 && this->m_utility_option == None) {
                 #ifdef DEBUG
                 dbg.push_back(6,"GNGAlgorith:: remove node because no edges");
                 #endif
@@ -385,7 +394,7 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
                  #endif
                 m_g.deleteNode(nr);
             }
-            if (m_g[nearest[0]->nr].edgesCount == 0) {
+            if (m_g[nearest[0]->nr].edgesCount == 0 && this->m_utility_option == None) {
                  #ifdef DEBUG
                 dbg.push_back(6,"GNGAlgorithm::Adapt() remove node because no edges");
                 #endif
@@ -396,17 +405,19 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
             #ifdef DEBUG
             dbg.push_back(3,"GNGAlgorith::Adapt::Removal completed");
             #endif
-            #ifdef DEBUG
-            dbg.push_back(2,to_string(*nearest[0]));
-            #endif
 
         }
     }
     #ifdef DEBUG
     dbg.push_back(3,"GNGAlgorith::Adapt::Scan completed");
     #endif
-     
-    //DecreaseAllErrorsNew();
+
+    
+    //erase nodes
+    if(this->m_utility_option == BasicUtility){
+        this->utility_criterion_check();
+    }   
+
 
     t2 = boost::posix_time::microsec_clock::local_time();
     dt = t2 - t1;
@@ -644,6 +655,7 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
             GNGExample ex = g_db->drawExample();
             
             Adapt(&ex);
+            
             if(!m_toggle_lazyheap && s!=m_lambda-1) DecreaseAllErrors();
             
             // ug.print3d();
@@ -651,7 +663,7 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
             #ifdef DEBUG
                 for (int i = 0; i <= m_g.getMaximumIndex(); ++i) { //another idea for storing list of actual nodes?
 
-                       if (m_g[i].occupied && m_g[i].edgesCount ==0) {
+                       if (m_g[i].occupied && m_g[i].edgesCount ==0 && m_utility_option == None) {
                            REPORT("Error at "+to_string<int>(i));
                        }
                 }
@@ -672,7 +684,7 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
         times["resize"] += dt.total_microseconds();
         ++c; //epoch
         if(!m_toggle_lazyheap) DecreaseAllErrors();
-   
+        if(this->m_utility_option == BasicUtility) decrease_all_utility();
 
     }
     t4 = boost::posix_time::microsec_clock::local_time();

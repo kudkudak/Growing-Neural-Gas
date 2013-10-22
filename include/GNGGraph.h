@@ -38,12 +38,13 @@ public:
         return g_pool_share.get();
     }
     
-    double getAccumulatedErrorShare(){
+    double getAccumulatedErrorShare(bool error_new = false){
         boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         GNGNode * nodes = getPoolShare();
         double error=0.0;
         REP(i,m_maximum_index+1){
-            error+=nodes[i].error_new;
+            if(error_new) error+=nodes[i].error_new;
+            else  error+=nodes[i].error;
         }
         return error;
     }

@@ -24,18 +24,8 @@
 typedef boost::posix_time::ptime Time;
 typedef boost::posix_time::time_duration TimeDuration;
 
-//typedef double (*fptr)(int, double*);
-//fptr get_dist_hack();
-extern GNGNode * global_pool;
-inline double dist(int index, double * position){
-    double x=0.0;
-    //arma!
-    REP(i,GNG_DIM){
-        x+=(global_pool[index].position[i] - position[i])*(global_pool[index].position[i] - position[i]);
-    }
-    return x;    
-}
 
+//TODO: strategy pattern here
 
 
 
@@ -80,6 +70,7 @@ private:
     //!!! Note: this code is not optimal and is inserted only for research purposes
     //TODO: optimize
     vector<double> m_local_utility;
+    double m_utility_k;
     
     double get_utility(int i){
         if(i+1>m_local_utility.size()) throw "Illegal utility access";
@@ -87,12 +78,53 @@ private:
     }
     
     void set_utility(int i, double u){
-        if(i+1>m_local_utility.size()) m_local_utility.resize(2*m_local_utility.size());
+        if(i+1>m_local_utility.size()){
+            #ifdef DEBUG
+           dbg.push_back(2,"GNGAlgorithm::set_utility resizing");
+           #endif           
+            m_local_utility.resize(2*m_local_utility.size());
+        }
         m_local_utility[i] = u;
     }
     
-    
-       
+    void utility_criterion_check(){
+        
+        if(m_g.getNumberNodes()<10) return; //just in case
+        
+        double max_error = this->GetMaximumError();
+        int maximumIndex = m_g.getMaximumIndex();
+        for(int i=0;i<=maximumIndex;++i){
+            if (m_g[i].occupied && max_error/get_utility(i)>m_utility_k){
+                if(m_g.getNumberNodes()<10) return;
+                #ifdef DEBUG
+                dbg.push_back(2,"GNGAlgorithm::utility_criterion_check Not passed for "+to_string<int>(i));
+                dbg.push_back(2,to_string<double>(max_error));
+                #endif
+
+                //replace with while please..
+                FOREACH(edg, (m_g[i].edges)) {
+                        edg = m_g.removeEdge(i, edg);
+                        if(edg != m_g[i].edges.end()) --edg;
+                        else break;
+                }                
+                
+                
+                m_g.deleteNode(i);
+                set_utility(i,0);
+            }
+        }              
+        
+    }
+     void decrease_all_utility(){
+        int maximumIndex = m_g.getMaximumIndex();
+        for(int i=0;i<=maximumIndex;++i){
+            if (m_g[i].occupied) {
+                set_utility(i, get_utility(i)*(m_betha)); //INACZEJ NIZ W BOORU.NET
+            }
+        }              
+        
+    }
+             
     
     GNGGraph & m_g; 
     GNGDatabase* g_db;
@@ -111,6 +143,8 @@ private:
      void ResizeUniformGrid();
      
     
+     //TODO: get rid of new/old 
+     
     void IncreaseErrorNew(GNGNode * node, double error){
         FixErrorNew(node);        
         node->error_new+=m_betha_powers[m_lambda-s]*error;
@@ -155,6 +189,17 @@ private:
         }
     }
     
+    double GetMaximumError() const{
+        double max_error = 0;
+        int maximumIndex = m_g.getMaximumIndex();
+        REP(i,maximumIndex+1){
+            if(m_g[i].occupied){
+                max_error = std::max(max_error, m_g[i].error);
+            }
+        } 
+        return max_error;
+    }
+    
     void DecreaseError(GNGNode * node){
         node->error = m_alpha*node->error;
     }
@@ -163,8 +208,12 @@ private:
         node->error = error;
     }      
 public:
-    void setUtilityOption(int option){
+    void setUtilityOption(int option, double k =-1.0){
         m_utility_option = option;
+        m_utility_k = k;
+#ifdef DEBUG
+        dbg.push_back(4, "GNGAlgorithm::setUtilityOption k="+to_string<double>(k));
+#endif
         if(m_utility_option !=0 && (m_toggle_uniformgrid==true || m_toggle_lazyheap==true)) throw "Exception"; //todo: poprawic
         if(option != 0){
             m_local_utility.clear();
@@ -211,4 +260,15 @@ private:
     
 };
 
+//typedef double (*fptr)(int, double*);
+//fptr get_dist_hack();
+extern GNGNode * global_pool;
+inline double dist(int index, double * position){
+    double x=0.0;
+    //arma!
+    REP(i,GNG_DIM){
+        x+=(global_pool[index].position[i] - position[i])*(global_pool[index].position[i] - position[i]);
+    }
+    return x;    
+}
 #endif	/* GNGALGORITHM_H */
