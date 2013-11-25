@@ -23,7 +23,7 @@ int memory_bound;
 double eps_n=0.0006;
 int utility_option = GNGAlgorithm::None;
 double utility_k = 2.0;
-
+SHMemoryManager *shm;
 //check what is reffered int ptr-> and implement as standalones
 
 #undef DEBUG
@@ -75,11 +75,12 @@ RcppExport SEXP GNGRunServer() {
 	SHMemoryManager::COUNTER = *ptr;
 
 
+                //TODO: memory leaks!
     GNGAlgorithmControl * gngAlgorithmControl;
     GNGAlgorithm * gngAlgorithm;
     GNGGraph * gngGraph;
     GNGDatabase* gngDatabase;
-    SHMemoryManager *shm;
+    
 
     shm = new SHMemoryManager(memory_bound); //nodes <-estimate!
     shm->new_segment(memory_bound); //database <-estimate!
@@ -104,7 +105,7 @@ RcppExport SEXP GNGRunServer() {
 
     SHGNGExampleDatabase * database_vec = shm->get_segment(1)->construct< SHGNGExampleDatabase > ("database_vec")(alc);
 
-    gngAlgorithmControl = shm->get_segment(1)->construct<GNGAlgorithmControl > ("gngAlgorithmControl")();
+    gngAlgorithmControl = shm->get_segment(1)->construct<GNGAlgorithmControl > ("gngAlgorithmControl")(shm);
 
 
 

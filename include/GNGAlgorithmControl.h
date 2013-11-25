@@ -34,11 +34,14 @@
 
 #include <stdlib.h>
 #include "Utils.h"
+#include "SHMemoryManager.h"
 extern DebugCollector dbg;
 typedef boost::interprocess::interprocess_mutex MyMutex;
 struct GNGAlgorithmControl {
     bool m_pause;
     bool m_terminate;
+    GNGAlgorithmControl(SHMemoryManager *shptr = 0): shptr(shptr){}
+    SHMemoryManager *shptr;
     MyMutex grow_mutex,database_mutex;
     boost::interprocess::interprocess_mutex m_pause_mutex;
     boost::interprocess::interprocess_condition m_pause_changed;
@@ -50,6 +53,7 @@ struct GNGAlgorithmControl {
 #ifdef DEBUG
                     dbg.push_back(100,"GNGAlgorithmicControl::killing server");
 #endif
+                    delete shptr;
                     exit(EXIT_SUCCESS);
                 
                 }
