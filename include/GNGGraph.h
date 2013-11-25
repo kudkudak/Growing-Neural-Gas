@@ -26,7 +26,7 @@ typedef ExtGraphNodeManager<GNGNode, GNGEdge, GNGList> GNGGraphBase;
 class GNGGraph : public GNGGraphBase {
     typedef ExtGraphNodeManager<GNGNode, GNGEdge, GNGList > super;
     typedef boost::interprocess::interprocess_mutex Mutex;
-    Mutex * m_mutex;
+    Mutex * m_mutex; //grow_mutex from GNGAlgorithmControl
     boost::interprocess::offset_ptr<GNGNode> g_pool_share;    
 public:
 
@@ -103,7 +103,7 @@ public:
         return i;
     }
     bool deleteNode(int x){
-        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+        boost::interprocess::scoped_lock<Mutex>(*m_mutex); 
         return super::deleteNode(x);
     }    
     super::EdgeIterator removeEdge(int a, int b){

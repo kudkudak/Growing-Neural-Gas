@@ -1,7 +1,7 @@
 source("gng.r")
 source("GNGConvertToIGraph.r")
 
-
+    unix_processes_before = system("ps")
 
 # Construct graph
 
@@ -12,7 +12,7 @@ source("GNGConvertToIGraph.r")
     Sys.sleep(2.0)
     print("Server created")
     print(server$server_id)
-    sv<-new("GNGClient", server[["server_id"]])
+    sv<-new("GNGClient", server)
     print("Successful client creation")
 
 
@@ -56,6 +56,9 @@ source("GNGConvertToIGraph.r")
     sv$pauseServer()
     stopifnot(error_before!=sv$getAccumulatedError())
     print("Test::Functional communication")
-
-
+    sv$terminateServer()
+    #TODO: Add checking if termination was successful :)
+    Sys.sleep(2)    
+    stopifnot(system("ps") == unix_processes_before)
+    print("Test::Termination successful")
 

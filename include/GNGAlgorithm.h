@@ -255,7 +255,12 @@ public:
    
     void runAlgorithm();
    
-    virtual ~GNGAlgorithm(){}
+    virtual ~GNGAlgorithm(){
+    
+        delete[] m_betha_powers;
+        delete[] m_betha_powers_to_n;
+    
+    }
 private:
     
 };

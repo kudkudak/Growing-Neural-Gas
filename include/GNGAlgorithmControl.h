@@ -53,7 +53,10 @@ struct GNGAlgorithmControl {
 #ifdef DEBUG
                     dbg.push_back(100,"GNGAlgorithmicControl::killing server");
 #endif
+                    //will it change anything ?
                     delete shptr;
+                    
+                    //doesn't do RAII etc : (
                     exit(EXIT_SUCCESS);
                 
                 }
@@ -71,8 +74,6 @@ struct GNGAlgorithmControl {
     
     void terminate(){
     	using namespace boost::interprocess;
-    	shared_memory_object::remove("SHMemoryPool_Segment1");
-    	shared_memory_object::remove("SHMemoryPool_Segment2");
     	m_terminate=true;
     }
 

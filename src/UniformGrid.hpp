@@ -217,9 +217,7 @@ int UniformGrid<VectorContainer, ListContainer, T>::insert(double *p, T x) {
 }
 
 template<class VectorContainer, class ListContainer, class T >
-
-
-T * UniformGrid<VectorContainer, ListContainer, T>::findNearest(double *p, int n) { //returns indexes (values whatever)
+std::vector<T> UniformGrid<VectorContainer, ListContainer, T>::findNearest(const double *p, int n) { //returns indexes (values whatever)
     s_search_query = n;
 
     
@@ -251,7 +249,10 @@ T * UniformGrid<VectorContainer, ListContainer, T>::findNearest(double *p, int n
             #ifdef DEBUG
              dbg.push_back(5,"UniformGird:: search for "+to_string(center_id));
              #endif
-       return 0;
+        vector<int> returned_value;
+        returned_value.push_back(-1);
+        returned_value.push_back(-1);
+        return returned_value;
     
     }
     double border, border_squared, tmp;
@@ -307,9 +308,10 @@ T * UniformGrid<VectorContainer, ListContainer, T>::findNearest(double *p, int n
     #endif
 
 
-    int * ret = new int[2];
-    memcpy(ret, s_found_cells, sizeof (int) *2);
-
+    std::vector<T> ret(2);
+    ret[0] = s_found_cells[0];
+    ret[1] = s_found_cells[1];
+  
     return ret;
 }
 

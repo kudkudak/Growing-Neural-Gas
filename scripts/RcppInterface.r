@@ -4,16 +4,20 @@ setGenericVerif <- function(x,y){if(!isGeneric(x)){setGeneric(x,y)}else{}}
 
 dyn.load("RcppInterface.so")
 
-setClass("GNGClient",representation(pointer="externalptr"))
 
 GNGClient_method <- function(name){
 	paste("GNGClient",name,sep="__");
 }
-setClass("GNGClient",representation(pointer="externalptr"))
+setClass("GNGClient",representation(pointer="externalptr", server_pid="list"))
+
+
+
+
 setMethod("initialize",
-"GNGClient",function(.Object, ...) {
+"GNGClient",function(.Object, server_descriptor) {
     
-	.Object@pointer <- .Call(GNGClient_method("new"), ...)
+	.Object@pointer <- .Call(GNGClient_method("new"), server_descriptor[["server_id"]])
+    .Object@server_pid = server_descriptor[["server_pid"]]
 	.Object
 }
 )
@@ -64,9 +68,34 @@ GNGAddExamples<-function(x,preset,preset_size,...){
 }
 
 setMethod( "$", "GNGClient", function(x, name ) { 
+
 	#if(name=="addExamples") function(...) GNGAddExamples(x,...)
-	function(...) .Call( GNGClient_method(name) , x@pointer , ... )
-} )
+    if(name=="terminateServer"){
+        function(...){
+	        .Call( GNGClient_method(name) , x@pointer , ... )
+            if(length(x@server_pid) == 0){
+                print("WARNING!! : not provided server_pid in constructor. Leaving zombie thread")
+            }else{
+                # Terminate child process
+                # TODO: test behaviour with 2 clients in different threads?
+                # TODO: should check if he is parent of this server
+                # TODO: do it the other way : server is created in the main thread
+                # and it creates clients? 
+                #print("Terminating GNGServer")
+                #print(x@server_pid[[1]])
+                # TODO: I honestly have no idea why I have to call it twice..
+                # TODO: Find fork mechanism for windows AND unix !
+                y = collect(x@server_pid[[1]], wait=FALSE, timeout=1)
+                y = collect(x@server_pid[[1]],wait=FALSE, timeout =1)
+                y = collect(x@server_pid[[1]],wait=FALSE, timeout=1)
+            }
+        }
+    }
+    else{    
+	    function(...) .Call( GNGClient_method(name) , x@pointer , ... )
+    }
+} 
+)
 
 
 createGNGServer <- function(... ){
@@ -80,9 +109,8 @@ tmp<-function(...){
 }
 
 GNGCreateServer <- function(... ){
-	ch<-parallel(tmp(...))
-	
-	return(list(ch = ch, server_id = .Call("GNGGetServerID")))
+    server_pid<-parallel(tmp(...))	
+	return(list(server_pid = list(server_pid), server_id = .Call("GNGGetServerID")))
 }
 
 GNGVisualiseStepAnimation <- function(step,pause,... ){
