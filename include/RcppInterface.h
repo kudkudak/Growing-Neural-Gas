@@ -15,12 +15,16 @@
 
 #include "GNG.h"
 #include "Utils.h"
+
+
 #undef DEBUG
 
 struct GNGClient {
+    /** @note All dangling pointers on purpose ! We do not own these !*/
+    
     MyMutex * grow_mutex;
-    GNGDatabase* g_database;
-    GNGAlgorithmControl *control; //czemu nie po prostu GNGAlgorithm?
+    GNGDatabase * g_database; 
+    GNGAlgorithmControl *control; 
     GNGGraph * graph;
     vector<GNGNodeOffline> buffer;      
 };

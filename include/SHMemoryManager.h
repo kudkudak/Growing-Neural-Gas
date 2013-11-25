@@ -68,7 +68,8 @@ public: static int COUNTER;
     bool deallocate(void * ptr,int index =0);
     virtual ~SHMemoryManager(){
         
-        FOREACH(seg,m_names) boost::interprocess::shared_memory_object::remove(seg->c_str());
+        FOREACH(seg,m_names) 
+        boost::interprocess::shared_memory_object::remove(seg->c_str());
     }
 private:
 

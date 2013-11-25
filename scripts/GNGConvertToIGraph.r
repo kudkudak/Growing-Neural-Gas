@@ -24,12 +24,13 @@ GNGVisualiseIGraph<-function(g, subgraph_v){
  	col<-rainbow(length(l))
  	plot.igraph(g,vertex.size=3.0,vertex.label=NA,vertex.color=col[membership(l)],layout=L)
 }
-GNGConvertToIGraph<-function(sv){
+
+GNGConvertToIGraph<-function(sv, dims=3){
 	sv$pauseServer()
 	sv$updateBuffer()
 	count_edges<-0
 	for(i in (1:(sv$getBufferSize()))){
-		count_edges<-count_edges+length(sv$getNode(i-1))-6
+		count_edges<-count_edges+length(sv$getNode(i-1))-(dims+1) # why -6?
 	}
 	edglist<-matrix(0,10*count_edges,2)
 	weightlist<-matrix(0,10*count_edges)

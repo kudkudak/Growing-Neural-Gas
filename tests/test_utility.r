@@ -12,7 +12,7 @@ source("GNGConvertToIGraph.r")
     Sys.sleep(2.0)
     print("Server created")
     print(server$server_id)
-    sv<-new("GNGClient", server[["server_id"]])
+    sv<-new("GNGClient", server)
     print("Successful client creation")
 
 

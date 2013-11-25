@@ -300,7 +300,8 @@ public:
     }
 
     ~GNGDatabaseProbabilistic(){
-
+        std::cout<<"Calling GNGDatabaseProbabilistic destructor";
+        delete[] g_database;
     }
 private:
 
@@ -351,7 +352,7 @@ public:
     }
     
     ~GNGDatabaseSimple(){
-        
+        delete[] g_database;
     }
 private:
 

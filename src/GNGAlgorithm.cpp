@@ -66,6 +66,10 @@ GNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
 
 //GNGNode * GNGGraphAccessHack::pool = 0;
 
+/**
+* @note: double * are taken care of. Bad design :/
+ * 
+ */
 GNGAlgorithm::GNGAlgorithm(GNGGraph & g, GNGDatabase* db, GNGAlgorithmControl * control, int start_number, double * boundingbox_origin,
 		double * boundingbox_axis, double l, int max_nodes,
 
@@ -243,21 +247,20 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
     #endif
      GNGNode * nearest[2];
     if(m_toggle_uniformgrid){
-        int * nearest_index = ug.findNearest(ex->position, 2); //TwoNearestNodes(ex->position);
+        std::vector<int> nearest_index = ug.findNearest(ex->position, 2); //TwoNearestNodes(ex->position);
 
-         if(!nearest_index || nearest_index[0] == nearest_index[1]) return; //something went wrong
+         if(nearest_index[0] == nearest_index[1]) return; //something went wrong (-1==-1 też)
     
     //GNGNode ** nearest = TwoNearestNodes(ex->position);
         nearest[0]=&m_g[nearest_index[1]];
         nearest[1]=&m_g[nearest_index[0]];
-        
-         delete[] nearest_index;
+
     }
     else{
         GNGNode ** tmp = TwoNearestNodes(ex->position);
         nearest[0]=tmp[0];
         nearest[1] = tmp[1];
-        delete[] tmp;
+        delete[] tmp; //TODO: smart pointer
     }
     Time t2(boost::posix_time::microsec_clock::local_time());
 
@@ -268,39 +271,6 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
     t1 = boost::posix_time::microsec_clock::local_time();
 
 
-
-    //GNGNode ** nearest = TwoNearestNodes(ex->position);
-
-    //if(m_g.getNumberNodes()>9000){ cout<<"ok\n";}
-
-    //ug.print3d();
-    /*
-    REP(i,m_g.getMaximumIndex()+1){
-        if(m_g.getDist(m_g[i]->position,ex->position)<m_g.getDist(nearest[0]->position,ex->position)){
-            cout<<"XXXXXXXXXXXXXXXXXXXX\n";
-            cout<<m_g.getDist(nearest[0]->position,ex->position)<<">"<<m_g.getDist(m_g[i]->position,ex->position)<<endl;
-            #ifdef DEBUGdbg.push_back(3,"GNGAlgorithm::Adapt:: found nodes "+to_string(nearest_index[0])+" "+to_string(nearest_index[1]));
-            double dist2=m_g.getDist(nearest[1]->position,ex->position);
-            #ifdef DEBUGdbg.push_back(3,"GNGAlgorithm::Adapt:: found node in distance (second) "+to_string(dist2));      
-           // ug.print3d();
-           // ug.findTwoNearest(ex->position,true);
-            cout<<"MISSED "<<i<<endl;
-            cout<<"FOUND "<<nearest[0]->nr<<endl;
-           // cout<<ug.find(m_g[i]->position)<<endl;
-           // write_array(m_g[i]->position,m_g[i]->position+3);
-
-        }
-    }
-
-        
-    REP(i,m_g.getMaximumIndex()+1){
-        if(m_g[i]->occupied && m_g.getDist(m_g[i]->position,ex->position)<m_g.getDist(nearest[1]->position,ex->position) && i!=nearest[0]->nr){
-            cout<<"XXXXXXXXXXXXXXXXXXXX\n";
-            cout<<nearest[1]->nr<<" "<<nearest[0]->nr<<" "<<i<<endl;
-            cout<<m_g.getDist(nearest[1]->position,ex->position)<<">"<<m_g.getDist(m_g[i]->position,ex->position)<<endl;
-        }
-    }
-     */
     #ifdef DEBUG
     dbg.push_back(4,"GNGAlgorith::Adapt::found nearest nodes to the drawn example "+to_string(*nearest[0])+" "+to_string(*nearest[1]));
     #endif
@@ -344,7 +314,7 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
 
     #ifdef DEBUG
         dbg.push_back(4,"GNGAlgorith::Adapt::position of the winner and neighbour mutated");
-        #endif
+    #endif
     if (!m_g.isEdge(nearest[0]->nr, nearest[1]->nr)) {
         m_g.addUDEdge(nearest[0]->nr, nearest[1]->nr);
         #ifdef DEBUG
@@ -374,29 +344,32 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
         }
 
         if (edg->age > m_max_age) {
-            // cout<<"DELETION";
             #ifdef DEBUG
             dbg.push_back(3,"GNGAlgorith::Adapt::Removing aged edge "+to_string(nearest[0]->nr)+" - "+to_string(edg->nr));
             #endif
             int nr = edg->nr;
             edg = m_g.removeEdge(nearest[0]->nr, edg);
-            if (edg == nearest[0]->edges.end()) break;
-            BYPASS = true; //foreach will add one anyway
+    
+            
             if (m_g[nr].edgesCount == 0 && this->m_utility_option == None) {
                 #ifdef DEBUG
-                dbg.push_back(6,"GNGAlgorith:: remove node because no edges");
+                dbg.push_back(8,"GNGAlgorith:: remove node because no edges");
+                FOREACH(edg, (m_g[nr].edges)) {
+                    dbg.push_back(40, "WARNING: GNGAlgorithm:: edges count of neighbours of erased node, shouldn't happen! "+to_string(m_g[edg->nr].edgesCount));
+                }
                 #endif
-                if(m_toggle_uniformgrid)  ug.remove(m_g[nr].position);
-                #ifdef DEBUG
 
+                if(m_toggle_uniformgrid)  ug.remove(m_g[nr].position);
+                
+                #ifdef DEBUG
                 dbg.push_back(8,"GNGAlgorithm::Adapt() Erasing node "+to_string<int>(nr));
                 dbg.push_back(8, "GNGAlgorithm::Adapt()  First coordinate "+to_string<double>(m_g[nr].position[0]));
-                 #endif
+                #endif
                 m_g.deleteNode(nr);
             }
             if (m_g[nearest[0]->nr].edgesCount == 0 && this->m_utility_option == None) {
                  #ifdef DEBUG
-                dbg.push_back(6,"GNGAlgorithm::Adapt() remove node because no edges");
+                dbg.push_back(49,"WARNING: GNGAlgorithm::Adapt() remove node because no edges, shouldn't happen"); //Shouldn't happen
                 #endif
                     if(m_toggle_uniformgrid) ug.remove(m_g[nearest[0]->nr].position);
                     m_g.deleteNode(nearest[0]->nr);
@@ -406,6 +379,9 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
             dbg.push_back(3,"GNGAlgorith::Adapt::Removal completed");
             #endif
 
+            
+            if (edg == nearest[0]->edges.end()) break; //error! should be after checking
+            BYPASS = true; //foreach will add one anyway    
         }
     }
     #ifdef DEBUG
@@ -630,6 +606,7 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
         int size = g_db->getSize();
         dbg.push_back(2, "GNGAlgorithm::check size of the db " + to_string(size));
 #endif    
+        m_control->checkPause();
     } 
      RandomInit();
      c=0;
@@ -662,13 +639,10 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
         
             #ifdef DEBUG
                 for (int i = 0; i <= m_g.getMaximumIndex(); ++i) { //another idea for storing list of actual nodes?
-
                        if (m_g[i].occupied && m_g[i].edgesCount ==0 && m_utility_option == None) {
                            REPORT("Error at "+to_string<int>(i));
                        }
                 }
-
-
             #endif
         }
         
