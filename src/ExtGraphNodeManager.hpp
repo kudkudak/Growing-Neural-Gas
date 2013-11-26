@@ -92,6 +92,12 @@ typename ExtGraphNodeManager<Node,Edge,EdgeStorage>::EdgeIterator ExtGraphNodeMa
         g_pool[a].edgesCount--;
         g_pool[b].edgesCount--;
         
+        if(a>m_maximum_index || b>m_maximum_index){
+#ifdef DEBUG
+            std::cout<<"WARNING: edge added to non existing vertex\n";
+#endif 
+        }
+        
         return ret;
     }
 template<class Node, class Edge, class EdgeStorage >
@@ -109,6 +115,11 @@ void ExtGraphNodeManager<Node,Edge,EdgeStorage>:: addUDEdge(int a, int b){
         g_pool[a].edgesCount++;
         g_pool[b].edgesCount++;
         
+         if(a>m_maximum_index || b>m_maximum_index){
+#ifdef DEBUG
+            std::cout<<"WARNING: edge added to non existing vertex\n";
+#endif 
+        }       
     }
  template<class Node, class Edge, class EdgeStorage >
 void ExtGraphNodeManager<Node,Edge,EdgeStorage>::addDEdge(int a, int b){
@@ -290,11 +301,7 @@ int ExtGraphNodeManager<Node,Edge,EdgeStorage>::newNode() {
     m_first_free = g_pool[createdNode].nextFree;
     g_pool[createdNode].nextFree = -1;
     g_pool[createdNode].edgesCount = 0;
-    
-   
-
-  // g_pool[createdNode].edges = new EdgeStorage();
-
+ 
     
      ++m_nodes; //zwiekszam licznik wierzcholkow //na koncu zeby sie nie wywalil przypadkowo
     

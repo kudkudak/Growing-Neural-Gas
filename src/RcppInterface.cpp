@@ -325,29 +325,50 @@ RcppExport SEXP GNGClient__updateBuffer(SEXP _xp){
     
     ptr->buffer.clear();
     
-    cout<<SIZE(ptr->buffer)<<endl;
-    
     ptr->buffer.resize(maximumIndex+1);
     
     for(int i=0;i<=maximumIndex;++i){
         //hack!
         if(!g_pool[i].occupied) { 
             ptr->buffer[i].occupied=false; 
-            for(int i=0;i<GNG_DIM;++i) ptr->buffer[i].position[i]=0; 
+         
+            for(int j=0;j<=GNG_DIM;++j) ptr->buffer[i].position[j]=0; 
             continue;  
         } //no more data is needed here (for in getNodeMatrix it will simply check for correctness of buffer line
        
-        
-        ptr->buffer[i] = g_pool[i]; //operator= !! wazne zeby dawac tego typu rzeczy do klas
+
+        ptr->buffer[i] = GNGNodeOffline();
+        //moved here to be sure everything is fine with indexes, quite lame
+
+        ptr->buffer[i].nr = g_pool[i].nr;
+        ptr->buffer[i].occupied = g_pool[i].occupied;
+        memcpy(&(ptr->buffer[i].position[0]),&g_pool[i].position[0],(GNG_DIM+1)*sizeof(double)); //param copy, zaklada baze danych probabilistyczną!!
+    
+         ptr->buffer[i].edgesCount = g_pool[i].edgesCount;
+         int j=0;
+        if(g_pool[i].edgesCount){
+          FOREACH(edg, g_pool[i].edges){ //tutaj sie gubil przy dodawniu wierzcholka, tak mysle, while sa niebezpieczne
+              REPORT(edg->nr);
+              REPORT(i);
+              if((j++)==ptr->buffer[i].edgesCount) break; //ale tu sie zatrzymuje, hm..
+             if(edg->nr < maximumIndex) 
+                ptr->buffer[i].edges.push_back(GNGEdge(edg->nr)); //rev nieistotne
+             
+          }
+         }
+
         int k=0;
-        
-        
-        
+
         //verification
+#ifdef DEBUG
         FOREACH(edg,ptr->buffer[i].edges){
-            if(edg->nr>((int)ptr->buffer.size()-1)) cout<<k+1<<" "<<ptr->buffer[i].edgesCount<<"X\n";
+            if(edg->nr>((int)ptr->buffer.size()-1)) {
+                cout<<"WARNING:";
+                cout<<k+1<<" "<<ptr->buffer[i].edgesCount<<"X\n";
+            }
             ++k;
         }
+#endif
         
         
     }
@@ -461,11 +482,10 @@ RcppExport SEXP GNGClient__getNode(SEXP _xp, SEXP _nr){
    // cout<<"pos read\n";
     
     if(edg>0){
-        FOREACH(it,requested_node->edges){
-            
+        FOREACH(it,requested_node->edges){ 
            ++i;
            node[i] = it->nr;
-          if(i==edg+3) break; //added  new edge meanwhile
+           if(i==edg+3) break; //added  new edge meanwhile
         }  
     }    
 

@@ -25,6 +25,8 @@ GNGVisualiseIGraph<-function(g, subgraph_v){
  	plot.igraph(g,vertex.size=3.0,vertex.label=NA,vertex.color=col[membership(l)],layout=L)
 }
 
+
+# Note........3 dimensions.
 GNGConvertToIGraph<-function(sv, dims=3){
 	sv$pauseServer()
 	sv$updateBuffer()
@@ -40,9 +42,14 @@ GNGConvertToIGraph<-function(sv, dims=3){
 	density<-matrix(0,sv$getBufferSize(),1)
 	k<-0
 	for(i in (1:(sv$getBufferSize()))){
-		
+        if(i%%1 == 0){
+            print(i)
+        }		
 		node<-sv$getNode(i-1) #indexing
-		if(node[1]==0) print("ERRRRRRRRRRRROR")		
+        if(i%%1 == 0){
+            print(node)
+		}
+        if(node[1]==0) print("ERRRRRRRRRRRROR")		
 		x_pos[i,1]<-node[2]
 		y_pos[i,1]<-node[3]
 		z_pos[i,1]<-node[4]
@@ -58,6 +65,8 @@ GNGConvertToIGraph<-function(sv, dims=3){
 			}
 		}
 	}	
+    print("Successfuly read nodes")
+
 	g<-graph.edgelist(edglist[1:k,])
 	E(g)$weight = weightlist[1:k]
 	V(g)$x=x_pos
