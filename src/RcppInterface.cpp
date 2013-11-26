@@ -271,9 +271,26 @@ RcppExport SEXP GNGClient__new(SEXP val_id){
    gngClient =  new GNGClient();
    
    //tu sa wyciecki
-   
-   mshm1= new managed_shared_memory(open_only,("SHMemoryPool_Segment"+to_string<int>(id_tmp1)).c_str());
-   mshm2= new managed_shared_memory(open_only,("SHMemoryPool_Segment"+to_string<int>(id_tmp2)).c_str());
+  
+
+   //should wait
+   bool success = false;
+   boost::posix_time::millisec workTime(5000);
+
+   //TODO: make it nonlame :)
+   while(!success){ 
+    try{ 
+
+            mshm1= new managed_shared_memory(open_only,("SHMemoryPool_Segment"+to_string<int>(id_tmp1)).c_str());
+            mshm2= new managed_shared_memory(open_only,("SHMemoryPool_Segment"+to_string<int>(id_tmp2)).c_str());
+            success = true;
+    }
+    catch(...){
+        std::cout<<"Not ready server, please wait...\n";
+    }
+    
+    boost::this_thread::sleep(workTime);
+   } 
 
    GNGAlgorithmControl * gngAlgorithmControl = (mshm2->find< GNGAlgorithmControl > ("gngAlgorithmControl")).first;
    GNGGraph * gngGraph = (mshm1->find< GNGGraph >("gngGraph")).first;		

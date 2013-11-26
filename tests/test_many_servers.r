@@ -8,11 +8,10 @@ unix_processes_before = system("ps", intern=TRUE)
 
 for (k in 1:200){
 
-    GNGSetParams(debug_level=2, max_nodes=600,
+    GNGSetParams(debug_level=5, max_nodes=600,
                 orig=c(-2, -2, -2), axis=c(2, 2, 2),
                 database_type=2, memory_bound = 5000000)
     server = GNGCreateServer()
-    Sys.sleep(1.0)
     print("Server created")
     print(server$server_id)
     sv<-new("GNGClient", server)
