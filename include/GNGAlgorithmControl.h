@@ -1,13 +1,13 @@
-/* 
- * File:   GNGAlgorithmControl.h
- * Author: staszek
- *
- * Created on September 2, 2012, 3:18 AM
- */
+/*
+* File: GNGAlgorithmControl.h
+* Author: staszek
+*
+* Created on September 2, 2012, 3:18 AM
+*/
 
 
 #ifndef GNGALGORITHMCONTROL_H
-#define	 GNGALGORITHMCONTROL_H
+#define         GNGALGORITHMCONTROL_H
 
 #include <boost/interprocess/containers/vector.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
@@ -36,18 +36,19 @@
 
 #include <stdlib.h>
 #include "Utils.h"
+#include "SHMemoryManager.h"
 
 
 /**
- *
- * Class responsible for handling communication between main core and clients. It adds examples, pauses algorithm, stores references to
- * main mutexes, etc. It is used in server.
- * 
- * 
- */
+*
+* Class responsible for handling communication between main core and clients. It adds examples, pauses algorithm, stores references to
+* main mutexes, etc. It is used in server.
+*
+*
+*/
 class GNGAlgorithmControl {
 public:
-    bool m_pause; /**< Is the algorithm paused? */ 
+    bool m_pause; /**< Is the algorithm paused? */
     bool m_terminate; /**< Has the algorithm(server) terminated? */
     boost::interprocess::interprocess_mutex grow_mutex; /**< Mutex locked when the graph pool is expanded @see ExtGraphNodeManager */
     boost::interprocess::interprocess_mutex database_mutex;
@@ -59,13 +60,18 @@ public:
     boost::interprocess::interprocess_condition m_pause_changed;
 
     //used gng_database, gng_graph, etc.
+    GNGAlgorithmControl(SHMemoryManager *shptr = 0): shptr(shptr){
+    }
+    SHMemoryManager *shptr; 
     
     void checkPause() {
         using namespace std;
         boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> lock(m_pause_mutex);
         
         while (m_pause) {
-        	if(m_terminate) exit(EXIT_SUCCESS);
+                if(m_terminate) exit(EXIT_SUCCESS);
+                delete shptr;
+                //note : doesn't unwind stack
                 m_pause_changed.wait(lock);
         }
     }
@@ -76,20 +82,15 @@ public:
         }
 
         m_pause_changed.notify_all();
-    }    
+    }
     
     void terminate(){
-    	using namespace boost::interprocess;
-    	shared_memory_object::remove("SHMemoryPool_Segment1"); //TODO: error with multiservers
-    	shared_memory_object::remove("SHMemoryPool_Segment2");
-    	m_terminate=true;
+            using namespace boost::interprocess;
+            m_terminate=true;
     }
 
 };
 
 
 
-#endif	/* GNGALGORITHMCONTROL_H */
-
-
-
+#endif        /* GNGALGORITHMCONTROL_H */

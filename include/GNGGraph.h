@@ -1,12 +1,12 @@
-/* 
- * File:   SHGraph.h
- * Author: staszek
- *
- * Created on 11 sierpień 2012, 09:07
- */
+/*
+* File: SHGraph.h
+* Author: staszek
+*
+* Created on 11 sierpień 2012, 09:07
+*/
 
 #ifndef GNGGraph_H
-#define	GNGGraph_H
+#define        GNGGraph_H
 
 #include "SHMemoryManager.h"
 #include "ExtGraphNodeManager.h"
@@ -27,7 +27,7 @@ class SHGNGGraph : public GNGGraphBase {
     typedef ExtGraphNodeManager<SHGNGNode, SHGNGEdge, GNGList > super;
     typedef boost::interprocess::interprocess_mutex Mutex;
     Mutex * m_mutex;
-    boost::interprocess::offset_ptr<SHGNGNode> g_pool_share;    
+    boost::interprocess::offset_ptr<SHGNGNode> g_pool_share;
 public:
 
     double getErrorNodeShare(int i ) const{
@@ -67,7 +67,7 @@ public:
     double getDist(int a, int b) {
         double distance = 0;
         for (int i = 0; i < GNG_DIM; ++i) {
-            distance += (super::operator[](a).position[i] - 
+            distance += (super::operator[](a).position[i] -
             
             super::operator[](b).position[i])*(super::operator[](a).position[i] - super::operator[](b).position[i]);
         }
@@ -89,14 +89,15 @@ public:
     int newNode(double const *position) {
 
          if (super::poolIsFull()) {
-             
+#ifdef DEBUG
+             dbg.push_back(10, "SHGNGGraph::newNode() growing pool");
+#endif
                  boost::interprocess::scoped_lock<Mutex>(*m_mutex);
-                 REPORT("growin27");
-                 super::growPool(); 
+                 super::growPool();
                  g_pool_share = super::getPool();
                 
          }
-         
+
         int i = super::newNode();
 
         memcpy(&(super::g_pool + i)->position[0], position, sizeof (double) *(GNG_DIM)); //param
@@ -104,13 +105,12 @@ public:
         g_pool[i].error = 0.0;
         g_pool[i].error_cycle = 0;
         g_pool[i].error_new = 0.0;
-
         return i;
     }
     bool deleteNode(int x){
         boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         return super::deleteNode(x);
-    }    
+    }
     super::EdgeIterator removeEdge(int a, int b){
         boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         return super::removeEdge(a,b);
@@ -145,5 +145,4 @@ private:
 
 
 
-#endif	/* SHGRAPH_H */
-
+#endif        /* SHGRAPH_H */

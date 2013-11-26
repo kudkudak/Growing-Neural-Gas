@@ -12,7 +12,7 @@
 
 
 #include "Utils.h"
-
+#include <vector>
 
 #include "GNGGlobals.h"
 
@@ -34,10 +34,11 @@ public:
     double s_found_cells_dist[4];
     int s_search_query;
 
-    int s_center[GNG_MAX_DIM];
+    //TODO: rewrite to vector.
+    int *s_center;
     int s_radius;
-    int s_pos[GNG_MAX_DIM];
-    double s_query[GNG_MAX_DIM];
+    int *s_pos;
+    double *s_query;
 
 
     double (*m_dist_fnc)(T, double*); //distance function;
@@ -53,9 +54,9 @@ public:
 
     int m_nodes;
 
-    int m_dim[GNG_MAX_DIM]; //number of uniform cells along certain axis
+    int* m_dim; //number of uniform cells along certain axis
 
-    int m_tmp_int[GNG_MAX_DIM]; //avoid alloc on heap all the time in calccell <- one thread!
+    int* m_tmp_int; //avoid alloc on heap all the time in calccell <- one thread!
 
     vector< int > m_neigh;
 
@@ -63,7 +64,7 @@ public:
     double m_origin[GNG_MAX_DIM];
 
     int getIndex(int *p) {
-        //not working for dim>2 idiot!
+ 
         int value = p[0];
         double mul = m_dim[0];
         for (int i = 1; i < GNG_DIM; ++i) {
@@ -90,13 +91,39 @@ public:
     }
     void purge(double *origin, int* dim, double l);
 public:
+    ~UniformGrid(){
+        delete[] s_center;
+        delete[] s_pos;
+        delete[] s_query;
+        delete[] m_dim;
+        delete[] m_tmp_int;
+    }
+    UniformGrid(double * origin, int *dim, double l): m_dist_fnc(0) {
+        
+        
+        s_center = new int[GNG_DIM];
+     
+        s_pos = new int[GNG_DIM];
+        s_query =new double[GNG_DIM]; 
+        m_dim = new int[GNG_DIM]; //number of uniform cells along certain axis
 
-    UniformGrid(double * origin, int *dim, double l) {
+          m_tmp_int = new int[GNG_DIM]; //avoid alloc on heap all the time in calccell <- one thread!   
         purge(origin, dim, l);
+      
     }
 
-    UniformGrid(double * origin, double *axis, double l) {
-        purge(origin, axis, l);
+    UniformGrid(double * origin, double *axis, double l): m_dist_fnc(0) {
+        
+        
+        
+       s_center = new int[GNG_DIM];
+   
+        s_pos = new int[GNG_DIM];
+        s_query =new double[GNG_DIM]; 
+        m_dim = new int[GNG_DIM]; //number of uniform cells along certain axis       
+        m_tmp_int = new int[GNG_DIM]; //avoid alloc on heap all the time in calccell <- one thread!   
+          
+          purge(origin, axis, l);
     }    
    
     void print3d();
@@ -140,7 +167,8 @@ public:
     bool remove(double *p);
     T find(double *p);
 
-    T * findNearest(const double *p, int n = 2);
+
+    vector<T> findNearest(const double *p, int n = 2);
 
     void setDistFunction(double (*dist_fnc)(T, double*)) {
         m_dist_fnc = dist_fnc;

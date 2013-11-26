@@ -1,7 +1,7 @@
 
 #include "RcppInterface.h"
 #include <fstream>
-
+#include <memory>
 
 using namespace boost::interprocess;
 using namespace std;
@@ -15,14 +15,38 @@ bool uniformgrid=true,lazyheap=true;
 double *orig=0,*axis=0;
 int database_type=1;
 int max_age=200;
-double alpha=0.95;get
-double betha=0.9995;
+
+double alpha=0.95;
+double betha=0.9995; //INNA DEFINICJA NIZ W BOORU.NET!
+
 double lambda=200;
 double eps_v=0.05;
 int memory_bound;
 double eps_n=0.0006;
-
+int utility_option = GNGAlgorithm::None;
+double utility_k = 2.0;
 //check what is reffered int ptr-> and implement as standalones
+
+
+using namespace std;
+
+/*@@ Server @@*/
+//not an auto_ptr because is called by GNGAlgorithmControl
+SHMemoryManager * shm;
+//Shared memory takes care of deletion
+//auto_ptr<GNGAlgorithmControl> gngAlgorithmControl;
+//auto_ptr<GNGAlgorithm> gngAlgorithm;
+//auto_ptr<GNGGraph> gngGraph;
+GNGDatabase * gngDatabase;
+GNGAlgorithmControl * gngAlgorithmControl;
+GNGAlgorithm * gngAlgorithm;
+GNGGraph * gngGraph;
+//GNGDatabase * gngDatabase;
+//GNGNode::alloc_inst - delete also
+
+/*@@ Client @@*/
+managed_shared_memory* mshm1,* mshm2;
+GNGClient* gngClient;
 
 #undef DEBUG
 
@@ -72,12 +96,7 @@ RcppExport SEXP GNGRunServer() {
 	int *ptr = interserver_variables.find_or_construct<int>("GNG__serverCount") ();
 	SHMemoryManager::COUNTER = *ptr;
 
-
-    GNGAlgorithmControl * gngAlgorithmControl;
-    GNGAlgorithm * gngAlgorithm;
-    GNGGraph * gngGraph;
-    GNGDatabase* gngDatabase;
-    SHMemoryManager *shm;
+    
 
     shm = new SHMemoryManager(memory_bound); //nodes <-estimate!
     shm->new_segment(memory_bound); //database <-estimate!
@@ -89,6 +108,7 @@ RcppExport SEXP GNGRunServer() {
     GNGNode::mm = shm;
     GNGNode::alloc_inst = new ShmemAllocatorGNG(shm->get_segment(0)->get_segment_manager());
 
+    //TODO: bad design
     if(!orig){
         orig=new double[3];
         orig[0]=orig[1]=orig[2]=-2;
@@ -102,25 +122,36 @@ RcppExport SEXP GNGRunServer() {
 
     SHGNGExampleDatabase * database_vec = shm->get_segment(1)->construct< SHGNGExampleDatabase > ("database_vec")(alc);
 
-    gngAlgorithmControl = shm->get_segment(1)->construct<GNGAlgorithmControl > ("gngAlgorithmControl")();
+    gngAlgorithmControl = 
+            shm->get_segment(1)->construct<GNGAlgorithmControl > ("gngAlgorithmControl")(shm)
+            ;
 
 
 
     if(database_type==1)
-    	gngDatabase = new GNGDatabaseSimple(&gngAlgorithmControl->database_mutex, database_vec);
+    	gngDatabase =new GNGDatabaseSimple(&gngAlgorithmControl->database_mutex, database_vec);
     else if(database_type==2)
     	gngDatabase = new GNGDatabaseProbabilistic(&gngAlgorithmControl->database_mutex, database_vec);
 
 
-    gngGraph = shm->get_segment(0)->construct<GNGGraph > ("gngGraph")(&gngAlgorithmControl->grow_mutex, max_nodes);
+    gngGraph = 
+            shm->get_segment(0)->construct<GNGGraph > ("gngGraph")(&gngAlgorithmControl->grow_mutex, max_nodes)
+            ; //TODO: max_nodes tutaj !! inaczej bylby blad : poprawic
     gngAlgorithm = new GNGAlgorithm
-            (*gngGraph, gngDatabase, gngAlgorithmControl,
-            max_nodes, orig, axis, axis[0] / 4.0, max_nodes,
+            (*(gngGraph), gngDatabase, gngAlgorithmControl,
+            max_nodes, orig, axis, axis[0], max_nodes,
     		max_age, alpha, betha, lambda, //params for the algorithm
     		eps_v, eps_n
             );
+    
+    
+    REPORT(uniformgrid);
+    REPORT(lazyheap);
+    
+    
     gngAlgorithm->setToggleUniformGrid(uniformgrid);
     gngAlgorithm->setToggleLazyHeap(lazyheap);
+    gngAlgorithm->setUtilityOption(utility_option,utility_k);
     gngAlgorithmControl->setRunningStatus(false); //skrypt w R inicjalizuje  
 
     gngAlgorithm->runAlgorithm();
@@ -128,6 +159,16 @@ RcppExport SEXP GNGRunServer() {
     return wrap(0);
 }
 
+
+RcppExport SEXP GNGSet__utility_option(SEXP val){
+	utility_option = as<int>(val);
+	return wrap(0);
+}
+
+RcppExport SEXP GNGSet__utility_k(SEXP val){
+	utility_k = as<double>(val);
+	return wrap(0);
+}
 
 //TODO: lepsze settery i gettery (dataframe? nie wiem)
 RcppExport SEXP GNGSet__memory_bound(SEXP val){
@@ -229,9 +270,12 @@ RcppExport SEXP GNGClient__new(SEXP val_id){
 
    int id_tmp1 = id+1;
    int id_tmp2 = id+2;
-
-   managed_shared_memory *  mshm1= new managed_shared_memory(open_only,("SHMemoryPool_Segment"+to_string<int>(id_tmp1)).c_str());
-   managed_shared_memory *  mshm2= new managed_shared_memory(open_only,("SHMemoryPool_Segment"+to_string<int>(id_tmp2)).c_str());
+   gngClient =  new GNGClient();
+   
+   //tu sa wyciecki
+   
+   mshm1= new managed_shared_memory(open_only,("SHMemoryPool_Segment"+to_string<int>(id_tmp1)).c_str());
+   mshm2= new managed_shared_memory(open_only,("SHMemoryPool_Segment"+to_string<int>(id_tmp2)).c_str());
 
    GNGAlgorithmControl * gngAlgorithmControl = (mshm2->find< GNGAlgorithmControl > ("gngAlgorithmControl")).first;
    GNGGraph * gngGraph = (mshm1->find< GNGGraph >("gngGraph")).first;		
@@ -239,7 +283,7 @@ RcppExport SEXP GNGClient__new(SEXP val_id){
 
    ScopedLock sc(gngAlgorithmControl->grow_mutex); 
 
-   GNGClient * gngClient = new GNGClient();
+   
 
    gngClient->graph = gngGraph;
    gngClient->g_database = new GNGDatabaseSimple(&gngAlgorithmControl->database_mutex, database_vec);
@@ -266,14 +310,11 @@ RcppExport SEXP GNGClient__getAccumulatedError(SEXP _xp) {
 
     
     //alg nie w ggi ale dobra
-    return wrap(ptr->graph->getAccumulatedErrorShare());
+    return wrap(ptr->graph->getAccumulatedErrorShare(uniformgrid));
 }
 
 RcppExport SEXP GNGClient__updateBuffer(SEXP _xp){
-    
-    
     Rcpp::XPtr<GNGClient> ptr(_xp);
-
     ScopedLock sc(ptr->control->grow_mutex);
     
     //GraphAccess & graph = *(ptr->readGraph());
@@ -289,10 +330,6 @@ RcppExport SEXP GNGClient__updateBuffer(SEXP _xp){
     cout<<SIZE(ptr->buffer)<<endl;
     
     ptr->buffer.resize(maximumIndex+1);
-    
-    
-    
-    
     
     for(int i=0;i<=maximumIndex;++i){
         //hack!
@@ -360,7 +397,16 @@ RcppExport SEXP GNGClient__terminateServer(SEXP _xp){
 	Rcpp::XPtr<GNGClient> ptr(_xp);
 
 	ptr->control->setRunningStatus(false);
+        
+#ifdef DEBUG
+        dbg.push_back(100,"RcppInterface::killing server");
+#endif
+        
 	ptr->control->terminate();
+        
+        delete mshm1;
+        delete mshm2;
+        gngClient->buffer.clear(); //leave pointers, should be fine 
 
 	return wrap(0);
 }

@@ -49,23 +49,15 @@ public:
                 (msm_ptr->allocate(size));
         if (!ptr) 
             throw BasicException("Memory allocation error");
-        
-//        
-//        this->allocated += size;
-//        
         return ptr;
     }
 
-
     bool deallocate(void * ptr) {
         msm_ptr->deallocate(ptr);
-        
-        
         //TODO: any error handling ? why no documentation..
         return true;
     }
-
-    
+  
 };
 
 #endif	/* EXTMEMORYMANAGER_H */

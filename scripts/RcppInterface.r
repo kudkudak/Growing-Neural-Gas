@@ -4,16 +4,20 @@ setGenericVerif <- function(x,y){if(!isGeneric(x)){setGeneric(x,y)}else{}}
 
 dyn.load("RcppInterface.so")
 
-setClass("GNGClient",representation(pointer="externalptr"))
 
 GNGClient_method <- function(name){
 	paste("GNGClient",name,sep="__");
 }
-setClass("GNGClient",representation(pointer="externalptr"))
+setClass("GNGClient",representation(pointer="externalptr", server_pid="list"))
+
+
+
+
 setMethod("initialize",
-"GNGClient",function(.Object, ...) {
+"GNGClient",function(.Object, server_descriptor) {
     
-	.Object@pointer <- .Call(GNGClient_method("new"), ...)
+	.Object@pointer <- .Call(GNGClient_method("new"), server_descriptor[["server_id"]])
+    .Object@server_pid = server_descriptor[["server_pid"]]
 	.Object
 }
 )
@@ -64,9 +68,34 @@ GNGAddExamples<-function(x,preset,preset_size,...){
 }
 
 setMethod( "$", "GNGClient", function(x, name ) { 
+
 	#if(name=="addExamples") function(...) GNGAddExamples(x,...)
-	function(...) .Call( GNGClient_method(name) , x@pointer , ... )
-} )
+    if(name=="terminateServer"){
+        function(...){
+	        .Call( GNGClient_method(name) , x@pointer , ... )
+            if(length(x@server_pid) == 0){
+                print("WARNING!! : not provided server_pid in constructor. Leaving zombie thread")
+            }else{
+                # Terminate child process
+                # TODO: test behaviour with 2 clients in different threads?
+                # TODO: should check if he is parent of this server
+                # TODO: do it the other way : server is created in the main thread
+                # and it creates clients? 
+                #print("Terminating GNGServer")
+                #print(x@server_pid[[1]])
+                # TODO: I honestly have no idea why I have to call it twice..
+                # TODO: Find fork mechanism for windows AND unix !
+                y = collect(x@server_pid[[1]], wait=FALSE, timeout=1)
+                y = collect(x@server_pid[[1]],wait=FALSE, timeout =1)
+                y = collect(x@server_pid[[1]],wait=FALSE, timeout=1)
+            }
+        }
+    }
+    else{    
+	    function(...) .Call( GNGClient_method(name) , x@pointer , ... )
+    }
+} 
+)
 
 
 createGNGServer <- function(... ){
@@ -80,9 +109,8 @@ tmp<-function(...){
 }
 
 GNGCreateServer <- function(... ){
-	ch<-parallel(tmp(...))
-	
-	return(list(ch = ch, server_id = .Call("GNGGetServerID")))
+    server_pid<-parallel(tmp(...))	
+	return(list(server_pid = list(server_pid), server_id = .Call("GNGGetServerID")))
 }
 
 GNGVisualiseStepAnimation <- function(step,pause,... ){
@@ -96,9 +124,12 @@ GNGVisualise <- function(... ){
 	return(0)
 }
 
+GNG.Utility.None = 0
+GNG.Utility.BasicUtility = 1
+
 GNGSetParams<- function(max_nodes,orig,axis,dim,uniformgrid,lazyheap,debug_level,database_type,
 	max_age=200, alpha=0.95, betha=0.9995, lambda=200,
-		eps_v=0.05, eps_n=0.0006, memory_bound = 500000){
+		eps_v=0.05, eps_n=0.0006, memory_bound = 500000, utility_option = GNG.Utility.None, utility_k = 1){
 	if(hasArg(database_type)) .Call("GNGSet__database_type",database_type)
 	if(hasArg(max_nodes)) .Call("GNGSet__max_nodes",max_nodes)
 	if(hasArg(dim)) .Call("GNGSet__dim",dim)
@@ -108,6 +139,8 @@ GNGSetParams<- function(max_nodes,orig,axis,dim,uniformgrid,lazyheap,debug_level
 	if(hasArg(debug_level)) .Call("GNGSet__debug_level",debug_level) 
 	if(hasArg(memory_bound)) .Call("GNGSet__memory_bound",memory_bound)
 	
+	if(hasArg(utility_option)) .Call("GNGSet__utility_option",utility_option)
+	if(hasArg(utility_k)) .Call("GNGSet__utility_k", utility_k)
     .Call("GNGSet__max_age",max_age)
 	.Call("GNGSet__alpha",alpha)
 	.Call("GNGSet__betha",betha)

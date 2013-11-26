@@ -106,11 +106,8 @@ int main(int argc, char** argv) {
 
     testLocal();
 
-
-    //
-
-//    initGNGServer();
-	//testDatabase();
+    
+    
     return 0;
 }
 

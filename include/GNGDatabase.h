@@ -1,11 +1,11 @@
-/* 
- * File:   GNGExampleManager.h
- * Author: staszek
- *
- * Created on 11 sierpień 2012, 10:47
- */
+/*
+* File: GNGExampleManager.h
+* Author: Stanisław "kudkudak" Jastrzebski
+*
+* Created on 11 sierpień 2012, 10:47
+*/
 #ifndef GNGDATABASE_H
-#define	GNGDATABASE_H
+#define        GNGDATABASE_H
 
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -24,34 +24,38 @@
 
 struct GNGExample;
 
-typedef boost::interprocess::allocator<GNGExample, boost::interprocess::managed_shared_memory::segment_manager>  SHGNGExampleDatabaseAllocator;
-typedef boost::interprocess::vector<GNGExample, SHGNGExampleDatabaseAllocator>  SHGNGExampleDatabase;
+typedef boost::interprocess::allocator<GNGExample, boost::interprocess::managed_shared_memory::segment_manager> SHGNGExampleDatabaseAllocator;
+typedef boost::interprocess::vector<GNGExample, SHGNGExampleDatabaseAllocator> SHGNGExampleDatabase;
 
 
 /*
- * @brief Example used by database. 
+* @brief Example used by database.
+*
+* It is a vector of numbers. Any extension of GNGExample for simplicity has to add new information as extra dimensions, and after that
+* Database should interpret it and pass interpreted version to the algorithm module,.
+*
+* Every database is casting its examples to this type, because it contains all the information needed by the algorithm (position). All the
+* extensions are hidden from the algorithm (like probability).
+*
+* Every GNGExample can be created from double[] vector, and should be possible to be interpreted as double[] vector (by getPositionPtr),
+* which is in GNGExample O(1), but take longer for more sophisticated GNGExample classes
  * 
- * It is a vector of numbers. Any extension of GNGExample for simplicity has to add new information as extra dimensions, and after that
- * Database should interpret it and pass interpreted version to the algorithm module,.
  * 
- * Every database is casting its examples to this type, because it contains all the information needed by algorithm (position). All the
- * extensions are hidden from the algorithm (like probability).
+ * @note: Think over notion of parameters??
  * 
- * Every GNGExample can be created from double[] vector, and should be possible to be interpreted as double[] vector (by getPositionPtr),
- * which is in GNGExample O(1), but take longer for more sophisticated GNGExample classes
- * 
- */
+*
+*/
 class GNGExample{
     
 protected:
     GNGExample(){}
     int dim;
 public:
-    GNGExample(const double * vect, int _dim):position(_dim), dim(_dim){ 
+    GNGExample(const double * vect, int _dim):position(_dim), dim(_dim){
         memcpy(&position[0],vect,sizeof(double)*(this->getLength())); //TODO: +1 failure
     }
     GNGExample(int _dim):position(_dim), dim(_dim){
-    }   
+    }
     
     
     vector<double> position;
@@ -71,8 +75,8 @@ public:
     bool operator==(const GNGExample & ex) const{
         if(this->getLength()!=ex.getLength()) return false;
         for(int i;i<this->getLength();++i){
-            if(getPositionPtr()[i]-ex.getPositionPtr()[i]<-10e-10 || 
-                    getPositionPtr()[i]-ex.getPositionPtr()[i]>10e-10 ) 
+            if(getPositionPtr()[i]-ex.getPositionPtr()[i]<-10e-10 ||
+                    getPositionPtr()[i]-ex.getPositionPtr()[i]>10e-10 )
                 return false;
         }
         return true;
@@ -99,9 +103,9 @@ public:
     }
     
     /** Get double[] interpretation of GNGExample */
-    const double  * getPositionPtr() const{
+    const double * getPositionPtr() const{
         return &this->position[0];
-    }   
+    }
 };
 
 
@@ -117,7 +121,7 @@ public:
         this->position[_dim]=1.0;
         
         dim = _dim;
-    }      
+    }
     double getProbability() const{
         return this->position[dim];
     }
@@ -125,15 +129,19 @@ public:
     
     int getDoubleEncodingLength() const{
         return dim+1;
-    }    
+    }
 };
 
+
+
+
+
 /** Database for growing neural gas interface
- * 
- * @note For performance issue there is a very strong assumption : once written data point
- * doesn't change its pointer position. If it does, it should be very rare, and whole 
- * algorithm should be stopped
- */
+*
+* @note For performance issue there is a very strong assumption : once written data point
+* doesn't change its pointer position. If it does, it should be very rare, and whole
+* algorithm should be stopped (GNGExamples are passed by pointers not copied, maybe it should be changed?)
+*/
 class GNGDatabase
 {
 public:
@@ -141,15 +149,15 @@ public:
     
     virtual int getDim() const{ return this->dim; }
     virtual GNGExample drawExample() const=0 ;
-    virtual void addExample(const GNGExample  * ex )=0;
-    virtual void removeExample(const GNGExample  * ex)=0;
+    virtual void addExample(const GNGExample * ex )=0;
+    virtual void removeExample(const GNGExample * ex)=0;
     virtual int getSize() const=0;
     
     virtual ~GNGDatabase(){}
 private:
     GNGDatabase(const GNGDatabase& orig){}
     int dim;
-    GNGDatabase(){}   
+    GNGDatabase(){}
 };
 
 
@@ -170,28 +178,28 @@ private:
 
 
 /**
- * Database basing its storage in template class parameter. Each input has
- * N+1 dimensionality, where N+1th coordinate is probability of drawing
- * this sample.
- * 
- * @note VectorStorage should implement main functions of std::vector collection
- * @note Mutex should be inteprocess::inteprocess_mutex or boost::mutex
- */
+* Database basing its storage in template class parameter. Each input has
+* N+1 dimensionality, where N+1th coordinate is probability of drawing
+* this sample.
+*
+* @note VectorStorage should implement main functions of std::vector collection
+* @note Mutex should be inteprocess::inteprocess_mutex or boost::mutex
+*/
 template<typename VectorStorage ,typename Mutex>
 class GNGDatabaseProbabilistic: public GNGDatabase
 {
-    int index;   
+    int index;
     
     
     /**
-     * Synchronizes threads that accesses the database (to add incoming examples and etc.)
-     */
-    mutable Mutex * database_mutex; 
+* Synchronizes threads that accesses the database (to add incoming examples and etc.)
+*/
+    mutable Mutex * database_mutex;
 
 
     /** Pointer to storage vector. Note that it is a pointer, because we can choose quite strange storage policy (file-based, network-based),
-     * and it is convenient to be able to specify it by passing object that is already configured and constructed.
-     */
+* and it is convenient to be able to specify it by passing object that is already configured and constructed.
+*/
     boost::shared_ptr<VectorStorage> g_database;
     void grow_database(){
         #ifdef DEBUG
@@ -204,29 +212,29 @@ class GNGDatabaseProbabilistic: public GNGDatabase
         #endif
     }
 public:
-    int getSize() const{ 
-        int ret; 
-        database_mutex->lock();   
-        ret=(int)(g_database->size()); 
-        database_mutex->unlock(); 
+    int getSize() const{
+        int ret;
+        database_mutex->lock();
+        ret=(int)(g_database->size());
+        database_mutex->unlock();
         return ret;
     }
 
     
     /**Construct GNGDatabaseProbabilistic
-     *
-     * @param database_mutex Mutex used for inner synchronization
-     * @param alc Object implementing vector functionality used for storage (note: creator should destruct it) of *GNGExampleProbabilistic*
-     * @param dim Dimensionality of object (note: without "probability dim")
-     *
-     */
-    GNGDatabaseProbabilistic(Mutex * database_mutex, boost::shared_ptr<VectorStorage> alc, int dim): 
+*
+* @param database_mutex Mutex used for inner synchronization
+* @param alc Object implementing vector functionality used for storage (note: creator should destruct it) of *GNGExampleProbabilistic*
+* @param dim Dimensionality of object (note: without "probability dim")
+*
+*/
+    GNGDatabaseProbabilistic(Mutex * database_mutex, boost::shared_ptr<VectorStorage> alc, int dim):
     database_mutex(database_mutex),index(0), g_database(alc) , GNGDatabase(dim){
         g_database->reserve(100);
         __init_rnd();
     }
 
-    void removeExample(const GNGExample  * ex){
+    void removeExample(const GNGExample * ex){
         throw 1; //not implemented
     }
 
@@ -236,7 +244,7 @@ public:
         
         GNGExampleProbabilistic * ex; //casting up the tree
         do{ //rejection sampling
-         ex=&(*g_database)[__int_rnd(0,g_database->size()-1)]; 
+         ex=&(*g_database)[__int_rnd(0,g_database->size()-1)];
         }while(ex->position[this->getDim()]>__double_rnd(0,1.0));
 
 
@@ -244,7 +252,7 @@ public:
         return GNGExample(&ex->position[0],this->getDim());
     }
 
-    void addExample(const GNGExample  * ex2){  
+    void addExample(const GNGExample * ex2){
         if(ex2->getLength() != this->getDim()) throw invalid_argument("Wrong example dimensionality");
         
         const GNGExampleProbabilistic * ex2_casted = reinterpret_cast<const GNGExampleProbabilistic*>(ex2);
@@ -259,12 +267,12 @@ private:
 };
 
 /**
- * Database basing its storage in template class parameter. Each input has
- * N dimensionality
- * 
- * @note VectorStorage should implement main functions of std::vector collection
- * @note Mutex should be inteprocess::inteprocess_mutex or boost::mutex
- */
+* Database basing its storage in template class parameter. Each input has
+* N dimensionality
+*
+* @note VectorStorage should implement main functions of std::vector collection
+* @note Mutex should be inteprocess::inteprocess_mutex or boost::mutex
+*/
 template<class VectorStorage = SHGNGExampleDatabase,
         class Mutex = boost::interprocess::interprocess_mutex
 >
@@ -284,7 +292,7 @@ class GNGDatabaseSimple: public GNGDatabase
         #endif
     }
 public:
-    int getSize() const{ int ret; database_mutex->lock();     ret=(int)(g_database->size());  database_mutex->unlock(); return ret;}
+    int getSize() const{ int ret; database_mutex->lock(); ret=(int)(g_database->size()); database_mutex->unlock(); return ret;}
     
     GNGDatabaseSimple( Mutex * database_mutex, VectorStorage * alc, int dim
     ): database_mutex(database_mutex),g_database(alc), index(0),GNGDatabase(dim){
@@ -292,7 +300,7 @@ public:
         __init_rnd();
     }
     
-    void removeExample(const GNGExample  * ex){
+    void removeExample(const GNGExample * ex){
         throw 1; //not implemented
     }
     
@@ -303,7 +311,7 @@ public:
         return ex;
     }
     
-    void addExample(const GNGExample  * ex){
+    void addExample(const GNGExample * ex){
         database_mutex->lock();
         if(g_database->size() == g_database->capacity()) grow_database();
         g_database->push_back(*ex); //operator= kopiowania, ale jest to struct wiec nie trzeba nic pisac
@@ -328,13 +336,13 @@ private:
 
 class GNGDatabaseMeshes: public GNGDatabase{
 public:
-    std::vector<GNGDatabase*> meshes;    
+    std::vector<GNGDatabase*> meshes;
     
     GNGDatabaseMeshes(): GNGDatabase(3){
         __init_rnd();
     }
     
-    void removeExample(const GNGExample  * ex){     
+    void removeExample(const GNGExample * ex){
         throw 1; //not implemented
     }
     
@@ -347,13 +355,13 @@ public:
         return meshes[i]->drawExample();
     }
     
-    void addExample(const GNGExample  * ex){
+    void addExample(const GNGExample * ex){
         throw 1;
     }
     int getSize() const{ return 100000000; }
     ~GNGDatabaseMeshes(){
         
-    }    
+    }
 };
 
 
@@ -371,15 +379,15 @@ public:
         __init_rnd();
     }
     
-    void removeExample(const GNGExample  * ex){  
+    void removeExample(const GNGExample * ex){
         throw 1; //not implemented
     }
     
-   GNGExample drawExample()  const{
+   GNGExample drawExample() const{
         GNGExample ret(3);
 
         
-        ret.position[0] =  m_center[0];
+        ret.position[0] = m_center[0];
         ret.position[1] =m_center[1];
         ret.position[2] =((double)rand() / RAND_MAX)*m_r;
       
@@ -387,7 +395,7 @@ public:
         return ret;
     }
     
-    void addExample(const GNGExample  * ex){
+    void addExample(const GNGExample * ex){
      
         throw 1;
     }
@@ -409,11 +417,11 @@ public:
         __init_rnd();
     }
     
-    void removeExample(const GNGExample  * ex){  
+    void removeExample(const GNGExample * ex){
         throw 1; //not implemented
     }
     
-    GNGExample drawExample()  const{
+    GNGExample drawExample() const{
         GNGExample ret(3);
          
      
@@ -430,7 +438,7 @@ public:
         return ret;
     }
     
-    void addExample(const GNGExample  * ex){
+    void addExample(const GNGExample * ex){
      
         throw 1;
     }
@@ -449,11 +457,11 @@ public:
         __init_rnd();
     }
     
-    void removeExample(const GNGExample  * ex){   
+    void removeExample(const GNGExample * ex){
         throw 1; //not implemented
     }
     
-   GNGExample drawExample()  const{
+   GNGExample drawExample() const{
         GNGExample ret(3);
 
         ret.position[0] = ((double)rand() / RAND_MAX);
@@ -464,7 +472,7 @@ public:
         return ret;
     }
     
-    void addExample(const GNGExample  * ex){
+    void addExample(const GNGExample * ex){
      
         throw 1;
     }
@@ -488,11 +496,11 @@ public:
         __init_rnd();
     }
     
-    void removeExample(const GNGExample  * ex){
+    void removeExample(const GNGExample * ex){
         throw 1; //not implemented
     }
     
-    GNGExample drawExample()  const{
+    GNGExample drawExample() const{
         GNGExample ret(3);
      
         ret.position[1]=m_center[1];
@@ -502,7 +510,7 @@ public:
         return ret;
     }
     
-    void addExample(const GNGExample  * ex){
+    void addExample(const GNGExample * ex){
      
         throw 1;
     }
@@ -517,5 +525,4 @@ public:
 
 
 
-#endif	/* GNGEXAMPLEMANAGER_H */
-
+#endif        /* GNGEXAMPLEMANAGER_H */

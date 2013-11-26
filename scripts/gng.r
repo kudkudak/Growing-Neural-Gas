@@ -10,7 +10,7 @@ source("GNGConvertToIGraph.r")
 
 
 #testing!
-source("gngprob.r")
-source("measures.r")
-source("utils.r")
+#source("gngprob.r")
+#source("measures.r")
+#:source("utils.r")
 

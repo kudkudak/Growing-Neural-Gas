@@ -39,7 +39,9 @@ template<class Node, class Edge, class EdgeStorage >
 typename ExtGraphNodeManager<Node,Edge,EdgeStorage>::EdgeIterator 
 ExtGraphNodeManager<Node,Edge,EdgeStorage>::removeEdge(int a, int b){
 
-        
+               #ifdef DEBUG
+                dbg.push_back(-1, "ExtGraphNodeManager::removing edge, searching for it");
+                #endif
         FOREACH(edg,g_pool[a].edges){
             if(edg->nr==b) {
                 EdgeIterator rev = edg->rev;
@@ -48,11 +50,16 @@ ExtGraphNodeManager<Node,Edge,EdgeStorage>::removeEdge(int a, int b){
                 dbg.push_back(-1, "ExtGraphNodeManager::removing edge");
 #endif
                 EdgeIterator ret= g_pool[a].edges.erase(edg);
+                #ifdef DEBUG
+                dbg.push_back(-5, "ExtGraphNodeManager::removed edge from "+to_string(a));
+                #endif 
+                
                 g_pool[b].edges.erase(rev);
 
                 #ifdef DEBUG
-                dbg.push_back(-1, "ExtGraphNodeManager::edges pretty much erased");
-#endif
+                dbg.push_back(-1, "ExtGraphNodeManager::edges pretty much erased also from "+to_string(b));
+                #endif
+
                 g_pool[a].edgesCount--;
                 g_pool[b].edgesCount--;    
                 
@@ -69,12 +76,13 @@ typename ExtGraphNodeManager<Node,Edge,EdgeStorage>::EdgeIterator  ExtGraphNodeM
 
         
         int b=it->nr;
+        #ifdef DEBUG
+        dbg.push_back(-1,"ExtGraphNodeManager::removing edge getting reverse iterator");
+        #endif    
         
         EdgeIterator rev = it->rev; 
         
-        #ifdef DEBUG
-        dbg.push_back(-1,"ExtGraphNodeManager::removing edge");
-        #endif
+
         EdgeIterator ret=g_pool[a].edges.erase(it);
         g_pool[b].edges.erase(rev);
         
@@ -123,17 +131,21 @@ bool  ExtGraphNodeManager<Node,Edge,EdgeStorage>::growPool(){
         
     #ifdef DEBUG
     dbg.push_back(8,"ExtGraphNodeManager::growing");
+    dbg.push_back(8,to_string(g_pool_nodes)+" from to 2*this size");
     #endif
+
         g_pool_nodes*=2;   
         
-        Node * tmp=g_pool;
+        Node * tmp = g_pool;
        
         g_pool = new Node[g_pool_nodes];
 
     
-        memcpy(g_pool,tmp, sizeof(Node)*(g_pool_nodes)/2);
+        //memcpy(g_pool,tmp, sizeof(Node)*(g_pool_nodes)/2);
        
         m_first_free=g_pool_nodes/2;
+        
+
         #ifdef DEBUG
         dbg.push_back(8,"ExtGraphNodeManager::copied old nodes");
         #endif        
@@ -141,9 +153,14 @@ bool  ExtGraphNodeManager<Node,Edge,EdgeStorage>::growPool(){
         //naprawa pointerow
         
         for(int i=0;i<(g_pool_nodes/2);++i){
-            REPORT(i);
+            g_pool[i] = tmp[i];
             if(g_pool[i].occupied){
-                g_pool[i].edges = tmp[i].edges; //kopiowanie krawedzi
+                g_pool[i].nr = tmp[i].nr;
+  
+                FOREACH(edg,tmp[i].edges){
+                    this->addUDEdge(i, edg->nr);
+                }
+                
             }
         }
         
@@ -161,11 +178,13 @@ bool  ExtGraphNodeManager<Node,Edge,EdgeStorage>::growPool(){
             else g_pool[i].nextFree = -1;           
         }
         
+        
+        //TODO: add assert
         #ifdef DEBUG
-        dbg.push_back(8,"ExtGraphNodeManager::all pointer corrected");
+        dbg.push_back(8,"ExtGraphNodeManager::all pointer corrected (untested)");
         #endif 
         
-        delete tmp;
+        delete[] tmp;
         
         #ifdef DEBUG
         dbg.push_back(8,"ExtGraphNodeManager::m_free="+to_string(m_first_free));
@@ -261,6 +280,8 @@ void ExtGraphNodeManager<Node,Edge,EdgeStorage>::init(int start_number)  {
 template<class Node, class Edge, class EdgeStorage >
 ExtGraphNodeManager<Node,Edge,EdgeStorage>::ExtGraphNodeManager(int start_number)  {
     this->init(start_number);
+//    delete[] g_pool;
+//    this->init(start_number);
 }
 template<class Node, class Edge, class EdgeStorage >
 int ExtGraphNodeManager<Node,Edge,EdgeStorage>::newNode() {

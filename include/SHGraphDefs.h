@@ -1,12 +1,12 @@
-/* 
- * File:   SHGraphDefs.h
- * Author: staszek
- *
- * Created on 11 sierpień 2012, 08:18
- */
+/*
+* File: SHGraphDefs.h
+* Author: staszek
+*
+* Created on 11 sierpień 2012, 08:18
+*/
 
 #ifndef SHGRAPHDEFS_H
-#define	SHGRAPHDEFS_H
+#define        SHGRAPHDEFS_H
 
 
 
@@ -25,25 +25,29 @@
 
 class SHGNGEdge;
 
-typedef boost::interprocess::allocator<SHGNGEdge, boost::interprocess::managed_shared_memory::segment_manager>  ShmemAllocatorGNG;
+typedef boost::interprocess::allocator<SHGNGEdge, boost::interprocess::managed_shared_memory::segment_manager> ShmemAllocatorGNG;
 typedef boost::interprocess::vector<SHGNGEdge, ShmemAllocatorGNG> GNGVectorTempl;
 typedef boost::interprocess::list<SHGNGEdge, ShmemAllocatorGNG> GNGListTempl;
 
-typedef  boost::interprocess::list<SHGNGEdge, ShmemAllocatorGNG> GNGList;
+typedef boost::interprocess::list<SHGNGEdge, ShmemAllocatorGNG> GNGList;
 typedef typename GNGListTempl::iterator GNGListTemplIterator;
 
 
 /**
- * Basic interface for Node in GNGGraph.
- * For information only, because actual GNGNode implementation doesn't
- * inherit after this class (vtable perfomance issue).
- */
+* Basic interface for Node in GNGGraph.
+* For information only, because actual GNGNode implementation doesn't
+* inherit after this class (vtable perfomance issue).
+ * 
+ * 
+ * Every inheriting class should implement = operator, but note, that = operator
+ * doesn't copy edges
+*/
 class GNGNode{
-public:   
+public:
     int error_cycle;
-    double error; 
+    double error;
     double error_new;
-    int edgesCount; 
+    int edgesCount;
     int nr;
     bool occupied;
     
@@ -60,8 +64,8 @@ public:
 };
 
 /**
- * GNG Edge kept in shared memory.
- */
+* GNG Edge kept in shared memory.
+*/
 class SHGNGEdge{ public:
     
     int nr;
@@ -70,7 +74,7 @@ class SHGNGEdge{ public:
     GNGListTemplIterator rev;
     
     static int size(){
-        return sizeof(int)*2 + sizeof(double)*1 + sizeof(GNGListTemplIterator)*1; 
+        return sizeof(int)*2 + sizeof(double)*1 + sizeof(GNGListTemplIterator)*1;
    }
     
     SHGNGEdge():error(0),age(0){}
@@ -80,18 +84,25 @@ class SHGNGEdge{ public:
 
 
 /**
- * GNG Node kept in shared memory.
- */
+* GNG Node kept in shared memory.
+*/
 class SHGNGNode: public GNGNode
-{ 
+{
 public:
     static MemoryAllocator * mm;
     static ShmemAllocatorGNG * alloc_inst;
     int nextFree;
-
-    /**
-    * @note Hack for memory be allocated to in SHM space (g_pool)
-    */
+    double position[GNG_MAX_DIMENSION]; //wymiar//
+    GNGList edges; //jest w shm mam nadzieje, chyba tak. do sprawdzenia
+    
+    bool operator=(const  SHGNGNode & r){
+        GNGNode::operator=(r);
+        memcpy(position, r.position, sizeof(double)*GNG_MAX_DIMENSION); //TODO: get rid of this 
+    }
+    
+     /**
+     * @note Hack for memory be allocated to in SHM space (g_pool)
+     */
      void* operator new[](std::size_t size){
          return mm->allocate(size);
          
@@ -103,17 +114,20 @@ public:
      void operator delete(void * ptr){
          mm->deallocate(ptr);
      }
-
+     void operator delete[](void * ptr){
+         mm->deallocate(ptr);
+     }
+     
      double dist(GNGNode * gnode) const{ //dist doesnt account for param
-    	 using namespace std;
+             using namespace std;
          SHGNGNode * node = reinterpret_cast<SHGNGNode*>(gnode); //no error handling for performance
 
-    	 double ret=0;
-    	 REP(i,GNG_DIM){
-    		 ret+=(this->position[i]-node->position[i])*
+             double ret=0;
+             REP(i,GNG_DIM){
+                     ret+=(this->position[i]-node->position[i])*
                          (this->position[i]-node->position[i]);
-    	 }
-    	 return sqrt(ret);
+             }
+             return sqrt(ret);
      }
 
      friend std::ostream& operator<<(std::ostream& out, const SHGNGNode & node){
@@ -143,11 +157,8 @@ public:
                  sizeof(int)*4 + sizeof(bool)*1;
      }
      
-    double position[GNG_MAX_DIMENSION]; //wymiar//
 
-    //std::list<GNGEdge> * edges;
-    GNGList edges; //jest w shm mam nadzieje, chyba tak. do sprawdzenia
-};   
+};
 
 
 
@@ -189,14 +200,13 @@ class GNGNodeOffline{ public:
     double position[GNG_MAX_DIMENSION]; //wymiar//
     
      
-    int edgesCount; 
+    int edgesCount;
     int nr;
     bool occupied;
     int nextFree;
     
     std::list<SHGNGEdge> edges; //jest w shm mam nadzieje, chyba tak. do sprawdzenia
-};   
+};
 
 
-#endif	/* SHGRAPHDEFS_H */
-
+#endif        /* SHGRAPHDEFS_H */

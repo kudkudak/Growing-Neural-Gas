@@ -114,15 +114,16 @@
 // }
 // 
 
+ //TODO: convert to easy in C++ unit test, we need tests like this
  void testLocal() {
-    dbg.set_debug_level(7);
+    dbg.set_debug_level(12);
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     
     config.databaseType = GNGConfiguration::DatabaseProbabilistic;
     config.graph_storage = GNGConfiguration::SharedMemory;
     
     GNGServer::setConfiguration(config); 
-    
+
     double * vect = new double[4*1000];
     for (int i = 0; i < 1000; ++i) {
         
@@ -132,28 +133,32 @@
         vect[3+(i)*4] = __double_rnd(0, 1);
         
     }
+    dbg.push_back(12, "testLocal::Server running");
     
-  
     GNGServer::getInstance().run();
     
-    dbg.push_back(12, "Server running");
+
     
     GNGClient gngClient("Server0", GNGServer::getInstance().getCurrentConfiguration());
     
-    dbg.push_back(12, "Client constructed");
+    dbg.push_back(12, "testLocal::Client constructed");
     
     gngClient.addExamples(&vect[0], 1000, 4);
     delete[] vect;
     
-    dbg.push_back(12, "Completed testLocal()");
-    
-     boost::posix_time::millisec workTime(500);
+   
+    boost::posix_time::millisec workTime(500);
 
+    
+    
+    dbg.push_back(12, "testLocal::Collecting results");
+    
     while(true){
        boost::this_thread::sleep(workTime);
        REPORT(GNGServer::getInstance().getGraph()->getNumberNodes()); 
-//       REPORT(GNGServer::getInstance().getAlgorithm()->CalculateAccumulatedError());
     }
+    
+    dbg.push_back(12, "testLocal::Completed testLocal()");
  
  }
 

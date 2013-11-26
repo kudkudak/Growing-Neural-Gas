@@ -30,7 +30,9 @@ typedef long long LL;
 #define ST first
 #define ND second
 
-#define REPORT(x) cout<<#x<<"="<<(x)<<endl<<flush;
+
+#define REPORT(x) cout<<#x<<"="<<(x)<<endl<<std::flush;
+
 
 #include <sstream>
 #include <string>
@@ -91,5 +93,26 @@ struct BasicException : public std::exception
    ~BasicException() throw () {} // Updated
    const char* what() const throw() { return s.c_str(); }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//TODO: add DBG() MACRO!
+//TOTO: add ASSERT() MACRO!
+
+
+
 
 #endif	/* UTILS_H */

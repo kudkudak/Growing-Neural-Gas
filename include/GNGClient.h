@@ -1,12 +1,12 @@
-/* 
- * File:   GNGClient.h
- * Author: Stanislaw "kudkudak" Jastrzebski <grimghil[at]gmail[dot]com>
- *
- * Created on October 17, 2013, 8:14 PM
- */
+/*
+* File: GNGClient.h
+* Author: Stanislaw "kudkudak" Jastrzebski <grimghil[at]gmail[dot]com>
+*
+* Created on October 17, 2013, 8:14 PM
+*/
 
 #ifndef GNGCLIENT_H
-#define	GNGCLIENT_H
+#define        GNGCLIENT_H
 
 #include "Utils.h"
 #include "GNGConfiguration.h"
@@ -32,16 +32,16 @@ public:
     } connection_type;
     
     /**
-     * Create instance of GNGClient
-     * @param server_identifier It is server identifier, that is enough information to connect to connect
-     * @param server_configuration Current configuration of server (has to be updated in case of severe changes)
-     */
-    GNGClient(std::string server_identifier, GNGConfiguration server_configuration): 
+* Create instance of GNGClient
+* @param server_identifier It is server identifier, that is enough information to connect to connect
+* @param server_configuration Current configuration of server (has to be updated in case of severe changes)
+*/
+    GNGClient(std::string server_identifier, GNGConfiguration server_configuration):
                 server_identifier(server_identifier),
                 server_configuration(server_configuration)
     {
-         message_buffer =  //create shared memory segment reference
-                 new boost::interprocess::managed_shared_memory(boost::interprocess::open_only,  
+         message_buffer = //create shared memory segment reference
+                 new boost::interprocess::managed_shared_memory(boost::interprocess::open_only,
                         SHMemoryManager::generate_name(server_identifier,"MessageBufor").c_str())
                 ;
          
@@ -56,13 +56,13 @@ public:
     
     
     /**
-     * 
-     * @param databaseType 
-     * @param examples_encoding concatenation of casted GNGExamples to double array. Double array can be stored in shared memory. Should be
-     * acquired using GNGExample->getDoubleEncoding()
-     * @param examples_count
-     * @param encoding_length How many doubles per example. GNGExample->getDoubleEncodingLenght()
-     */
+*
+* @param databaseType
+* @param examples_encoding concatenation of casted GNGExamples to double array. Double array can be stored in shared memory. Should be
+* acquired using GNGExample->getDoubleEncoding()
+* @param examples_count
+* @param encoding_length How many doubles per example. GNGExample->getDoubleEncodingLenght()
+*/
     void addExamples(const double * examples, int examples_count, int encoding_length){
         
         std::size_t bytes = sizeof(double)*examples_count*encoding_length;
@@ -96,7 +96,7 @@ public:
         //post message
         this->message_buffer_mutex->lock();
 
-        SHGNGMessage * current_message = this->message_buffer->find_or_construct<SHGNGMessage>("current_message")();           
+        SHGNGMessage * current_message = this->message_buffer->find_or_construct<SHGNGMessage>("current_message")();
 
         if(current_message->state == SHGNGMessage::Processed || current_message->state == SHGNGMessage::NoState){
             current_message->state = SHGNGMessage::Waiting;
@@ -117,5 +117,4 @@ public:
 };
 
 
-#endif	/* GNGCLIENT_H */
-
+#endif        /* GNGCLIENT_H */
