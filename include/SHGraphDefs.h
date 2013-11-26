@@ -159,7 +159,7 @@ class GNGNodeOffline{ public:
          
          FOREACH(edg, rhs.edges){ //tutaj sie gubil przy dodawniu wierzcholka, tak mysle, while sa niebezpieczne
              if((i++)==edgesCount) break; //ale tu sie zatrzymuje, hm..
-             edges.push_back(*edg); //rev nieistotne
+             edges.push_back(GNGEdge(edg->nr)); //rev nieistotne
          }
          //*(this->edges) = *(rhs.edges);
      }
