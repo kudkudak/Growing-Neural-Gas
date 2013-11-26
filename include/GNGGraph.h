@@ -87,8 +87,9 @@ public:
     }
 
     int newNode(double const *position) {
+        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+        
          if (super::poolIsFull()) {
-                 boost::interprocess::scoped_lock<Mutex>(*m_mutex);
                  super::growPool(); 
                  g_pool_share = super::getPool();
          }

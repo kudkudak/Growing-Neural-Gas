@@ -8,7 +8,7 @@ unix_processes_before = system("ps", intern=TRUE)
 
 for (k in 1:200){
 
-    GNGSetParams(debug_level=8, max_nodes=600,
+    GNGSetParams(debug_level=7, max_nodes=600,
                 orig=c(-2, -2, -2), axis=c(2, 2, 2),
                 database_type=2, memory_bound = 5000000)
     server = GNGCreateServer()

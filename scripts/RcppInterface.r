@@ -130,6 +130,14 @@ GNG.Utility.BasicUtility = 1
 GNGSetParams<- function(max_nodes,orig,axis,dim,uniformgrid,lazyheap,debug_level,database_type,
 	max_age=200, alpha=0.95, betha=0.9995, lambda=200,
 		eps_v=0.05, eps_n=0.0006, memory_bound = 500000, utility_option = GNG.Utility.None, utility_k = 1){
+
+    if(database_type == 2){
+        print("You are using DatabaseProbabilistic. Please remember to add column with probabilities of rejecting sample")
+    }
+    else{
+        print("You are using unsupported database type, please change to DatabaseProbabilistic (2)")
+    }
+
 	if(hasArg(database_type)) .Call("GNGSet__database_type",database_type)
 	if(hasArg(max_nodes)) .Call("GNGSet__max_nodes",max_nodes)
 	if(hasArg(dim)) .Call("GNGSet__dim",dim)

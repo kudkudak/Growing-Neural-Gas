@@ -333,7 +333,8 @@ RcppExport SEXP GNGClient__updateBuffer(SEXP _xp){
         //hack!
         if(!g_pool[i].occupied) { 
             ptr->buffer[i].occupied=false; 
-            for(int i=0;i<GNG_DIM;++i) ptr->buffer[i].position[i]=0; continue;  
+            for(int i=0;i<GNG_DIM;++i) ptr->buffer[i].position[i]=0; 
+            continue;  
         } //no more data is needed here (for in getNodeMatrix it will simply check for correctness of buffer line
        
         
@@ -369,6 +370,8 @@ RcppExport SEXP GNGClient__getNumberNodesOnline(SEXP _xp){
 RcppExport SEXP GNGClient__getBufferSize(SEXP _xp){
 
     Rcpp::XPtr<GNGClient> ptr(_xp);
+    
+    REPORT(ptr->buffer.size());
     
     return wrap((int)(ptr->buffer.size()));
     
