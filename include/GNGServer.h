@@ -36,26 +36,32 @@ class GNGServer{
     int listening_daemon_sleep_time;
     static GNGConfiguration current_configuration;
     static boost::mutex static_lock;
-    static int START_NODES; //TODO: change to 1000!
+    static int START_NODES; 
+    
+    /* Should Server allow for connections from other processes*/
+    bool crossprocess_communication;
 
     /**Construct GNGServer using configuration*/
-    GNGServer(GNGConfiguration configuration): listening_daemon_sleep_time(50){
+    GNGServer(GNGConfiguration configuration): listening_daemon_sleep_time(50), crossprocess_communication(true){
         this->current_configuration = configuration; //assign configuration
         
         #ifdef DEBUG
-             dbg.push_back(10, "GNGServer()::constructing GNGServer");
+             DBG(10, "GNGServer()::constructing GNGServer");
         #endif
 
         GNG_DIM = current_configuration.dim;
 
        
 
-        this->shm = std::auto_ptr<SHMemoryManager>(new SHMemoryManager("Server"+to_string<int>(current_configuration.serverId)));
+        if(crossprocess_communication)
+            this->shm = std::auto_ptr<SHMemoryManager>(new SHMemoryManager("Server"+to_string<int>(current_configuration.serverId)));
               
         if(current_configuration.graph_storage == GNGConfiguration::SharedMemory){
          
+            if(!crossprocess_communication) throw BasicException("SharedMemory configuration with switched off crossproces_communication");
+            
             #ifdef DEBUG
-                 dbg.push_back(10, "GNGServer()::constructing graph storage segment");
+                 DBG(10, "GNGServer()::constructing graph storage segment");
             #endif
             
             this->shm->new_named_segment("GraphStorage",current_configuration.graph_memory_bound);
@@ -83,20 +89,24 @@ class GNGServer{
             throw BasicException("Database type not supported");
         }
         
-        #ifdef DEBUG
-             dbg.push_back(10, "GNGServer()::gngDatabase and gngAlgorithmicControl constructed");
-        #endif
+  
+        DBG(10, "GNGServer()::gngDatabase and gngAlgorithmicControl constructed");
+      
         if(current_configuration.graph_storage == GNGConfiguration::SharedMemory){
             
-            this->gngGraph = std::auto_ptr<SHGNGGraph>(this->shm->get_named_segment("GraphStorage")->
-                    construct<SHGNGGraph>("gngGraph")(&this->gngAlgorithmControl->grow_mutex,GNGServer::START_NODES));
-            #ifdef DEBUG
-                 dbg.push_back(10, "GNGServer()::constructed shared graph");
-            #endif
+            SharedMemoryGraphStorage * storage 
+                    = this->shm->get_named_segment("GraphStorage")->
+                    construct<SharedMemoryGraphStorage >("storage")(GNGServer::START_NODES);
+            
+            this->gngGraph = std::auto_ptr<SHGNGGraph<SharedMemoryGraphStorage> >(
+                    new SHGNGGraph<SharedMemoryGraphStorage>(&this->gngAlgorithmControl->grow_mutex, storage));
+      
+            DBG(10, "GNGServer()::constructed shared graph");
+        
         }
         /* Initiliaze main computing object */
         this->gngAlgorithm = std::auto_ptr<GNGAlgorithm>(new GNGAlgorithm
-        ( *this->gngGraph.get(), //I do not want algorithm to depend on boost
+        ( this->gngGraph.get(), //I do not want algorithm to depend on boost
                 this->gngDatabase.get(),
                 this->gngAlgorithmControl.get(),
                 &current_configuration.orig[0],
@@ -112,7 +122,7 @@ class GNGServer{
         ));
         
         #ifdef DEBUG
-             dbg.push_back(10, "GNGServer()::constructed algorithm object");
+             DBG(10, "GNGServer()::constructed algorithm object");
         #endif
         
        
@@ -132,11 +142,11 @@ class GNGServer{
 
         
         #ifdef DEBUG
-        dbg.push_back(10, "GNGServer::run::waiting for database");
+        DBG(10, "GNGServer::run::waiting for database");
         #endif
         while (this->getDatabase()->getSize() < 200);
         #ifdef DEBUG
-        dbg.push_back(10, "GNGServer::run::proceeding to algorithm");
+        DBG(10, "GNGServer::run::proceeding to algorithm");
         #endif
 
         
@@ -147,7 +157,7 @@ class GNGServer{
     //TODO: use unique_ptr here
     std::auto_ptr<GNGAlgorithmControl> gngAlgorithmControl;
     std::auto_ptr<GNGAlgorithm> gngAlgorithm;
-    std::auto_ptr<SHGNGGraph> gngGraph;
+    std::auto_ptr<SHGNGGraph<SharedMemoryGraphStorage> > gngGraph;
     std::auto_ptr<GNGDatabase> gngDatabase;
     std::auto_ptr<SHMemoryManager> shm;
     /**
@@ -156,6 +166,12 @@ class GNGServer{
 **/
     boost::interprocess::interprocess_mutex * message_bufor_mutex;
 
+    
+    
+    
+    
+    
+    
     /*Section : protocol handling messages regardless of the source*/
   
     void _handle_AddExamples(double * examples, int count){
@@ -171,7 +187,7 @@ class GNGServer{
                 this->getDatabase()->addExample(&ex);
             }
         else{
-            dbg.push_back(100,"Not supported database type" );
+            DBG(100,"Not supported database type" );
             throw BasicException("Not supported database type");
         }
     }
@@ -180,6 +196,12 @@ public:
     void run() {
         boost::thread workerThread(boost::bind(&GNGServer::_run, this));
     }
+    
+    
+    void addExamples(double * examples, int count){
+        this->_handle_AddExamples(examples, count);
+    }
+    
     static void setConfiguration(GNGConfiguration configuration){
         GNGServer::current_configuration = configuration;
     }
@@ -205,7 +227,7 @@ public:
     GNGAlgorithm * getAlgorithm(){
         return this->gngAlgorithm.get();
     }
-    SHGNGGraph * getGraph(){
+    GNGGraph<SHGNGNode> * getGraph(){
         return this->gngGraph.get();
     }
     GNGDatabase * getDatabase(){
@@ -216,10 +238,12 @@ public:
         return this->shm.get();
     }
     
-    /**Run main processing loop for shared memory communication channel*/
+    /**Run main processing loop for shared memory communication channel
+     * @note: Not developed for now, until there is a need for crossprocess communication
+     */
     void runSHListeningDaemon(){
         #ifdef DEBUG
-        dbg.push_back(12, "GNGServer:: runSHListeningDaemon");
+        DBG(12, "GNGServer:: runSHListeningDaemon");
         #endif
         //TODO: add pause checking
         while(true){
@@ -231,7 +255,7 @@ public:
                 int type = current_message->type;
                 
                 #ifdef DEBUG
-                dbg.push_back(12, "GNGServer::runListeningDaemon caught message of type "+to_string<int>(type));
+                DBG(12, "GNGServer::runListeningDaemon caught message of type "+to_string<int>(type));
                 #endif
 
                 if(type == SHGNGMessage::AddExamples){
@@ -240,7 +264,7 @@ public:
                     
                     
                     if(!message_params){
-                        dbg.push_back(100, "GNGServer::runSHListeningDaemon not found message" );
+                        DBG(100, "GNGServer::runSHListeningDaemon not found message" );
                         throw BasicException("GNGServer::runSHListeningDaemon not found message");
                     }
                     
@@ -249,7 +273,7 @@ public:
                             getSHM()->get_named_segment("MessageBufor")->find<double>(message_params->pointer_reference_name.c_str()).first;
                     
                     if(!examples){
-                        dbg.push_back(100, "GNGServer::runSHListeningDaemon not found examples to add" );
+                        DBG(100, "GNGServer::runSHListeningDaemon not found examples to add" );
                         throw BasicException("GNGServer::runSHListeningDaemon not found examples to add");
                     }
                     

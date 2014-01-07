@@ -34,24 +34,25 @@ protected:
     typedef typename EdgeStorage::iterator EdgeIterator;
 
     Node *  g_pool; 
-    int m_first_free,m_nodes,m_maximum_index,g_pool_nodes;
+    
 
     /**
      * @brief This will grow (populate) the pool, but is called by the encapsulating function. 
      * 
      * @return Has the operation succeeded
      */
-    bool growPool();
-    bool poolIsFull(){
-        return m_first_free==-1;
-    }
+
     
     ExtGraphNodeManager(const ExtGraphNodeManager& orig){}
 public:
+    bool growPool();
+    bool poolIsFull(){
+        return m_first_free==-1;
+    }   
     /** For debugging purposes, prints pool
      */
     std::string reportPool(bool sorted=false);
- 
+    int m_first_free,m_nodes,m_maximum_index,g_pool_nodes;
     
     ExtGraphNodeManager(int start_number);
     ExtGraphNodeManager(){}
@@ -80,7 +81,7 @@ public:
 
     void removeRevEdge(int a,EdgeIterator it);
 
-    EdgeIterator removeEdge(int a, int b);
+    bool removeEdge(int a, int b);
     EdgeIterator removeEdge(int a,EdgeIterator it);
     
     void addUDEdge(int a, int b);

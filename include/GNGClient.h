@@ -1,6 +1,8 @@
 /*
 * File: GNGClient.h
 * Author: Stanislaw "kudkudak" Jastrzebski <grimghil[at]gmail[dot]com>
+ * 
+ * @note: This file is currently not developed, until there is a need for communication from other processes
 *
 * Created on October 17, 2013, 8:14 PM
 */

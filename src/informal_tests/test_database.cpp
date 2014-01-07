@@ -1,6 +1,7 @@
 
 #include "MemoryAllocator.h"
 #include "GNGServer.h"
+#include "Utils.h"
 
 // 
 // void initGNGServer(){
@@ -141,7 +142,7 @@
     
     GNGClient gngClient("Server0", GNGServer::getInstance().getCurrentConfiguration());
     
-    dbg.push_back(12, "testLocal::Client constructed");
+    DBG(12, "testLocal::Client constructed");
     
     gngClient.addExamples(&vect[0], 1000, 4);
     delete[] vect;
@@ -159,6 +160,50 @@
     }
     
     dbg.push_back(12, "testLocal::Completed testLocal()");
+ 
+ }
+
+
+ /* Without */
+void testNewInterface() {
+    dbg.set_debug_level(12);
+    GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
+    
+    config.databaseType = GNGConfiguration::DatabaseProbabilistic;
+    config.graph_storage = GNGConfiguration::SharedMemory;
+    
+    GNGServer::setConfiguration(config); 
+
+    double * vect = new double[4*1000];
+    for (int i = 0; i < 1000; ++i) {
+        
+        vect[0+(i)*4] = __double_rnd(0, 1);
+        vect[1+(i)*4] = __double_rnd(0, 1);
+        vect[2+(i)*4] = __double_rnd(0, 1);
+        vect[3+(i)*4] = __double_rnd(0, 1);
+        
+    }
+    DBG(12, "testNewInterface::Server running");
+    
+    GNGServer::getInstance().run();
+    GNGServer::getInstance().addExamples(&vect[0], 1000);
+    
+    
+    delete[] vect;
+    
+   
+    boost::posix_time::millisec workTime(500);
+
+    
+    
+    dbg.push_back(12, "testNewInterface::Collecting results");
+    
+    while(true){
+       boost::this_thread::sleep(workTime);
+       REPORT(GNGServer::getInstance().getGraph()->getNumberNodes()); 
+    }
+    
+    dbg.push_back(12, "testNewInterface::Completed testLocal()");
  
  }
 

@@ -8,66 +8,47 @@
 
 template<class Node, class Edge, class EdgeStorage >
 bool  ExtGraphNodeManager<Node,Edge,EdgeStorage>::isEdge(int a, int b){
-        
         FOREACH(edg,(g_pool[a].edges)){
             if(edg->nr == b) return true;
         }
-        
         return false;
     }
     
     
 template<class Node, class Edge, class EdgeStorage >
-void  ExtGraphNodeManager<Node,Edge,EdgeStorage>::removeRevEdge(int a,EdgeIterator it){
-     
-        
-        int b=it->nr;
-        
+void  ExtGraphNodeManager<Node,Edge,EdgeStorage>::removeRevEdge(int a,EdgeIterator it){      
+        int b=it->nr;       
         EdgeIterator rev = it->rev; 
-        #ifdef DEBUG
-                dbg.push_back(-1,"ExtGraphNodeManager::removing rev edge");
-        #endif
+        DBG(-1,"ExtGraphNodeManager::removing rev edge");
         g_pool[b].edges.erase(rev);       
-        #ifdef DEBUG
-        dbg.push_back(-1,"ExtGraphNodeManager::edge pretty much erased");  
-#endif
+        DBG(-1,"ExtGraphNodeManager::edge pretty much erased");  
         g_pool[b].edgesCount--;      
         
     }
      
 template<class Node, class Edge, class EdgeStorage >
-typename ExtGraphNodeManager<Node,Edge,EdgeStorage>::EdgeIterator 
+bool
 ExtGraphNodeManager<Node,Edge,EdgeStorage>::removeEdge(int a, int b){
+        DBG(-1, "ExtGraphNodeManager::removing edge, searching for it");
 
-               #ifdef DEBUG
-                dbg.push_back(-1, "ExtGraphNodeManager::removing edge, searching for it");
-                #endif
-        FOREACH(edg,g_pool[a].edges){
+        FOREACH(edg, g_pool[a].edges){
             if(edg->nr==b) {
                 EdgeIterator rev = edg->rev;
-                
-                #ifdef DEBUG
-                dbg.push_back(-1, "ExtGraphNodeManager::removing edge");
-#endif
-                EdgeIterator ret= g_pool[a].edges.erase(edg);
-                #ifdef DEBUG
-                dbg.push_back(-5, "ExtGraphNodeManager::removed edge from "+to_string(a));
-                #endif 
-                
+                DBG(-1, "ExtGraphNodeManager::removing edge");
+                EdgeIterator ret= g_pool[a].edges.erase(edg);   
+                DBG(-5, "ExtGraphNodeManager::removed edge from "+to_string(a));  
                 g_pool[b].edges.erase(rev);
-
-                #ifdef DEBUG
-                dbg.push_back(-1, "ExtGraphNodeManager::edges pretty much erased also from "+to_string(b));
-                #endif
+                DBG(-1, "ExtGraphNodeManager::edges pretty much erased also from "+to_string(b));
 
                 g_pool[a].edgesCount--;
                 g_pool[b].edgesCount--;    
-                
-                return ret;
+                return true;
+//                return ret;
             }
         }
         
-        return g_pool[a].edges.end();
+        return false;
+//        return g_pool[a].edges.end();
     }   
     
     
@@ -76,9 +57,9 @@ typename ExtGraphNodeManager<Node,Edge,EdgeStorage>::EdgeIterator  ExtGraphNodeM
 
         
         int b=it->nr;
-        #ifdef DEBUG
-        dbg.push_back(-1,"ExtGraphNodeManager::removing edge getting reverse iterator");
-        #endif    
+        
+        DBG(-1,"ExtGraphNodeManager::removing edge getting reverse iterator");
+            
         
         EdgeIterator rev = it->rev; 
         
@@ -86,9 +67,9 @@ typename ExtGraphNodeManager<Node,Edge,EdgeStorage>::EdgeIterator  ExtGraphNodeM
         EdgeIterator ret=g_pool[a].edges.erase(it);
         g_pool[b].edges.erase(rev);
         
-        #ifdef DEBUG
-        dbg.push_back(-1,"ExtGraphNodeManager::edges pretty much erased");
-        #endif
+        
+        DBG(-1,"ExtGraphNodeManager::edges pretty much erased");
+        
         g_pool[a].edgesCount--;       
         g_pool[b].edgesCount--;      
         
@@ -129,29 +110,19 @@ template<class Node, class Edge, class EdgeStorage >
 bool  ExtGraphNodeManager<Node,Edge,EdgeStorage>::growPool(){
       
         
-    #ifdef DEBUG
-    dbg.push_back(8,"ExtGraphNodeManager::growing");
-    dbg.push_back(8,to_string(g_pool_nodes)+" from to 2*this size");
-    #endif
-
-        g_pool_nodes*=2;   
-        
-        Node * tmp = g_pool;
-       
-        g_pool = new Node[g_pool_nodes];
-
     
-        //memcpy(g_pool,tmp, sizeof(Node)*(g_pool_nodes)/2);
-       
+    DBG(8,"ExtGraphNodeManager::growing");
+    DBG(8,to_string(g_pool_nodes)+" from to 2*this size");
+ 
+        g_pool_nodes*=2;   
+        Node * tmp = g_pool;
+        g_pool = new Node[g_pool_nodes];
         m_first_free=g_pool_nodes/2;
         
 
-        #ifdef DEBUG
-        dbg.push_back(8,"ExtGraphNodeManager::copied old nodes");
-        #endif        
         
-        //naprawa pointerow
-        
+        DBG(8,"ExtGraphNodeManager::copied old nodes");
+
         for(int i=0;i<(g_pool_nodes/2);++i){
             g_pool[i] = tmp[i];
             if(g_pool[i].occupied){
@@ -163,11 +134,10 @@ bool  ExtGraphNodeManager<Node,Edge,EdgeStorage>::growPool(){
                 
             }
         }
+
         
-        #ifdef DEBUG
-        dbg.push_back(8,"ExtGraphNodeManager::copy fine");
-        #endif   
-        
+        DBG(8,"ExtGraphNodeManager::copy fine");
+
         for(int i=m_first_free;i<g_pool_nodes;++i) {
             g_pool[i].occupied = false;
             g_pool[i].edgesCount = 0;
@@ -178,21 +148,12 @@ bool  ExtGraphNodeManager<Node,Edge,EdgeStorage>::growPool(){
             else g_pool[i].nextFree = -1;           
         }
         
-        
-        //TODO: add assert
-        #ifdef DEBUG
-        dbg.push_back(8,"ExtGraphNodeManager::all pointer corrected (untested)");
-        #endif 
-        
+
+        DBG(8,"ExtGraphNodeManager::all pointer corrected (untested)");
         delete[] tmp;
+        DBG(8,"ExtGraphNodeManager::m_free="+to_string(m_first_free));
+        DBG(8,"ExtGraphNodeManager::completed");
         
-        #ifdef DEBUG
-        dbg.push_back(8,"ExtGraphNodeManager::m_free="+to_string(m_first_free));
-        #endif
-        
-        #ifdef DEBUG
-        dbg.push_back(8,"ExtGraphNodeManager::completed");
-        #endif
 
         return true;
     }

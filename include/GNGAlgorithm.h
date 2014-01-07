@@ -42,7 +42,7 @@ public:
     /**Construct main algorithm object, that will hold mid-results
     * @param g SHGNGGraph object implementing graph interface
     * @param db GNGDatbase object
-    * @param control GNGAlgorithmControl object (*warning*: will become obsolete in near future)
+    * @param control GNGAlgorithmControl object (*warning*: will become obsolete in the near future)
     * @param boundingbox_origin Starting point for reference system
     * @param boundingbox_axis Axis lengths for reference system
     * @param l Starting box size for uniform grid. Advised to be set to axis[0]/4 (TODO: move to the end of parameters list)
@@ -54,14 +54,14 @@ public:
     * @param eps_v See original paper(TODO: add description)
     * @param eps_n See original paper (TODO: add description)
     */
-    GNGAlgorithm(SHGNGGraph & g,GNGDatabase* db, GNGAlgorithmControl * control,
+    GNGAlgorithm(GNGGraph<SHGNGNode> * g,GNGDatabase* db, GNGAlgorithmControl * control,
         double * boundingbox_origin, double * boundingbox_axis, double l,int max_nodes=1000,
         int max_age=200, double alpha=0.95, double betha=0.9995, double lambda=200,
         double eps_v=0.05, double eps_n=0.0006);
    
     
     double getAccumulatedError() const { return m_accumulated_error; }
-    const SHGNGGraph & get_graph(){ return m_g; }
+    const GNGGraph<SHGNGNode> & get_graph(){ return m_g; }
     
     void resetUniformGrid(double * orig, double *axis, double l) {
         ug.purge(orig,axis,l);
@@ -89,9 +89,9 @@ public:
     void setUtilityOption(int option, double k =-1.0){
         m_utility_option = option;
         m_utility_k = k;
-#ifdef DEBUG
-        dbg.push_back(4, "GNGAlgorithm::setUtilityOption k="+to_string<double>(k));
-#endif
+
+        DBG(4, "GNGAlgorithm::setUtilityOption k="+to_string<double>(k));
+
         if(m_utility_option !=0 && (m_toggle_uniformgrid==true || m_toggle_lazyheap==true)) throw "Exception"; //todo: poprawic
         if(option != 0){
             m_local_utility.clear();
@@ -129,7 +129,7 @@ private:
   
     int s,c;
     
-    SHGNGGraph & m_g;
+    GNGGraph<SHGNGNode> & m_g;
     GNGDatabase* g_db;
     GNGAlgorithmControl * m_control;
  
@@ -142,9 +142,9 @@ private:
     SHGNGNode ** LargestErrorNodes();
     
     /**
-* @brief Return two closest nodes (neurons) to the given example
-* @param[in] position Vector of coordinates of the example
-*/
+    * @brief Return two closest nodes (neurons) to the given example
+    * @param[in] position Vector of coordinates of the example
+    */
     SHGNGNode ** TwoNearestNodes(const double * position);
     
     void RandomInit();
@@ -236,9 +236,9 @@ private:
     
     void set_utility(int i, double u){
         if(i+1>m_local_utility.size()){
-            #ifdef DEBUG
-           dbg.push_back(2,"GNGAlgorithm::set_utility resizing");
-           #endif
+            
+           DBG(2,"GNGAlgorithm::set_utility resizing");
+           
             m_local_utility.resize(2*m_local_utility.size());
         }
         
@@ -254,14 +254,17 @@ private:
         for(int i=0;i<=maximumIndex;++i){
             if (m_g[i].occupied && max_error/get_utility(i)>m_utility_k){
                 if(m_g.getNumberNodes()<10) return;
-                #ifdef DEBUG
-                dbg.push_back(2,"GNGAlgorithm::utility_criterion_check Not passed for "+to_string<int>(i));
-                dbg.push_back(2,to_string<double>(max_error));
-                #endif
+                
+                DBG(2,"GNGAlgorithm::utility_criterion_check Not passed for "+to_string<int>(i));
+                DBG(2,to_string<double>(max_error));
+                
 
                 //replace with while please..
                 FOREACH(edg, (m_g[i].edges)) {
-                        edg = m_g.removeEdge(i, edg);
+                        int nr = edg->nr;
+                        ++edg;
+                        m_g.removeEdge(i, nr);
+                        
                         if(edg != m_g[i].edges.end()) --edg;
                         else break;
                 }
@@ -289,12 +292,13 @@ private:
 
 /**Design hack for passing distance function dist(index, position)*/
 struct GNGGraphAccessHack{
-    static SHGNGNode * pool;
+    static GNGGraph<SHGNGNode> * pool;
     static double dist(int index, double *position){
         double x=0.0;
-        //arma!
+        
+        //TODO: add expansion here or something like that (choose between GNGGRaphAccessHacks for 1-2-3-4-5-6 dimensions?)
         REP(i,GNG_DIM){
-            x+=(pool[index].position[i] - position[i])*(pool[index].position[i] - position[i]);
+            x+=((*pool)[index].position[i] - position[i])*((*pool)[index].position[i] - position[i]);
         }
         return x;
     }

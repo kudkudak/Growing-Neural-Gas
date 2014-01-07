@@ -103,8 +103,8 @@ double * uploadOBJ(const char * filename){
 #include "informal_tests/test_database.cpp"
 
 int main(int argc, char** argv) {
-
-    testLocal();
+    dbg.set_debug_level(0);
+    testNewInterface();
 
     
     

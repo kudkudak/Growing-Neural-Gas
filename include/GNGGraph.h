@@ -6,7 +6,7 @@
 */
 
 #ifndef GNGGraph_H
-#define        GNGGraph_H
+#define GNGGraph_H
 
 #include "SHMemoryManager.h"
 #include "ExtGraphNodeManager.h"
@@ -19,57 +19,113 @@
 #include <boost/interprocess/offset_ptr.hpp>
 
 
-typedef ExtGraphNodeManager<SHGNGNode, SHGNGEdge, GNGList> GNGGraphBase;
+typedef ExtGraphNodeManager<SHGNGNode, SHGNGEdge, GNGList> SharedMemoryGraphStorage;
 
 
+/** Graph interface for GNGAlgorithm. 
+ * @note: The next step will be implementing this interface using igraph and external storage
+ * such as disk space (with cache?)
+ */
+template <class Node>
+class GNGGraph{
+public:
+    virtual double getErrorNodeShare(int i ) const = 0;
 
-class SHGNGGraph : public GNGGraphBase {
-    typedef ExtGraphNodeManager<SHGNGNode, SHGNGEdge, GNGList > super;
+    virtual double getAccumulatedErrorShare() const= 0;
+
+    virtual Node & operator[](int i) = 0;
+
+    virtual int getNumberNodes() const = 0;
+    
+    virtual void init(int start_number) = 0;
+
+    /* Get maximum index in the node pool */
+    virtual int getMaximumIndex() const = 0;
+    
+    //TODO: move it to GNGNode
+    virtual double getDist(int a, int b) = 0;
+
+    virtual const double* getPosition(int nr) const = 0; 
+    
+    //TODO: move it to GNGNode
+    virtual double getDist(const double * pos_a, const double * pos_b) const = 0;
+
+    /* Initialize node with position attribute */
+    virtual int newNode(double const *position)= 0;
+    
+    virtual bool deleteNode(int x)= 0;
+    
+    virtual bool isEdge(int a, int b) const= 0;
+    
+    virtual bool removeEdge(int a, int b)= 0;
+    
+    virtual void addUDEdge(int a, int b)= 0;
+    
+    virtual void addDEdge(int a, int b)= 0;
+};
+//TODO: rewrite to use as a composite
+
+
+/* Shared GNG Graph class - thread safe graph using as storage template class
+ Storage class should be a specialization of ExtGraphNodeManager
+ */
+template<class Storage>
+class SHGNGGraph: public GNGGraph<SHGNGNode> {
     typedef boost::interprocess::interprocess_mutex Mutex;
+    
     Mutex * m_mutex;
-    boost::interprocess::offset_ptr<SHGNGNode> g_pool_share;
+    
+    Storage & storage;
 public:
 
+    bool isEdge(int a, int b) const{
+        
+        return storage.isEdge(a,b);
+    }
+    const double * getPosition(int nr) const{
+        return storage[nr].position;
+    }
+    
     double getErrorNodeShare(int i ) const{
-        return g_pool_share[i].error_new;
+        return storage[i].error_new;
+    }
+
+    int getNumberNodes() const{
+        return storage.getNumberNodes();
     }
     
-    SHGNGNode* getPoolShare(){
-        return g_pool_share.get();
+    int getMaximumIndex() const{
+        return storage.m_maximum_index;
     }
     
-    double getAccumulatedErrorShare(){
-        SHGNGNode * nodes = getPoolShare();
-        double error=0.0;
-        REP(i,m_maximum_index+1){
-            error+=nodes[i].error_new;
+    //TODO: problem when growing ! Should be called *ONLY* by GNGAlgorithm
+    SHGNGNode & operator[](int i){ return storage[i]; }
+    
+    double getAccumulatedErrorShare() const{
+       double error=0.0;
+       
+       REP(i,storage.m_maximum_index+1){
+            error+=storage[i].error_new;
         }
         return error;
     }
     
-    SHGNGGraph(Mutex * mutex, int start_number) : m_mutex(mutex), GNGGraphBase(start_number) {
-        g_pool_share = super::getPool();
+    SHGNGGraph(Mutex * mutex,  Storage * s) : m_mutex(mutex), storage(*s) {
     }
 
-    SHGNGGraph(Mutex * mutex) :m_mutex(mutex), GNGGraphBase() {
-        g_pool_share = super::getPool();
-    }
 
-    SHGNGGraph(Mutex * mutex,SHGNGNode * _g_pool, int _m_nodes, int _g_pool_nodes, int _m_first_free) :
-    m_mutex(mutex),GNGGraphBase(_g_pool, _m_nodes, _g_pool_nodes, _m_first_free) {
-        g_pool_share = super::getPool();
-    }
+
 
     void init(int start_number) {
-        super::init(start_number);
+        storage.init(start_number);
     }
 
     double getDist(int a, int b) {
         double distance = 0;
         for (int i = 0; i < GNG_DIM; ++i) {
-            distance += (super::operator[](a).position[i] -
+            distance += (storage.operator[](a).position[i] -
             
-            super::operator[](b).position[i])*(super::operator[](a).position[i] - super::operator[](b).position[i]);
+            storage.operator[](b).position[i])*(storage.operator[](a).position[i] - storage.operator[](b).position[i]);
         }
         return distance;
     }
@@ -82,54 +138,42 @@ public:
         return distance;
     }
 
-    double getDistEdge(int a, super::EdgeIterator it) {
-        return std::sqrt(getDist(super::operator[](a).position, super::operator[](it->nr).position));
-    }
 
-    int newNode(double const *position) {
+    int newNode(const double  *position) {
 
-         if (super::poolIsFull()) {
-#ifdef DEBUG
-             dbg.push_back(10, "SHGNGGraph::newNode() growing pool");
-#endif
-                 boost::interprocess::scoped_lock<Mutex>(*m_mutex);
-                 super::growPool();
-                 g_pool_share = super::getPool();
-                
+         if (storage.poolIsFull()) {
+             DBG(10, "SHGNGGraph::newNode() growing pool");
+            boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+            storage.growPool();
+            
          }
+        int i = storage.newNode();
 
-        int i = super::newNode();
+        //TODO: get rid of GNG_DIM
+        memcpy(&storage[i].position[0], position, sizeof (double) *(GNG_DIM)); //param
 
-        memcpy(&(super::g_pool + i)->position[0], position, sizeof (double) *(GNG_DIM)); //param
-
-        g_pool[i].error = 0.0;
-        g_pool[i].error_cycle = 0;
-        g_pool[i].error_new = 0.0;
+        storage[i].error = 0.0;
+        storage[i].error_cycle = 0;
+        storage[i].error_new = 0.0;
         return i;
     }
     bool deleteNode(int x){
         boost::interprocess::scoped_lock<Mutex>(*m_mutex);
-        return super::deleteNode(x);
+        return storage.deleteNode(x);
     }
-    super::EdgeIterator removeEdge(int a, int b){
+    bool removeEdge(int a, int b){
         boost::interprocess::scoped_lock<Mutex>(*m_mutex);
-        return super::removeEdge(a,b);
+        return storage.removeEdge(a,b);
     }
-    super::EdgeIterator removeEdge(int a,super::EdgeIterator it){
-        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
-        return super::removeEdge(a,it);
-    }
-     void removeRevEdge(int a,super::EdgeIterator it){
-         boost::interprocess::scoped_lock<Mutex>(*m_mutex);
-         return super::removeRevEdge(a,it);
-     }
+
+  
     void addUDEdge(int a, int b){
         boost::interprocess::scoped_lock<Mutex>(*m_mutex);
-        return super::addUDEdge(a,b);
+        return storage.addUDEdge(a,b);
     }
     void addDEdge(int a, int b){
         boost::interprocess::scoped_lock<Mutex>(*m_mutex);
-        return super::addDEdge(a,b);
+        return storage.addDEdge(a,b);
     }
 
 

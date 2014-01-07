@@ -8,6 +8,10 @@
 #ifndef UTILS_H
 #define	UTILS_H
 
+
+
+#define DBG(level, text) dbg.push_back(level, #text);
+
 #include <cstdio>
 #include <iostream>
 #include <algorithm>

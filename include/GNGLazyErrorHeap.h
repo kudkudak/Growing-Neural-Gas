@@ -30,8 +30,7 @@ class GNGLazyErrorHeap: protected Heap<ErrorNode>{
 protected:   
     std::vector<void*> m_buffer; // <HeapNode*, GNGNode->nr>
     std::vector<bool> m_isonlist;
-    
-    SHGNGGraph&m_g;
+
     
     int m_buffer_size;
     void checkBufferSize(){
@@ -42,7 +41,7 @@ protected:
 public:
      std::list<int> & getLazyList()  { return L; }
     
-    GNGLazyErrorHeap(SHGNGGraph& g):m_g(g),m_buffer_size(0),super(){}
+    GNGLazyErrorHeap():m_buffer_size(0),super(){}
     
     void insertLazy(int nr){
        m_buffer_size = std::max(m_buffer_size, nr + 1);

@@ -266,6 +266,9 @@ private:
 
 };
 
+
+//TODO: note as bagging dataset..
+
 /**
 * Database basing its storage in template class parameter. Each input has
 * N dimensionality
