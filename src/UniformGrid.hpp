@@ -12,7 +12,7 @@ void UniformGrid<VectorContainer, ListContainer, T>::print3d() {
         int index[3];
 
         REP(k, m_dim[2]) {
-
+            
             REP(j, m_dim[1]) {
 
                 REP(i, m_dim[0]) {
@@ -40,10 +40,10 @@ void UniformGrid<VectorContainer, ListContainer, T>::print3d() {
 
 template<class VectorContainer, class ListContainer, class T>
 void  UniformGrid<VectorContainer, ListContainer, T>::new_l(double l) {
-    double *org = new double[GNG_DIM];
-    double *axis = new double[GNG_DIM];
-    memcpy(org, m_origin, GNG_DIM * sizeof (double));
-    memcpy(axis, m_axis, GNG_DIM * sizeof (double));
+    double *org = new double[this->gng_dim];
+    double *axis = new double[this->gng_dim];
+    memcpy(org, m_origin, this->gng_dim * sizeof (double));
+    memcpy(axis, m_axis, this->gng_dim * sizeof (double));
     purge(org, axis, l);
     delete[] org;
     delete[] axis;
@@ -79,7 +79,7 @@ template<class VectorContainer, class ListContainer, class T>
 void UniformGrid<VectorContainer, ListContainer, T>::crawl(int current_dim, int fixed_dim) {
 
     if (current_dim == fixed_dim) {
-        if (current_dim >= GNG_DIM - 1) {					
+        if (current_dim >= this->gng_dim - 1) {					
             scanCell(getIndex(s_pos), s_query);		
         }            //skip current dimension
         else crawl(current_dim + 1, fixed_dim);
@@ -101,7 +101,7 @@ void UniformGrid<VectorContainer, ListContainer, T>::crawl(int current_dim, int 
 
             s_pos[current_dim] = i;
 
-            if (current_dim == GNG_DIM - 1) {					
+            if (current_dim == this->gng_dim - 1) {					
                 scanCell(getIndex(s_pos), s_query);
                 //TMP[getIndex(pos)]=true;
             } else {
@@ -124,9 +124,9 @@ bool UniformGrid<VectorContainer, ListContainer, T>::scanCorners() {
     bool scanned = false;
 
 
-    memcpy(s_pos, s_center, sizeof (int) *GNG_DIM);
+    memcpy(s_pos, s_center, sizeof (int) *this->gng_dim);
 
-    REP(i, GNG_DIM) {
+    REP(i, this->gng_dim) {
         left = s_center[i] - s_radius;
         right = s_center[i] + s_radius;
 
@@ -135,14 +135,14 @@ bool UniformGrid<VectorContainer, ListContainer, T>::scanCorners() {
         if (s_center[i] - s_radius >= 0) {
             s_pos[i] = left;
             //cout<<"crawler to "<<getIndex(pos)<<endl;
-            //write_array(pos,pos+GNG_DIM);
+            //write_array(pos,pos+this->gng_dim);
             crawl(0, i);
             scanned = true;
         }
         if (s_center[i] + s_radius < m_dim[i]) {
             s_pos[i] = right;
             //cout<<"crawler to "<<getIndex(pos)<<endl;
-            //write_array(pos,pos+GNG_DIM);
+            //write_array(pos,pos+this->gng_dim);
             crawl(0, i);
             scanned = true;
         }
@@ -155,10 +155,10 @@ bool UniformGrid<VectorContainer, ListContainer, T>::scanCorners() {
 
 template<class VectorContainer, class ListContainer, class T>
 void UniformGrid<VectorContainer, ListContainer, T>::purge(double *origin, double *axis, double l) {
-    int * dim = new int[GNG_DIM];
-    memcpy(m_axis, axis, sizeof (double) *GNG_DIM);
+    int * dim = new int[this->gng_dim];
+    memcpy(m_axis, axis, sizeof (double) *this->gng_dim);
 
-    REP(i, GNG_DIM) {
+    REP(i, this->gng_dim) {
         //REPORT(((axis[i] - origin[i]) / (l)));
         dim[i] = (int) ((axis[i] - origin[i]) / (l)) + 1;
     }
@@ -170,10 +170,10 @@ template<class VectorContainer, class ListContainer, class T>
 void UniformGrid<VectorContainer, ListContainer, T>::purge(double *origin, int* dim, double l) {
 
     m_l = l;
-    memcpy(&m_dim[0], dim, sizeof (int) *GNG_DIM);
-    memcpy(&m_origin, origin, sizeof (double) *GNG_DIM);
+    memcpy(&m_dim[0], dim, sizeof (int) *this->gng_dim);
+    memcpy(&m_origin, origin, sizeof (double) *this->gng_dim);
 
-    write_array(m_dim, m_dim + GNG_DIM); //to jest ten cout
+    write_array(m_dim, m_dim + this->gng_dim); //to jest ten cout
 
     m_density = 0.0;
     m_density_threshold = 0.1;
@@ -184,7 +184,7 @@ void UniformGrid<VectorContainer, ListContainer, T>::purge(double *origin, int* 
 
     int new_size = 1;
 
-    REP(i, GNG_DIM) {
+    REP(i, this->gng_dim) {
         new_size *= m_dim[i];
     }
 
@@ -201,7 +201,7 @@ void UniformGrid<VectorContainer, ListContainer, T>::purge(double *origin, int* 
 
 template<class VectorContainer, class ListContainer, class T>
 int UniformGrid<VectorContainer, ListContainer, T>::insert(double *p, T x) {
-    //memcpy(&m_copy[0],p,sizeof(double)*GNG_DIM);
+    //memcpy(&m_copy[0],p,sizeof(double)*this->gng_dim);
     int * index = calculateCell(p);
     int k = getIndex(index);
     
@@ -222,7 +222,7 @@ std::vector<T> UniformGrid<VectorContainer, ListContainer, T>::findNearest(const
 
     
     #ifdef DEBUG
-    dbg.push_back(2,"UniformGird:: search for "+write_cnt_str(p,p+GNG_DIM));
+    dbg.push_back(2,"UniformGird:: search for "+write_cnt_str(p,p+this->gng_dim));
     #endif
 
     int * center = calculateCell(p);
@@ -231,9 +231,9 @@ std::vector<T> UniformGrid<VectorContainer, ListContainer, T>::findNearest(const
         s_found_cells[i]=-1;
         s_found_cells_dist[i]=-1;
     }
-    memcpy(s_center, center, sizeof (int) *GNG_DIM);
+    memcpy(s_center, center, sizeof (int) *this->gng_dim);
 
-    memcpy(s_query, p, sizeof (double) *GNG_DIM);
+    memcpy(s_query, p, sizeof (double) *this->gng_dim);
 
     int center_id = getIndex(center);
     
@@ -244,7 +244,7 @@ std::vector<T> UniformGrid<VectorContainer, ListContainer, T>::findNearest(const
 
     if(!_inside(center_id)) {
         #ifdef DEBUG
-                dbg.push_back(5, "UniformGird:: search for " + write_cnt_str(p, p + GNG_DIM));
+                dbg.push_back(5, "UniformGird:: search for " + write_cnt_str(p, p + this->gng_dim));
         #endif
             #ifdef DEBUG
              dbg.push_back(5,"UniformGird:: search for "+to_string(center_id));
@@ -269,7 +269,7 @@ std::vector<T> UniformGrid<VectorContainer, ListContainer, T>::findNearest(const
     dbg.push_back(0,"UniformGird:: initializing serach");
     #endif
 
-    for (int i = 0; i < GNG_DIM; ++i) {
+    for (int i = 0; i < this->gng_dim; ++i) {
         tmp = abs((p[i] - m_origin[i] - center[i] * m_l)) < abs((p[i] - m_origin[i] - (center[i] + 1) * m_l)) ?
                 abs((p[i] - m_origin[i] - center[i] * m_l)) :
                 abs((p[i] - m_origin[i] - (center[i] + 1) * m_l));

@@ -36,10 +36,6 @@ int GNGNode::dim =0;
 
 GNGServer * gngServer;
 
-//Global variables
-int GNG_DIM, GNG_EX_DIM;
-
-
 
 struct Vertex{
 	int m_gngid;

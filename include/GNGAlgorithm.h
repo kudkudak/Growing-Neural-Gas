@@ -54,11 +54,12 @@ public:
     * @param lambda Every lambda new vertex is added
     * @param eps_v See original paper(TODO: add description)
     * @param eps_n See original paper (TODO: add description)
+     * @param dim Dimensionality
     */
     GNGAlgorithm(GNGGraph * g,GNGDatabase* db, GNGAlgorithmControl * control,
         double * boundingbox_origin, double * boundingbox_axis, double l,int max_nodes=1000,
         int max_age=200, double alpha=0.95, double betha=0.9995, double lambda=200,
-        double eps_v=0.05, double eps_n=0.0006);
+        double eps_v=0.05, double eps_n=0.0006, int dim=3);
    
     
     double getAccumulatedError() const { return m_accumulated_error; }
@@ -123,6 +124,8 @@ private:
     double * m_betha_powers_to_n;
     int m_betha_powers_size;
     double m_accumulated_error;
+    
+    int dim;
     
     std::map<std::string, long int> times;
     
@@ -305,15 +308,10 @@ private:
 struct GNGGraphAccessHack{
     static GNGGraph * pool;
     static double dist(int index, double *position){
-        double x=0.0;
-        
-        //TODO: add expansion here or something like that (choose between GNGGRaphAccessHacks for 1-2-3-4-5-6 dimensions?)
-        REP(i,GNG_DIM){
-            x+=((*pool)[index].position[i] - position[i])*((*pool)[index].position[i] - position[i]);
-        }
-        return x;
+        return pool->getDist((*pool)[index].position, position);
     }
 };
+
 
 typedef boost::posix_time::ptime Time;
 typedef boost::posix_time::time_duration TimeDuration;

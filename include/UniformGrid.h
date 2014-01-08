@@ -50,6 +50,8 @@ public:
     double m_density_threshold;
     double m_grow_factor;
 
+    int gng_dim;
+    
     double m_axis[GNG_MAX_DIM];
 
     int m_nodes;
@@ -67,7 +69,7 @@ public:
  
         int value = p[0];
         double mul = m_dim[0];
-        for (int i = 1; i < GNG_DIM; ++i) {
+        for (int i = 1; i < this->gng_dim; ++i) {
             value += p[i] * mul;
             mul *= m_dim[i];
         }
@@ -75,8 +77,8 @@ public:
         return value;
     }
     int * calculateCell(const double *p) {
-        //int * m_tmp_int = new int[GNG_DIM];
-        for (int i = 0; i < GNG_DIM; ++i) {
+        //int * m_tmp_int = new int[this->gng_dim];
+        for (int i = 0; i < this->gng_dim; ++i) {
             m_tmp_int[i] = (int) ((p[i] - m_origin[i]) / m_l);
         }
         return &m_tmp_int[0];
@@ -98,30 +100,30 @@ public:
         delete[] m_dim;
         delete[] m_tmp_int;
     }
-    UniformGrid(double * origin, int *dim, double l): m_dist_fnc(0) {
+    UniformGrid(double * origin, int *dim, double l, int gng_dim): m_dist_fnc(0), gng_dim(gng_dim) {
         
         
-        s_center = new int[GNG_DIM];
+        s_center = new int[this->gng_dim];
      
-        s_pos = new int[GNG_DIM];
-        s_query =new double[GNG_DIM]; 
-        m_dim = new int[GNG_DIM]; //number of uniform cells along certain axis
+        s_pos = new int[this->gng_dim];
+        s_query =new double[this->gng_dim]; 
+        m_dim = new int[this->gng_dim]; //number of uniform cells along certain axis
 
-          m_tmp_int = new int[GNG_DIM]; //avoid alloc on heap all the time in calccell <- one thread!   
+          m_tmp_int = new int[this->gng_dim]; //avoid alloc on heap all the time in calccell <- one thread!   
         purge(origin, dim, l);
       
     }
 
-    UniformGrid(double * origin, double *axis, double l): m_dist_fnc(0) {
+    UniformGrid(double * origin, double *axis, double l, int gng_dim): m_dist_fnc(0), gng_dim(gng_dim) {
         
         
         
-       s_center = new int[GNG_DIM];
+       s_center = new int[this->gng_dim];
    
-        s_pos = new int[GNG_DIM];
-        s_query =new double[GNG_DIM]; 
-        m_dim = new int[GNG_DIM]; //number of uniform cells along certain axis       
-        m_tmp_int = new int[GNG_DIM]; //avoid alloc on heap all the time in calccell <- one thread!   
+        s_pos = new int[this->gng_dim];
+        s_query =new double[this->gng_dim]; 
+        m_dim = new int[this->gng_dim]; //number of uniform cells along certain axis       
+        m_tmp_int = new int[this->gng_dim]; //avoid alloc on heap all the time in calccell <- one thread!   
           
           purge(origin, axis, l);
     }    

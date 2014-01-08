@@ -45,12 +45,10 @@ class GNGServer{
     /**Construct GNGServer using configuration*/
     GNGServer(GNGConfiguration configuration): listening_daemon_sleep_time(50), crossprocess_communication(true){
         this->current_configuration = configuration; //assign configuration
-
         
         DBG(10, "GNGServer()::constructing GNGServer");
         DBG(1, "GNGServer() dim = "+to_string(GNGNode::dim));
-        
-        GNG_DIM = current_configuration.dim;
+
         GNGNode tmp;
         tmp.dim = current_configuration.dim;
 
@@ -142,7 +140,8 @@ class GNGServer{
                 current_configuration.beta,
                 current_configuration.lambda,
                 current_configuration.eps_v,
-                current_configuration.eps_n
+                current_configuration.eps_n,
+                current_configuration.dim
         ));
 
         

@@ -8,6 +8,7 @@
 
 //note: change <= to < in GNG_DIM loops
 
+
 #include "GNGAlgorithm.h"
 
 using namespace std;
@@ -73,19 +74,21 @@ GNGAlgorithm::GNGAlgorithm(GNGGraph * g, GNGDatabase* db,
         GNGAlgorithmControl * control, double * boundingbox_origin,
         double * boundingbox_axis, double l, int max_nodes,
         int max_age, double alpha, double betha, double lambda,
-        double eps_v, double eps_n
+        double eps_v, double eps_n, int dim
         ) :
 m_g(*g), g_db(db), m_control(control), c(0), s(0),
 m_max_nodes(max_nodes), m_max_age(max_age),
 m_alpha(alpha), m_betha(betha), m_lambda(lambda),
-m_eps_v(eps_v), m_eps_n(eps_n), ug(boundingbox_origin, boundingbox_axis, l),
+m_eps_v(eps_v), m_eps_n(eps_n), ug(boundingbox_origin, boundingbox_axis, l, dim),
 m_density_threshold(0.1), m_grow_rate(1.5),
-errorHeap() {
+errorHeap(), dim(dim) {
     m_toggle_uniformgrid = m_toggle_lazyheap = true;
     m_local_utility.resize(1);
 
     
     GNGGraphAccessHack::pool = &m_g;
+    
+    
     ug.setDistFunction(GNGGraphAccessHack::dist);
     m_betha_powers_size = m_lambda * 10;
     m_betha_powers = new double[m_betha_powers_size];
@@ -146,9 +149,9 @@ void GNGAlgorithm::AddNewNode() {
         return;
     }
 
-    double position[GNG_DIM]; //param
+    double position[this->dim]; //param
     //TODO: < GNG_DIM?
-    for (int i = 0; i < GNG_DIM; ++i) //param
+    for (int i = 0; i < this->dim; ++i) //param
         position[i] = (error_nodes_new[0]->position[i] + error_nodes_new[1]->position[i]) / 2;
 
 
@@ -251,7 +254,7 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
     DBG(3, "GNGAlgorith::Adapt::accounted for the error");
 
     if (m_toggle_uniformgrid) ug.remove(nearest[0]->position);
-    for (int i = 0; i < GNG_DIM; ++i) {
+    for (int i = 0; i < this->dim; ++i) {
         nearest[0]->position[i] += m_eps_v * (ex->getPositionPtr()[i] - nearest[0]->position[i]);
     }
     if (m_toggle_uniformgrid) ug.insert(nearest[0]->position, nearest[0]->nr);
@@ -261,7 +264,7 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
             if (m_toggle_uniformgrid) 
                 ug.remove(m_g[(*edg)->nr].position);
             
-            for (int i = 0; i < GNG_DIM; ++i) { //param accounting
+            for (int i = 0; i < this->dim; ++i) { //param accounting
                 m_g[(*edg)->nr].position[i] += m_eps_n * (ex->position[i] - m_g[(*edg)->nr].position[i]);
             }
   
