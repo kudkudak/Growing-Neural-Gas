@@ -27,11 +27,10 @@ extern DebugCollector dbg;
  * 
  * 
  */
-template<class Node, class Edge, class EdgeStorage>
+template<class Node, class Edge>
 class ExtGraphNodeManager {
     
 protected:  
-    typedef typename EdgeStorage::iterator EdgeIterator;
 
     Node *  g_pool; 
     
@@ -45,6 +44,9 @@ protected:
     
     ExtGraphNodeManager(const ExtGraphNodeManager& orig){}
 public:
+    
+    typedef Node NodeClass;
+    
     bool growPool();
     bool poolIsFull(){
         return m_first_free==-1;
@@ -54,13 +56,12 @@ public:
     std::string reportPool(bool sorted=false);
     int m_first_free,m_nodes,m_maximum_index,g_pool_nodes;
     
-    ExtGraphNodeManager(int start_number);
-    ExtGraphNodeManager(){}
-    ExtGraphNodeManager(Node * _g_pool, int _m_nodes, 
-            int _g_pool_nodes, int _m_first_free):
-        g_pool(_g_pool),m_nodes(_m_nodes),g_pool_nodes(_g_pool_nodes),
-        m_first_free(_m_first_free),m_maximum_index(0)
-    {}
+    ExtGraphNodeManager(int start_number):
+       m_nodes(start_number), m_first_free(0),m_maximum_index(0)
+           {
+        this->init(start_number);
+    }
+ 
     
     int newNode();
 
@@ -79,11 +80,8 @@ public:
     bool isEdge(int a, int b);
     
 
-    void removeRevEdge(int a,EdgeIterator it);
+    typename Node::EdgeIterator removeEdge(int a, int b);
 
-    bool removeEdge(int a, int b);
-    EdgeIterator removeEdge(int a,EdgeIterator it);
-    
     void addUDEdge(int a, int b);
     void addDEdge(int a, int b);
  
@@ -95,6 +93,13 @@ public:
     int getPoolSize() const{ return g_pool_nodes; }
     
     virtual ~ExtGraphNodeManager(){
+        for(int i=0;i<getMaximumIndex();++i){
+            if(g_pool[i].occupied){
+                FOREACH(edg, g_pool[i]){
+                        delete *edg;
+                }
+            }
+        }
         delete[] g_pool;
     }
 private:

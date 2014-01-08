@@ -6,8 +6,8 @@
  */
 
 #include "SHGraphDefs.h"
-
-
-MemoryAllocator * SHGNGNode::mm = 0;
-ShmemAllocatorGNG * SHGNGNode::alloc_inst = 0;
-
+//
+//
+//MemoryAllocator * SHGNGNode::mm = 0;
+//ShmemAllocatorGNG * SHGNGNode::alloc_inst = 0;
+//

@@ -1,6 +1,6 @@
 /*
 * File: GNGAlgorithm.h
-* Author: staszek
+* Author: Stanislaw "kudkudak" Jastrzebski <grimghil@gmail.com>
 *
 * Created on 11 sierpień 2012, 10:02
 */
@@ -33,6 +33,7 @@
 *
 * @note TODO: Implement GNG on GPU.
 */
+
 class GNGAlgorithm {
 public:
 
@@ -54,14 +55,14 @@ public:
     * @param eps_v See original paper(TODO: add description)
     * @param eps_n See original paper (TODO: add description)
     */
-    GNGAlgorithm(GNGGraph<SHGNGNode> * g,GNGDatabase* db, GNGAlgorithmControl * control,
+    GNGAlgorithm(GNGGraph * g,GNGDatabase* db, GNGAlgorithmControl * control,
         double * boundingbox_origin, double * boundingbox_axis, double l,int max_nodes=1000,
         int max_age=200, double alpha=0.95, double betha=0.9995, double lambda=200,
         double eps_v=0.05, double eps_n=0.0006);
    
     
     double getAccumulatedError() const { return m_accumulated_error; }
-    const GNGGraph<SHGNGNode> & get_graph(){ return m_g; }
+    const GNGGraph & get_graph(){ return m_g; }
     
     void resetUniformGrid(double * orig, double *axis, double l) {
         ug.purge(orig,axis,l);
@@ -129,7 +130,7 @@ private:
   
     int s,c;
     
-    GNGGraph<SHGNGNode> & m_g;
+    GNGGraph & m_g;
     GNGDatabase* g_db;
     GNGAlgorithmControl * m_control;
  
@@ -137,15 +138,15 @@ private:
     GNGLazyErrorHeap errorHeap;
 
     
-    SHGNGNode ** LargestErrorNodesLazy();
+    GNGNode ** LargestErrorNodesLazy();
     
-    SHGNGNode ** LargestErrorNodes();
+    GNGNode ** LargestErrorNodes();
     
     /**
     * @brief Return two closest nodes (neurons) to the given example
     * @param[in] position Vector of coordinates of the example
     */
-    SHGNGNode ** TwoNearestNodes(const double * position);
+    GNGNode ** TwoNearestNodes(const double * position);
     
     void RandomInit();
     
@@ -157,17 +158,27 @@ private:
      
     bool stoppingCriterion(){ return m_g.getNumberNodes()>m_max_nodes; }
     
-    void IncreaseErrorNew(SHGNGNode * node, double error){
+    void IncreaseErrorNew(GNGNode * node, double error){
         FixErrorNew(node);
         node->error_new+=m_betha_powers[m_lambda-s]*error;
         errorHeap.updateLazy(node->nr);
     }
     
-    void FixErrorNew(SHGNGNode * node){
+    void FixErrorNew(GNGNode * node){
+        
+
         if(node->error_cycle==c) return;
 
-        node->error_new = m_betha_powers_to_n[c - node->error_cycle] * node->error_new;
-        node->error_cycle = c;
+            node->error_new = m_betha_powers_to_n[c - node->error_cycle] * node->error_new;
+            node->error_cycle = c;
+//        }catch(...){
+//            
+//            cout<<node->error_cycle<<endl;
+//            cout<<c<<" .."<<endl;
+//            
+//            node = 0;
+//            node->error_new = 10.0;
+//        }
     }
     
     double GetMaximumError() const{
@@ -186,21 +197,21 @@ private:
         return;
     }
     
-    void DecreaseErrorNew(SHGNGNode * node){
+    void DecreaseErrorNew(GNGNode * node){
         FixErrorNew(node);
         node->error_new = m_alpha*node->error_new;
         //cout<<node->error_new<<" ?? "<<node->error<<" after decrease\n";
         errorHeap.updateLazy(node->nr);
     }
     
-    void SetErrorNew(SHGNGNode * node, double error){
+    void SetErrorNew(GNGNode * node, double error){
         node->error_new = error;
         node->error_cycle = c;
         errorHeap.insertLazy(node->nr);
     }
 
     
-    void IncreaseError(SHGNGNode * node, double error){
+    void IncreaseError(GNGNode * node, double error){
         node->error+=error;
     }
 
@@ -213,11 +224,11 @@ private:
         }
     }
     
-    void DecreaseError(SHGNGNode * node){
+    void DecreaseError(GNGNode * node){
         node->error = m_alpha*node->error;
     }
             
-    void SetError(SHGNGNode * node, double error){
+    void SetError(GNGNode * node, double error){
         node->error = error;
     }
     
@@ -260,12 +271,12 @@ private:
                 
 
                 //replace with while please..
-                FOREACH(edg, (m_g[i].edges)) {
-                        int nr = edg->nr;
+                FOREACH(edg, m_g[i]) {
+                        int nr = (*edg)->nr;
                         ++edg;
                         m_g.removeEdge(i, nr);
                         
-                        if(edg != m_g[i].edges.end()) --edg;
+                        if(edg != m_g[i].end()) --edg;
                         else break;
                 }
                 
@@ -292,7 +303,7 @@ private:
 
 /**Design hack for passing distance function dist(index, position)*/
 struct GNGGraphAccessHack{
-    static GNGGraph<SHGNGNode> * pool;
+    static GNGGraph * pool;
     static double dist(int index, double *position){
         double x=0.0;
         

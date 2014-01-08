@@ -23,7 +23,7 @@ public:
     enum GraphNodeStorage{
         NoneGraphNodeStorage,
         SharedMemory,
-        Local
+        RAMMemory
     } graph_storage;
     
     enum DatabaseType{
@@ -79,6 +79,8 @@ public:
         default_configuration.axis.push_back(1.0);
         default_configuration.axis.push_back(1.0);  
             
+        default_configuration.graph_storage = RAMMemory;
+        
         default_configuration.serverId = 0;
         default_configuration.dim = 3;
         default_configuration.databaseType = DatabaseSimple;

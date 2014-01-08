@@ -10,7 +10,7 @@
 
 
 
-#define DBG(level, text) dbg.push_back(level, #text);
+#define DBG(level, text) dbg.push_back(level, text);
 
 #include <cstdio>
 #include <iostream>

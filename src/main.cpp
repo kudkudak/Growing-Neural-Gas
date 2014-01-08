@@ -27,6 +27,7 @@ using namespace boost;
 typedef boost::interprocess::interprocess_mutex MyMutex;
 
 
+int GNGNode::dim =0; 
 
 
 
@@ -103,7 +104,7 @@ double * uploadOBJ(const char * filename){
 #include "informal_tests/test_database.cpp"
 
 int main(int argc, char** argv) {
-    dbg.set_debug_level(0);
+    dbg.set_debug_level(12);
     testNewInterface();
 
     

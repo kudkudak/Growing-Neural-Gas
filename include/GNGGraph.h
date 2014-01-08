@@ -17,23 +17,25 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/bind.hpp>
 #include <boost/interprocess/offset_ptr.hpp>
+#include <iostream>
+using namespace std;
 
+//typedef ExtGraphNodeManager<SHGNGNode, SHGNGEdge> SharedMemoryGraphStorage;
+typedef ExtGraphNodeManager<RAMGNGNode, RAMGNGEdge> RAMMemoryGraphStorage;
 
-typedef ExtGraphNodeManager<SHGNGNode, SHGNGEdge, GNGList> SharedMemoryGraphStorage;
-
-
+#include <iterator>
 /** Graph interface for GNGAlgorithm. 
  * @note: The next step will be implementing this interface using igraph and external storage
  * such as disk space (with cache?)
  */
-template <class Node>
+
 class GNGGraph{
-public:
+public: 
     virtual double getErrorNodeShare(int i ) const = 0;
 
     virtual double getAccumulatedErrorShare() const= 0;
 
-    virtual Node & operator[](int i) = 0;
+    virtual GNGNode & operator[](int i) = 0;
 
     virtual int getNumberNodes() const = 0;
     
@@ -57,11 +59,13 @@ public:
     
     virtual bool isEdge(int a, int b) const= 0;
     
-    virtual bool removeEdge(int a, int b)= 0;
+    virtual typename GNGNode::EdgeIterator removeEdge(int a, int b)= 0;
     
     virtual void addUDEdge(int a, int b)= 0;
     
     virtual void addDEdge(int a, int b)= 0;
+    
+    virtual void print() = 0;
 };
 //TODO: rewrite to use as a composite
 
@@ -70,38 +74,50 @@ public:
  Storage class should be a specialization of ExtGraphNodeManager
  */
 template<class Storage>
-class SHGNGGraph: public GNGGraph<SHGNGNode> {
+class ExtGNGGraph: public GNGGraph {
+    typedef typename Storage::NodeClass Node;
     typedef boost::interprocess::interprocess_mutex Mutex;
-    
+    int dim;
     Mutex * m_mutex;
     
-    Storage & storage;
+    
 public:
-
+    void print(){
+        cout<<storage.reportPool()<<endl;
+    }
+    Storage & storage;
     bool isEdge(int a, int b) const{
-        
+        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         return storage.isEdge(a,b);
     }
     const double * getPosition(int nr) const{
+        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         return storage[nr].position;
     }
     
     double getErrorNodeShare(int i ) const{
+        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         return storage[i].error_new;
     }
 
     int getNumberNodes() const{
+        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         return storage.getNumberNodes();
     }
     
     int getMaximumIndex() const{
+        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         return storage.m_maximum_index;
     }
     
     //TODO: problem when growing ! Should be called *ONLY* by GNGAlgorithm
-    SHGNGNode & operator[](int i){ return storage[i]; }
+    Node & operator[](int i){ 
+        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+        return storage[i]; 
+    }
     
     double getAccumulatedErrorShare() const{
+       boost::interprocess::scoped_lock<Mutex>(*m_mutex);
        double error=0.0;
        
        REP(i,storage.m_maximum_index+1){
@@ -110,29 +126,28 @@ public:
         return error;
     }
     
-    SHGNGGraph(Mutex * mutex,  Storage * s) : m_mutex(mutex), storage(*s) {
+    ExtGNGGraph(Mutex * mutex,  Storage * s, int dim) : dim(dim), m_mutex(mutex), storage(*s) {
     }
 
-
-
-
     void init(int start_number) {
+        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         storage.init(start_number);
     }
 
     double getDist(int a, int b) {
+        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         double distance = 0;
-        for (int i = 0; i < GNG_DIM; ++i) {
-            distance += (storage.operator[](a).position[i] -
+        for (int i = 0; i < this->dim; ++i) {
             
-            storage.operator[](b).position[i])*(storage.operator[](a).position[i] - storage.operator[](b).position[i]);
+            distance += (storage[a].position[i] - storage[b].position[i])*(storage[a].position[i] - storage[b].position[i]);
         }
         return distance;
     }
 
     double getDist(const double * pos_a, const double * pos_b) const {
+        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         double distance = 0;
-        for (int i = 0; i < GNG_DIM; ++i) {
+        for (int i = 0; i < this->dim; ++i) {
             distance += (pos_a[i] - pos_b[i])*(pos_a[i] - pos_b[i]);
         }
         return distance;
@@ -140,17 +155,16 @@ public:
 
 
     int newNode(const double  *position) {
-
          if (storage.poolIsFull()) {
-             DBG(10, "SHGNGGraph::newNode() growing pool");
+            DBG(10, "SHGNGGraph::newNode() growing pool");
             boost::interprocess::scoped_lock<Mutex>(*m_mutex);
             storage.growPool();
             
          }
+         
         int i = storage.newNode();
-
         //TODO: get rid of GNG_DIM
-        memcpy(&storage[i].position[0], position, sizeof (double) *(GNG_DIM)); //param
+        memcpy(&storage[i].position[0], position, sizeof(double) *(this->dim)); //param
 
         storage[i].error = 0.0;
         storage[i].error_cycle = 0;
@@ -161,8 +175,9 @@ public:
         boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         return storage.deleteNode(x);
     }
-    bool removeEdge(int a, int b){
+    typename GNGNode::EdgeIterator removeEdge(int a, int b){
         boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+        
         return storage.removeEdge(a,b);
     }
 
@@ -174,11 +189,6 @@ public:
     void addDEdge(int a, int b){
         boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         return storage.addDEdge(a,b);
-    }
-
-
-    virtual ~SHGNGGraph() {
-
     }
 
 
