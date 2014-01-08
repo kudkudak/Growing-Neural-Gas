@@ -73,51 +73,53 @@ public:
 /* Shared GNG Graph class - thread safe graph using as storage template class
  Storage class should be a specialization of ExtGraphNodeManager
  */
-template<class Storage>
+template<class Storage, class Mutex = boost::mutex>
 class ExtGNGGraph: public GNGGraph {
     typedef typename Storage::NodeClass Node;
-    typedef boost::interprocess::interprocess_mutex Mutex;
+
     int dim;
     Mutex * m_mutex;
     
     
 public:
+    //Note: currently assumes single threaded access to the elements
+    
     void print(){
         cout<<storage.reportPool()<<endl;
     }
     Storage & storage;
     bool isEdge(int a, int b) const{
-        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+//        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         return storage.isEdge(a,b);
     }
     const double * getPosition(int nr) const{
-        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+//        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         return storage[nr].position;
     }
     
     double getErrorNodeShare(int i ) const{
-        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+//        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         return storage[i].error_new;
     }
 
     int getNumberNodes() const{
-        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+//        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         return storage.getNumberNodes();
     }
     
     int getMaximumIndex() const{
-        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+//        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         return storage.m_maximum_index;
     }
     
     //TODO: problem when growing ! Should be called *ONLY* by GNGAlgorithm
     Node & operator[](int i){ 
-        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+//        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         return storage[i]; 
     }
     
     double getAccumulatedErrorShare() const{
-       boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+//       boost::interprocess::scoped_lock<Mutex>(*m_mutex);
        double error=0.0;
        
        REP(i,storage.m_maximum_index+1){
@@ -130,12 +132,12 @@ public:
     }
 
     void init(int start_number) {
-        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+//        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         storage.init(start_number);
     }
 
     double getDist(int a, int b) {
-        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+//        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         double distance = 0;
         for (int i = 0; i < this->dim; ++i) {
             
@@ -145,7 +147,7 @@ public:
     }
 
     double getDist(const double * pos_a, const double * pos_b) const {
-        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+//        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         double distance = 0;
         for (int i = 0; i < this->dim; ++i) {
             distance += (pos_a[i] - pos_b[i])*(pos_a[i] - pos_b[i]);
@@ -172,22 +174,22 @@ public:
         return i;
     }
     bool deleteNode(int x){
-        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+//        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         return storage.deleteNode(x);
     }
     typename GNGNode::EdgeIterator removeEdge(int a, int b){
-        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+//        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         
         return storage.removeEdge(a,b);
     }
 
   
     void addUDEdge(int a, int b){
-        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+//        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         return storage.addUDEdge(a,b);
     }
     void addDEdge(int a, int b){
-        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
+//        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
         return storage.addDEdge(a,b);
     }
 

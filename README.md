@@ -17,6 +17,7 @@ but I reckon that it is already consitutes a practical tool for data analysis.
 ###Installation
 -----------
 Because it is a very early version, building isnt straightforward. You need to have installed libboost libraries and necessary packages in R (i.e. rgl, parallel). Now go to the reposity directory and enter:
+
 ```bash
     make rcpp
 ```
@@ -75,6 +76,15 @@ sv$getNumberNodes() #get nodes
 ```
 
 For more scripts, please check the 'scripts' directory. 
+
+
+#Testing
+-----
+To run tests you will need Google C++ Test Framework
+installed to your search paths.
+
+See instructions:
+http://code.google.com/p/tonatiuh/wiki/InstallingGoogleTestForLinux
 
 #Futher work
 ---

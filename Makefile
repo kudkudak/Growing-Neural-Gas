@@ -19,37 +19,33 @@ BUILD_DIR=build/performance
 SRC_DIR=src
 INCLUDE_DIR=include
 
-
-#SOURCES:=$(shell cat build/files|sed "s/\(.*\)/src\/\1\.cpp/g")
-#DEPFILES:=$(shell mcat build/files|sed "s/\(.*\)/build\/performance\/\1\.o/g")
-#OBJFILES:=$(shell cat build/files|sed "s/\(.*\)/build\/performance\/\1\.d/g")
-
-SOURCES=$(SRC_DIR)/SHGraphDefs.cpp $(SRC_DIR)/GNGAlgorithm.cpp $(SRC_DIR)/SHMemoryManager.cpp $(SRC_DIR)/Utils.cpp $(SRC_DIR)/GNGServer.cpp
-DEPFILES=$(BUILD_DIR)/SHGraphDefs.d $(BUILD_DIR)/GNGAlgorithm.d $(BUILD_DIR)/SHMemoryManager.d $(BUILD_DIR)/Utils.d $(BUILD_DIR)/GNGServer.d
-OBJFILES=$(BUILD_DIR)/SHGraphDefs.o $(BUILD_DIR)/GNGAlgorithm.o $(BUILD_DIR)/SHMemoryManager.o $(BUILD_DIR)/Utils.o $(BUILD_DIR)/GNGServer.o
+CPPFILES := $(foreach dir, $(SRC_DIR)/, $(notdir $(wildcard $(SRC_DIR)/*.cpp)))
+OBJFILES := $(addprefix $(BUILD_DIR)/, $(CPPFILES:.cpp=.o))
 
 
+#SOURCES=$(SRC_DIR)/SHGraphDefs.cpp $(SRC_DIR)/GNGAlgorithm.cpp $(SRC_DIR)/SHMemoryManager.cpp $(SRC_DIR)/Utils.cpp $(SRC_DIR)/GNGServer.cpp
+#DEPFILES=$(BUILD_DIR)/SHGraphDefs.d $(BUILD_DIR)/GNGAlgorithm.d $(BUILD_DIR)/SHMemoryManager.d $(BUILD_DIR)/Utils.d $(BUILD_DIR)/GNGServer.d
+#OBJFILES=$(BUILD_DIR)/SHGraphDefs.o $(BUILD_DIR)/GNGAlgorithm.o $(BUILD_DIR)/SHMemoryManager.o $(BUILD_DIR)/Utils.o $(BUILD_DIR)/GNGServer.o
 
 
-all: $(OBJFILES) main.cpp
+$(OBJFILES): $(CPPFILES)
+	$(CC) -c $< -o $@ $(CFLAGS) -l$(SRC_DIR) $(CLIBS) $(CINCLUDE)
+
+
+
+all: $(OBJFILES) main
 
 
 
 #$(OBJRFILES)
 
-main.cpp:$(OBJFILES)
-	$(CC) $(SRC_DIR)/main.cpp $(OBJFILES) -o main $(CFLAGS) $(CLIBS) $(CINCLUDE)
+main: $(OBJFILES) main.cpp
+	$(CC) $(SRC_DIR)/main.cpp $(wildcard build/performance/*.o) -o main $(CFLAGS) $(CLIBS) $(CINCLUDE)
 
-#build/performance/%.d:src/%.cpp
-#        $(CC) -c $< -o $@ $(CFLAGS) $(CLIBS) $(CINCLUDE)
 
- 
-build/performance/%.o:src/%.cpp
-	$(CC) -c $< -o $@ $(CFLAGS) -l$(SRC_DIR) $(CLIBS) $(CINCLUDE)
-
-rcpp: all
-	$(CC) $(OBJFILES) -c src/RcppInterface.cpp -o scripts/RcppInterface.o $(RFLAGS) $(CFLAGS) $(CLIBS) $(CINCLUDE)
-	$(CC) $(OBJFILES) -shared -o scripts/RcppInterface.so scripts/RcppInterface.o $(RFLAGS) $(CFLAGS) $(CLIBS) $(CINCLUDE)
+ #rcpp: all
+#	$(CC) $(OBJFILES) -c src/RcppInterface.cpp -o scripts/RcppInterface.o $(RFLAGS) $(CFLAGS) $(CLIBS) $(CINCLUDE)
+#	$(CC) $(OBJFILES) -shared -o scripts/RcppInterface.so scripts/RcppInterface.o $(RFLAGS) $(CFLAGS) $(CLIBS) $(CINCLUDE)
 
 
 clean:

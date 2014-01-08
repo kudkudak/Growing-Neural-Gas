@@ -71,12 +71,12 @@ GNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
 GNGGraph* GNGGraphAccessHack::pool=0;
 
 GNGAlgorithm::GNGAlgorithm(GNGGraph * g, GNGDatabase* db,
-        GNGAlgorithmControl * control, double * boundingbox_origin,
+         double * boundingbox_origin,
         double * boundingbox_axis, double l, int max_nodes,
         int max_age, double alpha, double betha, double lambda,
         double eps_v, double eps_n, int dim
         ) :
-m_g(*g), g_db(db), m_control(control), c(0), s(0),
+m_g(*g), g_db(db), c(0), s(0),
 m_max_nodes(max_nodes), m_max_age(max_age),
 m_alpha(alpha), m_betha(betha), m_lambda(lambda),
 m_eps_v(eps_v), m_eps_n(eps_n), ug(boundingbox_origin, boundingbox_axis, l, dim),
@@ -557,8 +557,11 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
         if (c % 10 != 0) continue;
         int size = g_db->getSize();
         DBG(2, "GNGAlgorithm::check size of the db " + to_string(size));
-
-        m_control->checkPause();
+        
+        while(this->gng_status != GNG_RUNNING) {
+            if(this->gng_status == GNG_TERMINATED) break;
+            this->status_change_condition.wait(this->status_change_mutex);
+        }
     }
     RandomInit();
     c = 0;
@@ -568,8 +571,14 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 
     t3 = boost::posix_time::microsec_clock::local_time();
     int iteration = 0;
-    while (1) {//(m_g.getNumberNodes() < m_max_nodes) {
-        m_control->checkPause();
+    while (1) {
+        
+        
+        while(this->gng_status != GNG_RUNNING) {
+            if(this->gng_status == GNG_TERMINATED) break;
+            this->status_change_condition.wait(this->status_change_mutex);
+        }
+        
         for (s = 0; s < m_lambda; ++s) { //global counter!!
             ++iteration;
 

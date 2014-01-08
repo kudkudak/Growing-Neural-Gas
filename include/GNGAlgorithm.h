@@ -10,16 +10,14 @@
 
 #include <memory>
 
+
 #include "GNGGlobals.h"
-
-#include "GNGAlgorithmControl.h"
-
 #include "GNGGraph.h"
 #include "GNGDatabase.h"
-
 #include "UniformGrid.h"
 #include "GNGLazyErrorHeap.h"
 
+#include <boost/thread/condition.hpp>
 #include <boost/thread.hpp>
 #include <boost/date_time.hpp>
 
@@ -33,17 +31,14 @@
 *
 * @note TODO: Implement GNG on GPU.
 */
-
 class GNGAlgorithm {
 public:
-
     /** Run main loop of the algorithm*/
     void runAlgorithm();
     
     /**Construct main algorithm object, that will hold mid-results
     * @param g SHGNGGraph object implementing graph interface
     * @param db GNGDatbase object
-    * @param control GNGAlgorithmControl object (*warning*: will become obsolete in the near future)
     * @param boundingbox_origin Starting point for reference system
     * @param boundingbox_axis Axis lengths for reference system
     * @param l Starting box size for uniform grid. Advised to be set to axis[0]/4 (TODO: move to the end of parameters list)
@@ -56,7 +51,7 @@ public:
     * @param eps_n See original paper (TODO: add description)
      * @param dim Dimensionality
     */
-    GNGAlgorithm(GNGGraph * g,GNGDatabase* db, GNGAlgorithmControl * control,
+    GNGAlgorithm(GNGGraph * g,GNGDatabase* db, 
         double * boundingbox_origin, double * boundingbox_axis, double l,int max_nodes=1000,
         int max_age=200, double alpha=0.95, double betha=0.9995, double lambda=200,
         double eps_v=0.05, double eps_n=0.0006, int dim=3);
@@ -64,16 +59,25 @@ public:
     
     double getAccumulatedError() const { return m_accumulated_error; }
     const GNGGraph & get_graph(){ return m_g; }
-    
-    void resetUniformGrid(double * orig, double *axis, double l) {
-        ug.purge(orig,axis,l);
-        int maximum_index = m_g.getMaximumIndex();
 
-        REP(i, maximum_index + 1) {
-            if (m_g[i].occupied) ug.insert(m_g[i].position, m_g[i].nr);
-        }
+    
+    /** Start algorithm loop */
+    void run(){
+         this->gng_status = GNG_RUNNING;
+         this->status_change_condition.notify_all();
+    }    
+    
+    /** Pause algorithm loop */
+    void pause(){
+         this->gng_status = GNG_PAUSED;
+         this->status_change_condition.notify_all();
     }
     
+    /** Terminate the algorithm */
+    void terminate(){
+        this->gng_status = GNG_TERMINATED;
+        this->status_change_condition.notify_all();
+    }
     
     
     void setToggleUniformGrid(bool value){ m_toggle_uniformgrid=value;}
@@ -102,15 +106,37 @@ public:
     }
     
     int CalculateAccumulatedError();
+    
     void TestAgeCorrectness();
+    
     enum UtilityOptions{
         None,
         BasicUtility
     };     
+    
     virtual ~GNGAlgorithm(){}
 private:
+   boost::mutex status_change_mutex;
+   boost::condition status_change_condition;
    typedef std::list<int> Node;
+   
+   void resetUniformGrid(double * orig, double *axis, double l) {
+        ug.purge(orig,axis,l);
+        int maximum_index = m_g.getMaximumIndex();
+
+        REP(i, maximum_index + 1) {
+            if (m_g[i].occupied) ug.insert(m_g[i].position, m_g[i].nr);
+        }
+   } 
     
+   enum{
+       GNG_PREPARING,
+       GNG_RUNNING,
+       GNG_PAUSED,
+       GNG_TERMINATED
+               
+   } gng_status;
+   
     double m_error; //error of the network
     int m_lambda; //lambda parameter
     double m_eps_v, m_eps_n; //epsilon of the winner and of the neighbour
@@ -130,13 +156,12 @@ private:
     std::map<std::string, long int> times;
     
     double m_density_threshold,m_grow_rate;
-  
+    
+    /** Constants used by lazy heap implementation */
     int s,c;
     
     GNGGraph & m_g;
     GNGDatabase* g_db;
-    GNGAlgorithmControl * m_control;
- 
     UniformGrid< std::vector<Node>, Node, int> ug;
     GNGLazyErrorHeap errorHeap;
 
@@ -168,20 +193,10 @@ private:
     }
     
     void FixErrorNew(GNGNode * node){
-        
-
         if(node->error_cycle==c) return;
 
-            node->error_new = m_betha_powers_to_n[c - node->error_cycle] * node->error_new;
-            node->error_cycle = c;
-//        }catch(...){
-//            
-//            cout<<node->error_cycle<<endl;
-//            cout<<c<<" .."<<endl;
-//            
-//            node = 0;
-//            node->error_new = 10.0;
-//        }
+        node->error_new = m_betha_powers_to_n[c - node->error_cycle] * node->error_new;
+        node->error_cycle = c;
     }
     
     double GetMaximumError() const{

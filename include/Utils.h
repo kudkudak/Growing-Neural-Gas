@@ -9,8 +9,11 @@
 #define	UTILS_H
 
 
-
+#ifdef DEBUG
 #define DBG(level, text) dbg.push_back(level, text);
+#else
+#define DBG(level, text)
+#endif
 
 #include <cstdio>
 #include <iostream>

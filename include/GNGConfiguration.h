@@ -63,12 +63,18 @@ public:
     /**Id of the server*/
     int serverId;
     
+    /**Initial reserve memory for nodes */
+    int starting_nodes
+    
+    bool interprocess_communication; /**< Should server listen for incommin connection from other processes? Not possible in the current version */
    
     
     /** Get default configuration of GNG Server */
     static GNGConfiguration getDefaultConfiguration(){
         GNGConfiguration default_configuration;
      
+        default_configuration.starting_nodes = 100;
+        
         default_configuration.message_bufor_size = 10000*sizeof(double);
         
         default_configuration.orig.push_back(0.0);
@@ -94,7 +100,9 @@ public:
         default_configuration.beta=0.9995;      
         default_configuration.lambda=200;
         default_configuration.eps_v=0.05;
-        default_configuration.eps_n=0.0006;   
+        default_configuration.eps_n=0.0006; 
+        
+        default_configuration.interprocess_communication = false;
         
         return default_configuration;
     }
