@@ -20,11 +20,10 @@ using namespace std;
 
 int GNGNode::dim =0; 
 
-#include "tests/cpp/basic_convergence.cpp"
 
 int main(int argc, char** argv) {
     dbg.set_debug_level(12);
-    testNewInterface();
+//    testNewInterface();
 
     
     

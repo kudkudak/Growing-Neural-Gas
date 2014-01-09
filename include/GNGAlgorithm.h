@@ -115,6 +115,14 @@ public:
     };     
     
     virtual ~GNGAlgorithm(){}
+    
+    enum{
+        GNG_PREPARING,
+        GNG_RUNNING,
+        GNG_PAUSED,
+        GNG_TERMINATED
+
+    } gng_status;
 private:
    boost::mutex status_change_mutex;
    boost::condition status_change_condition;
@@ -129,13 +137,7 @@ private:
         }
    } 
     
-   enum{
-       GNG_PREPARING,
-       GNG_RUNNING,
-       GNG_PAUSED,
-       GNG_TERMINATED
-               
-   } gng_status;
+
    
     double m_error; //error of the network
     int m_lambda; //lambda parameter

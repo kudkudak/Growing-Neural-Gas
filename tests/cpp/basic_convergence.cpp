@@ -1,27 +1,35 @@
 
-#include "MemoryAllocator.h"
 #include "GNGServer.h"
 #include "Utils.h"
 
+#include <algorithm>
+#include <utility>
+using namespace std;
 
-void test_convergence(GNGConfiguration * cnf) {
+
+/** Run GNGAlgorithm on cube (3-dimensional) with given parameters
+ * @returns pair<double, double> : nodes, mean_error
+ */
+pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database=1000,
+        int ms_loop = 5000) {
+    
+    
+    
+    dbg.set_debug_level(12);
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();  
-    
-    if(cnf) config=*cnf;
-    
-    config.databaseType = GNGConfiguration::DatabaseProbabilistic;
     config.uniformgrid_optimization = true;
+    if(cnf) config=*cnf;
+    config.databaseType = GNGConfiguration::DatabaseProbabilistic;
     
+    GNGServer *s = GNGServer::constructTestServer(config);
     
+//    GNGServer::setConfiguration(config); 
+//    GNGServer::getInstance()->run();
     
+    s->run();
     
-    GNGServer::setConfiguration(config); 
-    GNGServer::getInstance().run();
-    
-    
-    
-    double * vect = new double[4*100];
-    for (int i = 0; i < 100; ++i) {
+    double * vect = new double[4*num_database];
+    for (int i = 0; i < num_database; ++i) {
         
         vect[0+(i)*4] = __double_rnd(0, 1);
         vect[1+(i)*4] = __double_rnd(0, 1);
@@ -32,11 +40,8 @@ void test_convergence(GNGConfiguration * cnf) {
     DBG(12, "testNewInterface::Server running");
     
     
-    GNGServer::getInstance().addExamples(&vect[0], 1000);
-    
-    
-    
-    
+    s->addExamples(&vect[0], num_database);
+
     
     delete[] vect;
     
@@ -53,13 +58,34 @@ void test_convergence(GNGConfiguration * cnf) {
        ++iteration;
        REPORT(iteration);
        boost::this_thread::sleep(workTime);
-       REPORT(GNGServer::getInstance().getGraph().getNumberNodes()); 
-       REPORT(GNGServer::getInstance().getAlgorithm().CalculateAccumulatedError()
-               /(GNGServer::getInstance().getGraph().getNumberNodes()+0.)); 
+       REPORT(s->getGraph().getNumberNodes()); 
+       REPORT(s->getAlgorithm().CalculateAccumulatedError()
+               /(s->getGraph().getNumberNodes()+0.)); 
+       if(iteration >= ms_loop/500) break;
     }
     
+    s->getAlgorithm().terminate();
+    boost::this_thread::sleep(workTime);
+    
     dbg.push_back(12, "testNewInterface::Completed testLocal()");
- 
+    
+    
+    
+            
+    pair<double , double> t = pair<double, double>(s->getGraph().getNumberNodes(),
+            s->getAlgorithm().CalculateAccumulatedError()
+               /(s->getGraph().getNumberNodes()+0.));
+    
+    
+    delete s;
+    
+    return t;
  }
 
 
+TEST(BasicTests, BasicConvergence){
+    GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
+    pair<double, double> results = test_convergence(&config, 1000, 5000);
+    ASSERT_GE(results.first, 100.0);
+    ASSERT_LE(results.second, 40.0);
+}

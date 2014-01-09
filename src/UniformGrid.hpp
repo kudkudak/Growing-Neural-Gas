@@ -173,8 +173,6 @@ void UniformGrid<VectorContainer, ListContainer, T>::purge(double *origin, int* 
     memcpy(&m_dim[0], dim, sizeof (int) *this->gng_dim);
     memcpy(&m_origin, origin, sizeof (double) *this->gng_dim);
 
-    write_array(m_dim, m_dim + this->gng_dim); //to jest ten cout
-
     m_density = 0.0;
     m_density_threshold = 0.1;
     m_grow_factor = 1.5;

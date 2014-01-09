@@ -611,6 +611,9 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
         if (this->m_utility_option == BasicUtility) decrease_all_utility();
 
     }
+    
+    DBG(30, "GNGAlgorithm::Terminated server");
+    
     t4 = boost::posix_time::microsec_clock::local_time();
     dt = t4 - t3;
     REPORT(times["adapt1"]);
