@@ -114,6 +114,28 @@ public:
       
     }
 
+//    
+//    /***
+//     * Create UniformGrid object
+//     * @param origin double array specifying starting point
+//     * @param axis double array specifying end of axises points (counter intuitive, TODO: change)
+//     * @param l length of starting box, most safe initialize to -1.0, then there will be only one box
+//     * @param gng_dim dimensionality of the space
+//     */
+//    UniformGrid(double * origin, double *axis, double l, int gng_dim): m_dist_fnc(0), gng_dim(gng_dim) {
+//        
+//        //This is a hack that will ensure that initial dimensionality is 1
+//        if(l < ) l=axis[0] + 0.000001; 
+//        
+//       s_center = new int[this->gng_dim];
+//   
+//        s_pos = new int[this->gng_dim];
+//        s_query =new double[this->gng_dim]; 
+//        m_dim = new int[this->gng_dim]; //number of uniform cells along certain axis       
+//        m_tmp_int = new int[this->gng_dim]; //avoid alloc on heap all the time in calccell <- one thread!   
+//          
+//          purge(origin, axis, l);
+//    }  
     UniformGrid(double * origin, double *axis, double l, int gng_dim): m_dist_fnc(0), gng_dim(gng_dim) {
         
         

@@ -54,7 +54,10 @@ public:
     GNGAlgorithm(GNGGraph * g,GNGDatabase* db, 
         double * boundingbox_origin, double * boundingbox_axis, double l,int max_nodes=1000,
         int max_age=200, double alpha=0.95, double betha=0.9995, double lambda=200,
-        double eps_v=0.05, double eps_n=0.0006, int dim=3);
+        double eps_v=0.05, double eps_n=0.0006, int dim=3,
+        bool uniformgrid_optimization=true,
+        bool lazyheap_optimization=true
+        );
    
     
     double getAccumulatedError() const { return m_accumulated_error; }
@@ -80,8 +83,7 @@ public:
     }
     
     
-    void setToggleUniformGrid(bool value){ m_toggle_uniformgrid=value;}
-    void setToggleLazyHeap(bool value){ m_toggle_lazyheap=value;}
+
     void setMaxNodes(int value){m_max_nodes = value;}
     
     
@@ -129,11 +131,11 @@ private:
    typedef std::list<int> Node;
    
    void resetUniformGrid(double * orig, double *axis, double l) {
-        ug.purge(orig,axis,l);
+        ug->purge(orig,axis,l);
         int maximum_index = m_g.getMaximumIndex();
 
         REP(i, maximum_index + 1) {
-            if (m_g[i].occupied) ug.insert(m_g[i].position, m_g[i].nr);
+            if (m_g[i].occupied) ug->insert(m_g[i].position, m_g[i].nr);
         }
    } 
     
@@ -164,7 +166,7 @@ private:
     
     GNGGraph & m_g;
     GNGDatabase* g_db;
-    UniformGrid< std::vector<Node>, Node, int> ug;
+    UniformGrid< std::vector<Node>, Node, int> * ug;
     GNGLazyErrorHeap errorHeap;
 
     

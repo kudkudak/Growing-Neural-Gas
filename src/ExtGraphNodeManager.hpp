@@ -53,6 +53,9 @@ typename Node::EdgeIterator ExtGraphNodeManager<Node,Edge >::removeEdge(int a, i
             }
         }
         DBG(10, "ExtGraphNodeManager()::removeEdge Not found edge!");
+#ifdef DEBUG
+        cout<<this->reportPool()<<endl;
+#endif
         return g_pool[a].end();
 } 
 

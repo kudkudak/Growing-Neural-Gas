@@ -107,13 +107,14 @@ public:
         return default_configuration;
     }
     
-//    /**Validate server configuration. *Not working now**/
-//    bool checkCorrectness(){
-//        GNGConfiguration empty_configuration;
-//        return gngDim!=empty_configuration.gngDim && 
-//               serverId!=empty_configuration.serverId && 
-//                databaseType != empty_configuration.databaseType;
-//    }
+    /**Validate server configuration. *Not working now**/
+    bool check_correctness(){
+        GNGConfiguration empty_configuration;
+        return dim == axis.size() && dim == orig.size() &&
+                //We do not allow for massive dimensionality with uniformgrid - it begins to be slow, and
+                //it scales exponentially (memory))
+                (dim < 20 || ! uniformgrid_optimization);
+    }
 //    
 //    /**Python like update of configuration*/
 //    void updateConfiguration(GNGConfiguration update){

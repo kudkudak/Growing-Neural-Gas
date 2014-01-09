@@ -31,18 +31,124 @@
 
 /** Holds together all logic and objects.*/
 class GNGServer{
+    /**Construct GNGServer using configuration*/
+    GNGServer(GNGConfiguration configuration){
+        DBG(10, "GNGServer()::constructing GNGServer");
+        
+        
+        if(!configuration.check_correctness()) 
+            throw BasicException("Invalid configuration passed to GNGServer");
+        if(configuration.interprocess_communication) throw BasicException("Current version doesn't allow for crossprocess communication");
+        
+        this->current_configuration = configuration; //assign configuration
+        
+        DBG(1, "GNGServer() dim = "+to_string(GNGNode::dim));
+
+        /** Set up dimensionality **/
+        GNGNode tmp;
+        tmp.dim = current_configuration.dim;
+
+        DBG(1, "GNGServer() dim = "+to_string(GNGNode::dim));
+
+
+        
+        /** Construct Shared Memory if allowed **/
+//        if(crossprocess_communication)
+//            this->shm = std::auto_ptr<SHMemoryManager>(new SHMemoryManager("Server"+to_string<int>(current_configuration.serverId)));
+        if(current_configuration.graph_storage == GNGConfiguration::SharedMemory){
+            throw BasicException("Not supported SharedMemory configuration");     
+//            if(!crossprocess_communication) throw BasicException("SharedMemory configuration with switched off crossproces_communication");
+//            this->shm->new_named_segment("GraphStorage",current_configuration.graph_memory_bound)
+//            BoostSHMemoryAllocator * boostSHMemoryAllocator = new BoostSHMemoryAllocator(this->shm->get_named_segment("GraphStorage"));
+//            SHGNGNode::mm = boostSHMemoryAllocator;
+//            SHGNGNode::alloc_inst = new ShmemAllocatorGNG(this->shm->get_named_segment("GraphStorage")->get_segment_manager());
+        }
+        else if(current_configuration.graph_storage == GNGConfiguration::RAMMemory){
+            //Nothing to do here
+        }else{
+            throw BasicException("Not supported GNGConfiguration type");
+        }
+
+//        if(configuration.interprocess_communication){
+//            this->shm->new_named_segment("MessageBufor",current_configuration.message_bufor_size);
+//            this->message_bufor_mutex = this->shm->get_named_segment("MessageBufor")->construct<
+//                    boost::interprocess::interprocess_mutex>("MessageBuforMutex")();
+//        }
+
+
+        /** Construct database **/
+        if(current_configuration.databaseType == GNGConfiguration::DatabaseProbabilistic){
+                boost::shared_ptr<std::vector<GNGExampleProbabilistic> > 
+                g_database(new std::vector<GNGExampleProbabilistic>());
+                this->gngDatabase = std::auto_ptr<GNGDatabase>(
+                        new GNGDatabaseProbabilistic<std::vector<GNGExampleProbabilistic>, boost::mutex >
+                        (&database_mutex_thread, g_database, current_configuration.dim));
+        }else if(current_configuration.databaseType == GNGConfiguration::DatabaseSimple){
+            throw BasicException("Database type not supported");
+        }
+
+
+        DBG(10, "GNGServer()::gngDatabase constructed");
+
+        /** Construct graph **/
+        if(current_configuration.graph_storage == GNGConfiguration::SharedMemory){
+            throw BasicException("Not supported SharedMemory configuration");
+//            SharedMemoryGraphStorage * storage
+//                    = this->shm->get_named_segment("GraphStorage")->
+//                    construct<SharedMemoryGraphStorage >("storage")(GNGServer::START_NODES);
+//            this->gngGraph = std::auto_ptr<ExtGNGGraph<SharedMemoryGraphStorage> >(
+//                    new SHGNGGraph<SharedMemoryGraphStorage>(&this->gngAlgorithmControl->grow_mutex, storage,
+//                    configuration.dim));
+//            DBG(10, "GNGServer()::constructed shared graph");
+        }
+        else if(current_configuration.graph_storage == GNGConfiguration::RAMMemory){
+            RAMMemoryGraphStorage * storage
+                    = new RAMMemoryGraphStorage(current_configuration.starting_nodes);
+            this->gngGraph = std::auto_ptr<ExtGNGGraph<RAMMemoryGraphStorage> >(
+                    new ExtGNGGraph<RAMMemoryGraphStorage>(&grow_mutex, storage,
+                    configuration.dim));           
+        }else{
+            throw BasicException("Not supported GNGConfiguration type");
+        } 
+        
+        
+        
+        DBG(10, "GNGServer()::constructing algorithm object");
+        
+        /** Initiliaze main computing object **/
+        this->gngAlgorithm = std::auto_ptr<GNGAlgorithm>(new GNGAlgorithm
+        ( this->gngGraph.get(), //I do not want algorithm to depend on boost
+                this->gngDatabase.get(),
+                &current_configuration.orig[0],
+                &current_configuration.axis[0],
+                current_configuration.axis[0]/4.0, //only 2^dim
+                current_configuration.max_nodes,
+                current_configuration.max_age,
+                current_configuration.alpha,
+                current_configuration.beta,
+                current_configuration.lambda,
+                current_configuration.eps_v,
+                current_configuration.eps_n,
+                current_configuration.dim,
+                current_configuration.uniformgrid_optimization,
+                current_configuration.lazyheap_optimization
+        ));
+
+        
+        DBG(10, "GNGServer()::constructed algorithm object");
+        
+
+    }
 
 
     /** Run GNG Server - runs in separate thread and returns control
 * @note Runs one extra threads for communication.
 */
     void _run() {
-//      boost::thread workerThread3(boost::bind(&GNGServer::runSHListeningDaemon, this));
-        DBG(10, "GNGServer::run::waiting for database");
-        while (gngDatabase->getSize() < 200);
-        gngAlgorithm->run();
+
         DBG(10, "GNGServer::run::proceeding to algorithm");
         gngAlgorithm->runAlgorithm();
+        gngAlgorithm->run();
     }
 
 
@@ -78,6 +184,7 @@ class GNGServer{
     
     void _handle_AddExamples(double * examples, int count){
         //Handle coding
+        DBG(1, "GNGServer::_handle_AddExamples adding examples");
         if(current_configuration.databaseType==GNGConfiguration::DatabaseProbabilistic)
             for(int i=0;i<count;++i){
                 GNGExampleProbabilistic ex(&examples[i*(current_configuration.dim+1)],current_configuration.dim); //decoding
@@ -92,20 +199,19 @@ class GNGServer{
             DBG(100,"Not supported database type" );
             throw BasicException("Not supported database type");
         }
+        int tmp = gngDatabase->getSize();
+        DBG(7, "GNGServer::Database size "+to_string(tmp));
     }
     
 public:
-    
-    static GNGServer * constructTestServer(GNGConfiguration config){
-        return new GNGServer(config);
-    }
-    
-    
     void run() {
         boost::thread workerThread(boost::bind(&GNGServer::_run, this));
     }
 
-
+    
+    static GNGServer * constructTestServer(GNGConfiguration config){
+        return new GNGServer(config);
+    }
     
     void addExamples(double * examples, int count){
         this->_handle_AddExamples(examples, count);

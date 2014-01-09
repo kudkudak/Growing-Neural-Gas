@@ -202,20 +202,23 @@ class GNGDatabaseProbabilistic: public GNGDatabase
 */
     boost::shared_ptr<VectorStorage> g_database;
     void grow_database(){
-        #ifdef DEBUG
-        dbg.push_back(1,"GNGDatabaseSimple::resizing");
-        #endif
+        database_mutex->lock();
+        DBG(1,"GNGDatabaseSimple::resizing");
+        
         //TODO: pause the algorithm here, because every vector can hypothetically get reallocated
         g_database->reserve(g_database->capacity()*2);
-        #ifdef DEBUG
-        dbg.push_back(1,"GNGDatabaseSimple::resizing completed");
-        #endif
+        
+        DBG(1,"GNGDatabaseSimple::resizing completed");
+        database_mutex->unlock();
     }
 public:
     int getSize() const{
         int ret;
         database_mutex->lock();
+        
+        
         ret=(int)(g_database->size());
+   
         database_mutex->unlock();
         return ret;
     }
@@ -243,7 +246,7 @@ public:
         database_mutex->lock();
         
         GNGExampleProbabilistic * ex; //casting up the tree
-        do{ //rejection sampling
+        do{ //rejection sampling TODO: improve
          ex=&(*g_database)[__int_rnd(0,g_database->size()-1)];
         }while(ex->position[this->getDim()]>__double_rnd(0,1.0));
 
@@ -286,16 +289,19 @@ class GNGDatabaseSimple: public GNGDatabase
     int index;
     VectorStorage *g_database;
     void grow_database(){
-        #ifdef DEBUG
-        dbg.push_back(1,"GNGDatabaseSimple::resizing started");
-        #endif
+        
+        DBG(1,"GNGDatabaseSimple::resizing started");
+        
         g_database->reserve(g_database->capacity()*2);
-        #ifdef DEBUG
-        dbg.push_back(1,"GNGDatabaseSimple::resizing completed");
-        #endif
+        
+        DBG(1,"GNGDatabaseSimple::resizing completed");
+        
     }
 public:
-    int getSize() const{ int ret; database_mutex->lock(); ret=(int)(g_database->size()); database_mutex->unlock(); return ret;}
+    int getSize() const{ 
+        int ret; 
+        database_mutex->lock(); 
+        ret=(int)(g_database->size()); database_mutex->unlock(); return ret;}
     
     GNGDatabaseSimple( Mutex * database_mutex, VectorStorage * alc, int dim
     ): database_mutex(database_mutex),g_database(alc), index(0),GNGDatabase(dim){
@@ -526,6 +532,6 @@ public:
 
 
 
+#endif
 
-
-#endif        /* GNGEXAMPLEMANAGER_H */
+        /* GNGEXAMPLEMANAGER_H */

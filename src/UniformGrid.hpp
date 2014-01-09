@@ -184,6 +184,8 @@ void UniformGrid<VectorContainer, ListContainer, T>::purge(double *origin, int* 
 
     REP(i, this->gng_dim) {
         new_size *= m_dim[i];
+        REPORT(new_size);
+        REPORT(m_dim[i]);
     }
 
 #ifdef DEBUG

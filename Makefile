@@ -6,7 +6,7 @@ CC=g++
 CINCLUDE=-I./include -I./src -I/usr/share/R/include -I/usr/local/lib/R/site-library/Rcpp/include -I/usr/local/lib/R/site-library/RcppArmadillo/include -L/usr/local/lib
 CLIBS= -lboost_system -lpthread -lrt -lboost_thread
 RFLAGS=$(shell Rscript scripts/generateflags.r)
-CFLAGS=-fPIC -DDEBUG -MD -MP
+CFLAGS=-fPIC
 
 
 #
@@ -14,14 +14,16 @@ GTESTFLAGS=-lgtest
 
 
 ## Build directories
-BUILD_DIR := build/performance
+BUILD_PERF_DIR := build/performance
+BUILD_DEBUG_DIR := build/debug
 SRC_DIR := src
 INCLUDE_DIR := include
 CPP_TEST_DIR := tests/cpp
 
 ## Files
 CPPFILES := $(filter-out main.cpp, $(foreach dir, $(SRC_DIR)/, $(notdir $(wildcard $(SRC_DIR)/*.cpp))))
-OBJFILES := $(addprefix $(BUILD_DIR)/, $(CPPFILES:.cpp=.o))
+OBJFILES := $(addprefix $(BUILD_PERF_DIR)/, $(CPPFILES:.cpp=.o))
+DEBUGOBJFILES := $(addprefix $(BUILD_DEBUG_DIR)/, $(CPPFILES:.cpp=.o))
 
 TESTCPPFILES := $(foreach dir, $(CPP_TEST_DIR)/, $(notdir $(wildcard $(CPP_TEST_DIR)/*.cpp)))
 TESTOBJFILES := $(addprefix $(CPP_TEST_DIR)/, $(TESTCPPFILES:.cpp=.o))
@@ -31,26 +33,27 @@ DEPFILES := $(addprefix $(BUILD_DIR)/, $(CPPFILES:.cpp=.d))
 
 
 
-all: $(OBJFILES) main
+## Main targets
+all: $(OBJFILES)
+	$(CC) $(OBJFILES) src/main.cpp -o main  $(CFLAGS) $(CLIBS) $(CINCLUDE) -O3
 
-main: $(OBJFILES)
-	$(CC) $(OBJFILES) src/main.cpp -o main  $(CFLAGS) $(CLIBS) $(CINCLUDE) 
-
-$(BUILD_DIR)/%.o:$(SRC_DIR)/%.cpp
-	$(CC) -c $< -o $@ $(CFLAGS) $(CLIBS) $(CINCLUDE)
+debug: $(DEBUGOBJFILES)
+	$(CC) $(DEBUGOBJFILES) src/main.cpp -o main  $(CFLAGS) $(CLIBS) $(CINCLUDE) -DDEBUG
 
 
-# Automatic dependency injection
+## Helping targets
+$(BUILD_PERF_DIR)/%.o:$(SRC_DIR)/%.cpp
+	$(CC) -c $< -o $@ $(CFLAGS) $(CLIBS) $(CINCLUDE) -O3 -MD -MP
+
+$(BUILD_DEBUG_DIR)/%.o:$(SRC_DIR)/%.cpp
+	$(CC) -c $< -o $@ $(CFLAGS) $(CLIBS) $(CINCLUDE) -DDEBUG
+
+## Automatic dependency injection
 -include $(DEPFILES)
 
-
-#test: $(TESTOBJFILES) all
-
-#tests/cpp/%.o: tests/cpp/%.cpp
-#	$(CC) $(OBJFILES) -c $< -o $@ $(CFLAGS) -l$(SRC_DIR) $(CLIBS) $(CINCLUDE) $(GTESTFLAGS)
-
-test: all
-	$(CC) $(OBJFILES) tests/cpp/run_tests.cpp -o tests/cpp/run_tests $(CFLAGS) $(CLIBS) $(CINCLUDE) $(GTESTFLAGS) 
+## Tests
+test: debug
+	$(CC) $(DEBUGOBJFILES) tests/cpp/run_tests.cpp -o tests/cpp/run_tests $(CFLAGS) $(CLIBS) $(CINCLUDE) $(GTESTFLAGS) 
 
 
 #$(OBJRFILES)
@@ -60,8 +63,9 @@ test: all
 #	$(CC) $(OBJFILES) -shared -o scripts/RcppInterface.so scripts/RcppInterface.o $(RFLAGS) $(CFLAGS) $(CLIBS) $(CINCLUDE)
 
 
+## Cleaning
 clean:
-	rm $(OBJFILES) $(DEPFILES) -f
+	rm $(OBJFILES) $(DEPFILES) $(DEBUGOBJFILES) -f
 
 # DO NOT DELETE
 
