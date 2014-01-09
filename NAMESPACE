@@ -1,0 +1,2 @@
+useDynLib(GrowingNeuralGas)
+exportPattern("^[[:alpha:]]+")

@@ -1,47 +1,46 @@
-# GNG Makefile
-# requires Rcpp,R and boost in path
+#### Growing-Neural-Gas Makefile used for development and by travis #####
 
 
-#TODO: make it use generic dependencies. Now modyfing .h leads to cleaning whole build, so it is extra lame.
-#TODO: make it generic.. FINALLY!. For now, please modify it, and sorry for that
-# GNG Makefile
-# requires Rcpp,R and boost in path
-
-#rcpp include flags (in readme)
+## Flags 
 CC=g++
-CINCLUDE=-I./include -I./src -I/home/staszek/usr/include -I/usr/share/R/include -I/usr/local/lib/R/site-library/Rcpp/include -I/usr/local/lib/R/site-library/RcppArmadillo/include
+CINCLUDE=-I./include -I./src -I/usr/share/R/include -I/usr/local/lib/R/site-library/Rcpp/include -I/usr/local/lib/R/site-library/RcppArmadillo/include
 CLIBS= -lboost_system -lpthread -lrt -lboost_thread
 RFLAGS=$(shell Rscript scripts/generateflags.r)
-CFLAGS=-fPIC -DDEBUG
+CFLAGS=-fPIC -DDEBUG -MD -MP
 
+## Build directories
+BUILD_DIR := build/performance
+SRC_DIR := src
+INCLUDE_DIR := include
 
-BUILD_DIR=build/performance
-SRC_DIR=src
-INCLUDE_DIR=include
-
+## Files
 CPPFILES := $(foreach dir, $(SRC_DIR)/, $(notdir $(wildcard $(SRC_DIR)/*.cpp)))
 OBJFILES := $(addprefix $(BUILD_DIR)/, $(CPPFILES:.cpp=.o))
-
-
-#SOURCES=$(SRC_DIR)/SHGraphDefs.cpp $(SRC_DIR)/GNGAlgorithm.cpp $(SRC_DIR)/SHMemoryManager.cpp $(SRC_DIR)/Utils.cpp $(SRC_DIR)/GNGServer.cpp
-#DEPFILES=$(BUILD_DIR)/SHGraphDefs.d $(BUILD_DIR)/GNGAlgorithm.d $(BUILD_DIR)/SHMemoryManager.d $(BUILD_DIR)/Utils.d $(BUILD_DIR)/GNGServer.d
-#OBJFILES=$(BUILD_DIR)/SHGraphDefs.o $(BUILD_DIR)/GNGAlgorithm.o $(BUILD_DIR)/SHMemoryManager.o $(BUILD_DIR)/Utils.o $(BUILD_DIR)/GNGServer.o
-
-
-$(OBJFILES): $(CPPFILES)
-	$(CC) -c $< -o $@ $(CFLAGS) -l$(SRC_DIR) $(CLIBS) $(CINCLUDE)
+SOURCES := $(addprefix $(SRC_DIR)/, $(CPPFILES:.cpp=.o))
+DEPFILES := $(addprefix $(BUILD_DIR)/, $(CPPFILES:.cpp=.d))
 
 
 
 all: $(OBJFILES) main
 
+main: $(OBJFILES)
+	$(CC) $(OBJFILES) -o main  $(CFLAGS) $(CLIBS) $(CINCLUDE) 
+
+$(BUILD_DIR)/%.o:$(SRC_DIR)/%.cpp
+	$(CC) -c $< -o $@ $(CFLAGS) -l$(SRC_DIR) $(CLIBS) $(CINCLUDE)
+
+
+# Automatic dependency injection
+-include $(DEPFILES)
+
+
+test:
+	echo $(DEPFILES)
+	echo $(CPPFILES)
+	echo $(OBJFILES)
 
 
 #$(OBJRFILES)
-
-main: $(OBJFILES) main.cpp
-	$(CC) $(SRC_DIR)/main.cpp $(wildcard build/performance/*.o) -o main $(CFLAGS) $(CLIBS) $(CINCLUDE)
-
 
  #rcpp: all
 #	$(CC) $(OBJFILES) -c src/RcppInterface.cpp -o scripts/RcppInterface.o $(RFLAGS) $(CFLAGS) $(CLIBS) $(CINCLUDE)
@@ -49,5 +48,8 @@ main: $(OBJFILES) main.cpp
 
 
 clean:
-	rm $(BUILD_DIR)/*  
+	rm $(OBJFILES) $(DEPFILES) -f
 
+# DO NOT DELETE
+
+src/main.o: src/informal_tests/test_database.cpp -

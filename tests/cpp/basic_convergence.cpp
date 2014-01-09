@@ -1,24 +1,27 @@
-#include <limits.h>
-#include "sample1.h"
-#include "gtest/gtest.h"
+
+#include "MemoryAllocator.h"
+#include "GNGServer.h"
+#include "Utils.h"
 
 
-void test_convergence(bool lazyheap, bool uniformgrid, GNGConfiguration * conf){
+void test_convergence(GNGConfiguration * cnf) {
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();  
-    config.databaseType = GNGConfiguration::DatabaseProbabilistic;
-
-    config.uniformgrid_optimization = uniformgrid;
-    config.lazyheap_optimization = lazyheap;
     
-
-
+    if(cnf) config=*cnf;
+    
+    config.databaseType = GNGConfiguration::DatabaseProbabilistic;
+    config.uniformgrid_optimization = true;
+    
+    
+    
+    
     GNGServer::setConfiguration(config); 
     GNGServer::getInstance().run();
     
     
     
-    double * vect = new double[4*1000];
-    for (int i = 0; i < 1000; ++i) {
+    double * vect = new double[4*100];
+    for (int i = 0; i < 100; ++i) {
         
         vect[0+(i)*4] = __double_rnd(0, 1);
         vect[1+(i)*4] = __double_rnd(0, 1);
@@ -50,9 +53,9 @@ void test_convergence(bool lazyheap, bool uniformgrid, GNGConfiguration * conf){
        ++iteration;
        REPORT(iteration);
        boost::this_thread::sleep(workTime);
-       REPORT(GNGServer::getInstance().getGraph()->getNumberNodes()); 
-       REPORT(GNGServer::getInstance().getAlgorithm()->CalculateAccumulatedError()
-               /(GNGServer::getInstance().getGraph()->getNumberNodes()+0.)); 
+       REPORT(GNGServer::getInstance().getGraph().getNumberNodes()); 
+       REPORT(GNGServer::getInstance().getAlgorithm().CalculateAccumulatedError()
+               /(GNGServer::getInstance().getGraph().getNumberNodes()+0.)); 
     }
     
     dbg.push_back(12, "testNewInterface::Completed testLocal()");

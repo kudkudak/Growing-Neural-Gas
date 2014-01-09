@@ -22,7 +22,6 @@
 
 #include "GNGGlobals.h"
 
-#include "GNGAlgorithmControl.h"
 
 #include "UniformGrid.h"
 

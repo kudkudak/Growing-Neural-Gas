@@ -559,22 +559,23 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
         DBG(2, "GNGAlgorithm::check size of the db " + to_string(size));
         
         while(this->gng_status != GNG_RUNNING) {
+            DBG(1, "GNGAlgorithm::status in database loop = "+to_string(this->gng_status));
             if(this->gng_status == GNG_TERMINATED) break;
             this->status_change_condition.wait(this->status_change_mutex);
         }
     }
     RandomInit();
-    c = 0;
-
+    c = 0; // cycle variable
 
     DBG(3, "GNGAlgorithm::init successful, starting the loop");
 
     t3 = boost::posix_time::microsec_clock::local_time();
     int iteration = 0;
-    while (1) {
+    while (this->gng_status != GNG_TERMINATED) {
         
         
         while(this->gng_status != GNG_RUNNING) {
+            DBG(1, "GNGAlgorithm::status in main loop = "+to_string(this->gng_status));
             if(this->gng_status == GNG_TERMINATED) break;
             this->status_change_condition.wait(this->status_change_mutex);
         }

@@ -64,7 +64,7 @@ public:
     int serverId;
     
     /**Initial reserve memory for nodes */
-    int starting_nodes
+    int starting_nodes;
     
     bool interprocess_communication; /**< Should server listen for incommin connection from other processes? Not possible in the current version */
    

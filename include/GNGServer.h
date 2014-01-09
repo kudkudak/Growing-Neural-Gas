@@ -32,9 +32,9 @@
 /** Holds together all logic and objects.*/
 class GNGServer{
     /**Construct GNGServer using configuration*/
-    GNGServer(GNGConfiguration configuration): listening_daemon_sleep_time(50){
+    GNGServer(GNGConfiguration configuration){
         
-        if(configuration.interprocess_communication) throw BasicException("Current version doesn't allow for crossprocess communication")
+        if(configuration.interprocess_communication) throw BasicException("Current version doesn't allow for crossprocess communication");
         
         this->current_configuration = configuration; //assign configuration
         
@@ -76,8 +76,9 @@ class GNGServer{
         /** Construct database **/
         if(current_configuration.databaseType == GNGConfiguration::DatabaseProbabilistic){
                 boost::shared_ptr<std::vector<GNGExampleProbabilistic> > g_database(new std::vector<GNGExampleProbabilistic>());
-                this->gngDatabase = std::auto_ptr<GNGDatabase>(new GNGDatabaseProbabilistic<std::vector<GNGExampleProbabilistic, boost::mutex>
-                        (&this->gngAlgorithmControl->database_mutex_thread, g_database, current_configuration.dim));
+                this->gngDatabase = std::auto_ptr<GNGDatabase>(
+                        new GNGDatabaseProbabilistic<std::vector<GNGExampleProbabilistic>, boost::mutex >
+                        (&database_mutex_thread, g_database, current_configuration.dim));
         }else if(current_configuration.databaseType == GNGConfiguration::DatabaseSimple){
             throw BasicException("Database type not supported");
         }
@@ -98,9 +99,9 @@ class GNGServer{
         }
         else if(current_configuration.graph_storage == GNGConfiguration::RAMMemory){
             RAMMemoryGraphStorage * storage
-                    = new RAMMemoryGraphStorage(GNGServer::START_NODES);
+                    = new RAMMemoryGraphStorage(current_configuration.starting_nodes);
             this->gngGraph = std::auto_ptr<ExtGNGGraph<RAMMemoryGraphStorage> >(
-                    new ExtGNGGraph<RAMMemoryGraphStorage>(&this->gngAlgorithmControl->grow_mutex, storage,
+                    new ExtGNGGraph<RAMMemoryGraphStorage>(&grow_mutex, storage,
                     configuration.dim));           
         }else{
             throw BasicException("Not supported GNGConfiguration type");
@@ -141,14 +142,19 @@ class GNGServer{
 */
     void _run() {
 //      boost::thread workerThread3(boost::bind(&GNGServer::runSHListeningDaemon, this));
-        this->gngAlgorithmControl->setRunningStatus(true); //skrypt w R inicjalizuje
         DBG(10, "GNGServer::run::waiting for database");
-        while (this->getDatabase()->getSize() < 200);
+        while (gngDatabase->getSize() < 200);
+        gngAlgorithm->run();
         DBG(10, "GNGServer::run::proceeding to algorithm");
-        this->getAlgorithm()->runAlgorithm();
+        gngAlgorithm->runAlgorithm();
     }
 
 
+    /** Mutex used for synchronization in database*/
+    boost::mutex database_mutex_thread;
+    /** Mutex used for synchronization of graph access*/
+    boost::mutex grow_mutex;
+    
     std::auto_ptr<GNGAlgorithm> gngAlgorithm;
     std::auto_ptr<GNGGraph > gngGraph;
     std::auto_ptr<GNGDatabase> gngDatabase;
@@ -179,12 +185,12 @@ class GNGServer{
         if(current_configuration.databaseType==GNGConfiguration::DatabaseProbabilistic)
             for(int i=0;i<count;++i){
                 GNGExampleProbabilistic ex(&examples[i*(current_configuration.dim+1)],current_configuration.dim); //decoding
-                this->getDatabase()->addExample(&ex);
+                gngDatabase->addExample(&ex);
             }
         else if(current_configuration.databaseType==GNGConfiguration::DatabaseSimple)
              for(int i=0;i<count;++i){
                 GNGExampleProbabilistic ex(&examples[i*current_configuration.dim],current_configuration.dim); //decoding
-                this->getDatabase()->addExample(&ex);
+                gngDatabase->addExample(&ex);
             }
         else{
             DBG(100,"Not supported database type" );
@@ -224,13 +230,13 @@ public:
 
 
     //TODO: const reference not dandling pointer
-    const GNGAlgorithm & getAlgorithm(){
+    GNGAlgorithm & getAlgorithm(){
         return *this->gngAlgorithm.get();
     }
-    const GNGGraph & getGraph(){
+     GNGGraph & getGraph(){
         return *this->gngGraph.get();
     }
-    const GNGDatabase & getDatabase(){
+     GNGDatabase & getDatabase(){
         return *this->gngDatabase.get();
     }
     

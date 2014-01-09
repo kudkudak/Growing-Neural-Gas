@@ -105,7 +105,7 @@ public:
         }
     }
     
-    int CalculateAccumulatedError();
+    int CalculateAccumulatedError() ;
     
     void TestAgeCorrectness();
     
