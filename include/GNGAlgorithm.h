@@ -116,16 +116,24 @@ public:
         BasicUtility
     };     
     
-    virtual ~GNGAlgorithm(){}
+    virtual ~GNGAlgorithm(){
+        delete [] m_betha_powers_to_n;
+        delete []m_betha_powers;
+    }
     
-    enum{
+    enum GngStatus{
         GNG_PREPARING,
         GNG_RUNNING,
         GNG_PAUSED,
         GNG_TERMINATED
 
-    } gng_status;
+    } ;
+    
+    GngStatus gng_status;   
+    bool running;
 private:
+  
+    
    boost::mutex status_change_mutex;
    boost::condition status_change_condition;
    typedef std::list<int> Node;
@@ -151,6 +159,7 @@ private:
     
     double m_alpha,m_betha;
     double * m_betha_powers;
+    int m_betha_powers_to_n_length;
     double * m_betha_powers_to_n;
     int m_betha_powers_size;
     double m_accumulated_error;
@@ -198,7 +207,15 @@ private:
     
     void FixErrorNew(GNGNode * node){
         if(node->error_cycle==c) return;
-
+        
+//        if(c - node->error_cycle >= m_betha_powers_to_n_length){
+//            delete[] m_betha_powers_to_n;
+//            m_betha_powers_to_n_length *= 2;
+//            m_betha_powers_to_n = new double[m_betha_powers_to_n_length];
+//            REP(i, m_betha_powers_to_n_length) 
+//            m_betha_powers_to_n[i] = std::pow(m_betha, m_lambda * (double) (i));
+//        }
+//        
         node->error_new = m_betha_powers_to_n[c - node->error_cycle] * node->error_new;
         node->error_cycle = c;
     }

@@ -53,9 +53,7 @@ typename Node::EdgeIterator ExtGraphNodeManager<Node,Edge >::removeEdge(int a, i
             }
         }
         DBG(10, "ExtGraphNodeManager()::removeEdge Not found edge!");
-#ifdef DEBUG
-        cout<<this->reportPool()<<endl;
-#endif
+
         return g_pool[a].end();
 } 
 
@@ -221,10 +219,7 @@ int ExtGraphNodeManager<Node,Edge>::newNode() {
     m_first_free = g_pool[createdNode].nextFree;
     g_pool[createdNode].nextFree = -1;
     g_pool[createdNode].edgesCount = 0;
-    DBG(8, "New node");
-    DBG(8, "Position pointer="+to_string(g_pool[createdNode].position[0]));
-   
-
+ 
   //  g_pool[createdNode].edges = new EdgeStorage();
 
     

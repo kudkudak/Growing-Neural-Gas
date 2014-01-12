@@ -60,12 +60,18 @@ public:
 		return m_size;
 	}
 	
-
+        ~Heap(){
+            for(int i=0; i<m_size;++i){
+                delete m_heap[i];
+            }
+        }
 	Heap(int size=100):m_size(0){
 		m_heap.resize(size);	
 	}
 
 	int moveUp(int i, HeapNode * node){
+            if(m_size==0) return -1;
+            
 		while
 		(	i>0 
 			&& 
@@ -84,6 +90,8 @@ public:
 		return i;		
 	}	
 	int moveDown(int i){
+            if(m_size==0) return -1;
+            
 			HeapNode * tmp;
 			int j=0;
 			
@@ -123,6 +131,8 @@ public:
 	}	
 
 	bool check(int i) const{
+            if(m_size==0) return false;
+            
 		bool r=true,l=true;		
 		if(leftChild(i)<m_size){
 			l=*m_heap[leftChild(i)]<=*m_heap[i] && check(leftChild(i));		
@@ -168,6 +178,11 @@ public:
 
 
 	T extractMax(){
+            if(m_size == 0) throw "Zero sized Heap max extraction?";
+            
+            
+            DBG(1, "Heap::extractMax() size="+to_string(m_size))
+            
 			HeapNode * tmp=m_heap[0];
 			T extracted = tmp->val;
                         

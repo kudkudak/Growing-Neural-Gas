@@ -38,7 +38,7 @@ all: $(OBJFILES)
 	$(CC) $(OBJFILES) src/main.cpp -o main  $(CFLAGS) $(CLIBS) $(CINCLUDE) -O3
 
 debug: $(DEBUGOBJFILES)
-	$(CC) $(DEBUGOBJFILES) src/main.cpp -o main  $(CFLAGS) $(CLIBS) $(CINCLUDE) -DDEBUG
+	$(CC) $(DEBUGOBJFILES) src/main.cpp -o main  $(CFLAGS) $(CLIBS) $(CINCLUDE) -DDEBUG -ggdb -O0
 
 
 ## Helping targets
@@ -46,14 +46,18 @@ $(BUILD_PERF_DIR)/%.o:$(SRC_DIR)/%.cpp
 	$(CC) -c $< -o $@ $(CFLAGS) $(CLIBS) $(CINCLUDE) -O3 -MD -MP
 
 $(BUILD_DEBUG_DIR)/%.o:$(SRC_DIR)/%.cpp
-	$(CC) -c $< -o $@ $(CFLAGS) $(CLIBS) $(CINCLUDE) -DDEBUG
+	$(CC) -c $< -o $@ $(CFLAGS) $(CLIBS) $(CINCLUDE) -DDEBUG -ggdb -O0
 
 ## Automatic dependency injection
 -include $(DEPFILES)
 
 ## Tests
 test: debug
-	$(CC) $(DEBUGOBJFILES) tests/cpp/run_tests.cpp -o tests/cpp/run_tests $(CFLAGS) $(CLIBS) $(CINCLUDE) $(GTESTFLAGS) 
+	$(CC) $(DEBUGOBJFILES) tests/cpp/run_tests.cpp -o tests/cpp/run_tests $(CFLAGS) $(CLIBS) $(CINCLUDE) $(GTESTFLAGS) -DDEBUG -ggdb -O0
+
+test_performance: all
+	$(CC) $(OBJFILES) tests/cpp/run_tests.cpp -o tests/cpp/run_tests $(CFLAGS) $(CLIBS) $(CINCLUDE) $(GTESTFLAGS) -O3
+
 
 
 #$(OBJRFILES)

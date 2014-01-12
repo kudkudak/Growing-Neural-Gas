@@ -121,7 +121,7 @@ class GNGServer{
                 this->gngDatabase.get(),
                 &current_configuration.orig[0],
                 &current_configuration.axis[0],
-                current_configuration.axis[0]/4.0, //only 2^dim
+                current_configuration.axis[0]/1.1, //only 2^dim
                 current_configuration.max_nodes,
                 current_configuration.max_age,
                 current_configuration.alpha,
@@ -147,8 +147,9 @@ class GNGServer{
     void _run() {
 
         DBG(10, "GNGServer::run::proceeding to algorithm");
-        gngAlgorithm->runAlgorithm();
         gngAlgorithm->run();
+        gngAlgorithm->runAlgorithm();
+        
     }
 
 

@@ -202,14 +202,8 @@ class GNGDatabaseProbabilistic: public GNGDatabase
 */
     boost::shared_ptr<VectorStorage> g_database;
     void grow_database(){
-        database_mutex->lock();
-        DBG(1,"GNGDatabaseSimple::resizing");
-        
         //TODO: pause the algorithm here, because every vector can hypothetically get reallocated
         g_database->reserve(g_database->capacity()*2);
-        
-        DBG(1,"GNGDatabaseSimple::resizing completed");
-        database_mutex->unlock();
     }
 public:
     int getSize() const{

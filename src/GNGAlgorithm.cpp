@@ -83,9 +83,10 @@ m_alpha(alpha), m_betha(betha), m_lambda(lambda),
 m_eps_v(eps_v), m_eps_n(eps_n),
 m_density_threshold(0.1), m_grow_rate(1.5),
 errorHeap(), dim(dim), m_toggle_uniformgrid(uniformgrid_optimization),
-        m_toggle_lazyheap(m_toggle_lazyheap)
+        m_toggle_lazyheap(lazyheap_optimization), running(false), m_utility_option(None)
 {
     DBG(1, "GNGAlgorithm:: Constructing object");
+    
     if(m_toggle_uniformgrid){
         ug = new UniformGrid< std::vector<Node>, Node, int>(boundingbox_origin,
                 boundingbox_axis, l, dim);
@@ -105,7 +106,10 @@ errorHeap(), dim(dim), m_toggle_uniformgrid(uniformgrid_optimization),
     m_betha_powers = new double[m_betha_powers_size];
     REP(i, m_betha_powers_size) m_betha_powers[i] = std::pow(m_betha, (double) (i));
 
+    //wrong alloc etc
+    m_betha_powers_to_n_length = m_max_nodes * 2;
     m_betha_powers_to_n = new double[m_max_nodes * 2];
+    
     REP(i, m_max_nodes * 2) m_betha_powers_to_n[i] = std::pow(m_betha, m_lambda * (double) (i));
      DBG(1, "GNGAlgorithm:: Constructed object");
 }
@@ -141,9 +145,14 @@ void GNGAlgorithm::RandomInit() {
 
 void GNGAlgorithm::AddNewNode() {
     using namespace std;
-
+    
+    DBG(4, m_g.reportPool());
     DBG(4, "GNGAlgorith::AddNewNode::start search");
-
+    
+    if(m_toggle_lazyheap){
+        DBG(4, "GNGAlgorithm::AddNewNode:: "+to_string(m_toggle_lazyheap)+" : )= toggle_lazyheap");
+    }
+    
     GNGNode ** error_nodes_new;
     if (m_toggle_lazyheap) error_nodes_new = LargestErrorNodesLazy();
     else error_nodes_new = LargestErrorNodes();
@@ -156,6 +165,7 @@ void GNGAlgorithm::AddNewNode() {
 
 
     if (m_max_nodes <= m_g.getNumberNodes()) {
+        DBG(4, "GNGAlgorith::AddNewNode:: achieved maximum number of nodes");
         delete[] error_nodes_new;
         return;
     }
@@ -176,9 +186,9 @@ void GNGAlgorithm::AddNewNode() {
 
 
     DBG(4, "GNGAlgorith::AddNewNode::added " + to_string(m_g[new_node_index]));
-
+    
     m_g.removeEdge(error_nodes_new[0]->nr, error_nodes_new[1]->nr);
-
+ 
     DBG(3, "GNGAlgorith::AddNewNode::removed edge beetwen " + to_string(error_nodes_new[0]->nr) + " and" + to_string(error_nodes_new[1]->nr));
 
     DBG(2, "GNGAlgorithm::AddNewNode::largest error node after removing edge : " + to_string(*error_nodes_new[0]));
@@ -189,7 +199,6 @@ void GNGAlgorithm::AddNewNode() {
     m_g.addUDEdge(new_node_index, error_nodes_new[1]->nr);
 
 
-    m_g.removeEdge(error_nodes_new[0]->nr, error_nodes_new[1]->nr);
 
     DBG(3, "GNGAlgorith::AddNewNode::add edge beetwen " + to_string(error_nodes_new[0]->nr) + " and" + to_string(new_node_index));
 
@@ -227,6 +236,13 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
     if (m_toggle_uniformgrid) {
         std::vector<int> nearest_index = ug->findNearest(ex->getPositionPtr(), 2); //TwoNearestNodes(ex->position);
 
+        Time t2(boost::posix_time::microsec_clock::local_time());
+        TimeDuration dt = t2 - t1;
+        
+        
+
+        times["uniform_grid_search"] += dt.total_microseconds();
+        
         if (nearest_index[0] == nearest_index[1]) return; //something went wrong (-1==-1 też)
 
         nearest[0] = &m_g[nearest_index[1]];
@@ -437,17 +453,24 @@ void GNGAlgorithm::ResizeUniformGrid() {
 }
 
 GNGNode ** GNGAlgorithm::LargestErrorNodes() {
+    DBG(2, "LargestErrorNodes::started procedure");
+    
     GNGNode ** largest = new GNGNode*[2];
 
     largest[0] = 0;
     largest[1] = 0;
     double error = -1.0;
 
+    
+    
+    
     REP(i, m_g.getMaximumIndex() + 1) {
         if (m_g[i].occupied) {
             error = std::max(error, m_g[i].error);
         }
     }
+    
+    DBG(2, "LargestErrorNodes::found maximum error");
 
     REP(i, m_g.getMaximumIndex() + 1) {
         if (m_g[i].occupied) {
@@ -455,6 +478,8 @@ GNGNode ** GNGAlgorithm::LargestErrorNodes() {
         }
     }
 
+    DBG(2, "LargestErrorNodes::largest picked");
+    
     if (largest[0]->edgesCount == 0) //{largest[0]->error=0; return largest;} //error?
     {
         m_g.deleteNode(largest[0]->nr);
@@ -550,7 +575,8 @@ GNGNode ** GNGAlgorithm::TwoNearestNodes(const double * position) { //to the exa
 }
 
 void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that computes)
-
+  
+    this->running = true;
     int size = g_db->getSize();
     
     DBG(3, "GNGAlgorithm::runAlgorithm()");
@@ -560,9 +586,7 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 
     Time t1, t2, t3, t4;
     TimeDuration dt;
-    DBG(3, "GNGAlgorithm::runAlgorithm()");
-    
-    DBG(3, "GNGAlgorithm::runAlgorithm()");
+
     DBG(3, "GNGAlgorithm::check size of the db " + to_string(size));
 
     boost::posix_time::millisec workTime(100);
@@ -588,6 +612,7 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 
     t3 = boost::posix_time::microsec_clock::local_time();
     int iteration = 0;
+    DBG(1, "GNGAlgorithm::gng_status="+to_string(this->gng_status));
     while (this->gng_status != GNG_TERMINATED) {
         
         
@@ -596,6 +621,8 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
             if(this->gng_status == GNG_TERMINATED) break;
             this->status_change_condition.wait(this->status_change_mutex);
         }
+        
+        DBG(1, "GNGAlgorithm::starting iteration");
         
         for (s = 0; s < m_lambda; ++s) { //global counter!!
             ++iteration;
@@ -622,7 +649,7 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
         if (m_toggle_uniformgrid && ug->getDensity() > m_density_threshold) ResizeUniformGrid();
         t2 = boost::posix_time::microsec_clock::local_time();
         dt = t2 - t1;
-        times["resize"] += dt.total_microseconds();
+//        times["resize"] += dt.total_microseconds();
         ++c; //epoch
         if (!m_toggle_lazyheap) DecreaseAllErrors();
         if (this->m_utility_option == BasicUtility) decrease_all_utility();
@@ -630,11 +657,12 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
     }
     
     DBG(30, "GNGAlgorithm::Terminated server");
-    
+    this->running =false;
     t4 = boost::posix_time::microsec_clock::local_time();
     dt = t4 - t3;
     REPORT(times["adapt1"]);
     REPORT(times["adapt2"]);
+    REPORT(times["uniform_grid_search"]);
     REPORT(times["resize"]);
     REPORT(dt.total_microseconds() / (double) 1000000);
 }

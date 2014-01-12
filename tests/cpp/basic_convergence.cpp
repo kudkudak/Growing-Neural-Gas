@@ -38,9 +38,9 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
              vect[j+(i)*(config.dim+1)] = __double_rnd(0, 1);
     }
     
+    DBG(10, "Allocated examples\n");
     cout<<"Allocated examples\n";
     
-    DBG(12, "testNewInterface::Server running");
     
     
     s->addExamples(&vect[0], num_database);
@@ -48,6 +48,8 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     
     delete[] vect;
     
+    DBG(12, "testNewInterface::Server running");
+
    
     boost::posix_time::millisec workTime(500);
 
@@ -67,7 +69,11 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
        if(iteration >= ms_loop/500) break;
     }
     
+    
+    cout<< "testNewInterface::Terminating server\n";
     s->getAlgorithm().terminate();
+    
+    while(s->getAlgorithm().running);
     
     boost::this_thread::sleep(workTime);
 
@@ -83,44 +89,54 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
  }
 #include <cmath>
 
-//
-//
-//TEST(BasicTests, ManyDimsNoUG){
-//    dbg.set_debug_level(-5);
-//    GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
-//    config.uniformgrid_optimization =  false;
-//    config.dim = 3;
-//    config.axis = vector<double>(3, 1.0);
-//    config.orig = vector<double>(3, 0.0);
-//    pair<double, double> results = test_convergence(&config, 100, 5000);
-//    
-//    ASSERT_GE(fabs(results.first), 10.0);
-//    ASSERT_LE(fabs(results.second), 50.0);
-//}
-//
-//
+
 //TEST(BasicTests, BasicConvergence){
 //    dbg.set_debug_level(12);
+//    
 //    GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
 //    pair<double, double> results = test_convergence(&config, 1000, 5000);
 //    ASSERT_GE(fabs(results.first), 100.0);
 //    ASSERT_LE(fabs(results.second), 40.0);
 //}
 
+TEST(BasicTests, ManyDimsUGConvergence){
+    dbg.set_debug_level(12);
+    
+    GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
+    config.uniformgrid_optimization =  true;
+    config.lazyheap_optimization =  true;
+    config.dim = 10;
+    config.axis = vector<double>(config.dim , 1.0);
+    config.orig = vector<double>(config.dim , 0.0);
+    pair<double, double> results = test_convergence(&config, 100, 10000);
+    
+    ASSERT_GE(results.first, 10.0);
+    ASSERT_LE(results.second, 50.0);
+}
+
 //
-//TEST(BasicTests, ManyDimsUGConvergence){
+
+////
+////
+//TEST(BasicTests, ManyDimsNoUG){
+//    cout<<"BasicTests::ManyDimsNoUG"<<endl;
+//    dbg.set_debug_level(12);
 //    GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
 //    config.uniformgrid_optimization =  false;
-//    config.dim = 100;
-//    pair<double, double> results = test_convergence(&config, 100, 1000);
+//    config.dim = 50;
+//    config.axis = vector<double>(config.dim, 1.0);
+//    config.orig = vector<double>(config.dim, 0.0);
+//    pair<double, double> results = test_convergence(&config, 100, 5000);
 //    
-//    ASSERT_GE(results.first, 10.0);
-//    ASSERT_LE(results.second, 50.0);
+//    ASSERT_GE(fabs(results.first), 100.0);
+//    ASSERT_LE(fabs(results.second), 2000.0);
 //}
 //
 //
-
+//
+//
 //TEST(BasicTests, BasicConvergeLazyHeapUG){
+//    dbg.set_debug_level(12);
 //    GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
 //    config.lazyheap_optimization = true;
 //    config.uniformgrid_optimization = true;
@@ -128,4 +144,4 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
 //    ASSERT_GE(results.first, 10.0);
 //    ASSERT_LE(results.second, 50.0);
 //}
-
+//
