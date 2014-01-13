@@ -81,3 +81,7 @@ For more scripts, please check the 'scripts' directory.
 Documentation and compiling as an R package
 
 
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/kudkudak/growing-neural-gas/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
