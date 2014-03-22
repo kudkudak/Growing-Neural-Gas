@@ -7,6 +7,7 @@ Package to be included in GMuM.R project. Currently under heavy rewritting.
 
 Fast implementation of the GNG algorithm in C++/Rcpp/R using also Fiser optimization [FGNG: A fast multi-dimensional growing neural gas implementation] (http://www.sciencedirect.com/science/article/pii/S0925231213009259). This algorithms is widely used for dynamic clustering problems.
 
+**Note**: It is being prepared as a common R package on the dev branch. Come back soon to check if the R package is released yet.
 
 
 <center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/master/screens/plot_speed.png" width="50%"></img></center>
