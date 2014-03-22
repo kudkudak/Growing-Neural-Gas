@@ -5,7 +5,7 @@ Package to be included in GMuM.R project. Currently under heavy rewritting.
 ###General
 ------
 
-Fast implementation of the GNG algorithm in C++/Rcpp/R (plot compares its performance with the original implementation from Fisher's paper). This algorithms is widely used for dynamic clustering problems, often occuring for example in robotics. This version should be stable.
+Fast implementation of the GNG algorithm in C++/Rcpp/R using also Fiser optimization [FGNG: A fast multi-dimensional growing neural gas implementation] (http://www.sciencedirect.com/science/article/pii/S0925231213009259). This algorithms is widely used for dynamic clustering problems, often occuring for example in robotics. This version should be stable.
 Alpha build, which means unfriendly building, and not fully implemented interface for the end user, 
 but I reckon that it is already consitutes a practical tool for data analysis.
 
