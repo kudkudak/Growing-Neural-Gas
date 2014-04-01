@@ -1,0 +1,15 @@
+* Add bigmemory dataset
+* Add translation dataset
+* Uniform grid for massive dimensionality data (sparse vector from boost?)
+    having done that we can make splitting more efficient
+    because currently it has to look in 3^d cubes, and 
+    for d>10 it is equivalent to looking at all points 
+* Refactor to bagging datasets, improve rejection sampling
+* Add example should pause the algorithm
+* Uniform Grid - add tests for skewed (non cube) space
+* Performance test only for uniform grid
+
+
+* Refactor m_grow_rate -> m_shrink_rate
+
+* Exceptions

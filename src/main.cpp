@@ -23,8 +23,6 @@ using namespace std;
 
 int main(int argc, char** argv) {
 //    dbg.set_debug_level(12);
-//    testNewInterface();
-//    dbg.set_debug_level(12);
 //    GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
 //    config.uniformgrid_optimization =  false;
 //    config.databaseType = GNGConfiguration::DatabaseProbabilistic;

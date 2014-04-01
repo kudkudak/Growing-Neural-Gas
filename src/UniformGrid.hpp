@@ -48,27 +48,87 @@ void  UniformGrid<VectorContainer, ListContainer, T>::new_l(double l) {
     delete[] org;
     delete[] axis;
 }
+template<class VectorContainer, class ListContainer, class T>
+void UniformGrid<VectorContainer, ListContainer, T>::purge(double *origin, double *axis_array, double l) {
+    int * dim = new int[this->gng_dim];
+    memcpy(m_axis, axis_array,  sizeof (double) *this->gng_dim);
+
+    // If length has not been specified, it means that we want to have minimum number of cells possible
+    // Which amounts to picking the smallest axis
+    if(l == -1.0){
+        double l_min = axis_array[0];
+        REP(i, this->gng_dim)
+                l_min = min(l_min, axis_array[0]);
+        l = l_min * 1.01; // For numerical stability
+    }
+    
+    REP(i, this->gng_dim){ 
+        dim[i] = calculate_cell_side(axis_array[i], l, m_dim[i]);
+        
+        DBG(6, "New dimension "+to_string(dim[i]));
+    }
+    
+    purge(origin, dim, l);
+    delete[] dim;
+}
+template<class VectorContainer, class ListContainer, class T>
+void UniformGrid<VectorContainer, ListContainer, T>::purge(double *origin, int* dim, double l) {
+    m_l = l;
+    memcpy(&m_dim[0], dim, sizeof (int) *this->gng_dim);
+    memcpy(&m_origin, origin, sizeof (double) *this->gng_dim);
+
+    m_density = 0.0;
+    m_density_threshold = 0.1;
+    m_grow_factor = 1.5;
+    m_nodes = 0;
+
+    m_grid.clear();
+
+    int new_size = 1;
+
+    REP(i, this->gng_dim) {
+        new_size *= m_dim[i];
+        REPORT(new_size);
+        REPORT(m_dim[i]);
+    }
+
+    DBG(3, "UniformGrid::purge new size "+to_string<int>(new_size));
+ 
+    m_grid.resize(new_size);
+}
+
+
 
 template<class VectorContainer, class ListContainer, class T>
 void UniformGrid<VectorContainer, ListContainer, T>::scanCell(int k, double* query) {
     double dist_candidate;
+    
+    // Not implemented search routine for > 2
+    if(s_search_query != 2) throw "Not implemented for >2 search query..";
+    
     FOREACH(node, m_grid[k]){
    
         dist_candidate = m_dist_fnc(*node, query);
 
         
-        if (s_found_cells_dist[0] <0 || dist_candidate <= s_found_cells_dist[0]) {
+        //
+        if (*node != s_found_cells[1] &&
+                (s_found_cells_dist[0] < 0 || dist_candidate <= s_found_cells_dist[0]) ){
+
+            //Overwrite worst 
             s_found_cells_dist[0] = dist_candidate;
-            s_found_cells[0] = *node;
-
+            s_found_cells[0] = *node;           
+                   
+            //Swap it to the right place
             for (int j = 1; j < s_search_query; ++j) {
-
                 if (s_found_cells_dist[j] <0 || dist_candidate <= s_found_cells_dist[j]) {
                     std::swap(s_found_cells[j], s_found_cells[j - 1]);
                     std::swap(s_found_cells_dist[j], s_found_cells_dist[j - 1]);
                     
                 }
             }
+
+            
         }
 
 
@@ -150,49 +210,7 @@ bool UniformGrid<VectorContainer, ListContainer, T>::scanCorners() {
     return scanned;
 }
 
-template<class VectorContainer, class ListContainer, class T>
-void UniformGrid<VectorContainer, ListContainer, T>::purge(double *origin, double *axis, double l) {
-    int * dim = new int[this->gng_dim];
-    memcpy(m_axis, axis, sizeof (double) *this->gng_dim);
 
-    REP(i, this->gng_dim) 
-        dim[i] = (int) ((axis[i] - origin[i]) / (l)) + 1;
-   
-    
-    
-    purge(origin, dim, l);
-    delete[] dim;
-}
-
-template<class VectorContainer, class ListContainer, class T>
-void UniformGrid<VectorContainer, ListContainer, T>::purge(double *origin, int* dim, double l) {
-
-    m_l = l;
-    memcpy(&m_dim[0], dim, sizeof (int) *this->gng_dim);
-    memcpy(&m_origin, origin, sizeof (double) *this->gng_dim);
-
-    m_density = 0.0;
-    m_density_threshold = 0.1;
-    m_grow_factor = 1.5;
-    m_nodes = 0;
-
-    m_grid.clear();
-
-    int new_size = 1;
-
-    REP(i, this->gng_dim) {
-        new_size *= m_dim[i];
-        REPORT(new_size);
-        REPORT(m_dim[i]);
-    }
-
-
-    DBG(3, "UniformGrid::purge new size "+to_string<int>(new_size));
-
-    
-    m_grid.resize(new_size);
- 
-}
 
 
 //mutates pos!
@@ -226,8 +244,8 @@ std::vector<T> UniformGrid<VectorContainer, ListContainer, T>::findNearest(const
     int * center = calculateCell(p);
     
     REP(i,n){
-        s_found_cells[i]=-1;
-        s_found_cells_dist[i]=-1;
+        s_found_cells[i] = -1;
+        s_found_cells_dist[i] = -1;
     }
     memcpy(s_center, center, sizeof (int) *this->gng_dim);
 
@@ -241,9 +259,9 @@ std::vector<T> UniformGrid<VectorContainer, ListContainer, T>::findNearest(const
     
     //Check if inside uniform grid
     if(!_inside(center_id)) {
-        DBG(5, "UniformGird:: search for " + write_cnt_str(p, p + this->gng_dim));  
-        DBG(5,"UniformGird:: search for "+to_string(center_id));
-             
+        DBG(6, "UniformGird:: search for " + write_cnt_str(p, p + this->gng_dim));  
+        DBG(6,"UniformGird:: search for "+to_string(center_id));
+        DBG(6, "UniformGrid:: size="+to_string(m_grid.size()));
         vector<int> returned_value;
         returned_value.push_back(-1);
         returned_value.push_back(-1);
@@ -254,16 +272,17 @@ std::vector<T> UniformGrid<VectorContainer, ListContainer, T>::findNearest(const
     s_found_cells_dist[0] = s_found_cells_dist[1] = -1;
     s_found_cells[0] = s_found_cells[1] = -1;
 
-    //REP(i,10000) TMP[i]=false;
-    
-    DBG(0,"UniformGird:: initializing serach");
-    
     //init of the search
     scanCell(center_id, s_query);
-    
-    DBG(0,"UniformGird:: initializing serach");
-    
 
+    
+    if(s_found_cells[0] == s_found_cells[1] && s_found_cells[0] != -1){
+        DBG(10, "UniformGrid:: Found two same nodes in one cell!!");
+    }
+
+    DBG(2, "UniformGrid:: Found 0: "+to_string(s_found_cells[0]));
+    DBG(2, "UniformGrid:: Found 1: "+to_string(s_found_cells[1]));
+    
     for (int i = 0; i < this->gng_dim; ++i) {
         tmp = abs((p[i] - m_origin[i] - center[i] * m_l)) < abs((p[i] - m_origin[i] - (center[i] + 1) * m_l)) ?
                 abs((p[i] - m_origin[i] - center[i] * m_l)) :
@@ -287,12 +306,22 @@ std::vector<T> UniformGrid<VectorContainer, ListContainer, T>::findNearest(const
             DBG(2, "UniformGird:: scanned straightforward cell proceeding to crawling");
      Time t1(boost::posix_time::microsec_clock::local_time());
 
-       
+    
+     //No more cells to search
+    if(m_grid.size()==1){
+            std::vector<T> ret(2);
+            ret[1] = s_found_cells[0];
+            ret[0] = s_found_cells[1];
+
+            return ret;
+     }
+     
+     
     while
         (
             !searchSuccessful(border_squared)
             ) {
-        
+        DBG(3, "UniformGird:: scanning radius "+to_string(s_radius));
         ++s_radius;
         border += m_l;
         border_squared = border*border;
@@ -311,8 +340,10 @@ std::vector<T> UniformGrid<VectorContainer, ListContainer, T>::findNearest(const
 //        cout<<"Uniform grid search time "<< dt.total_microseconds()<<endl;
 
     std::vector<T> ret(2);
-    ret[0] = s_found_cells[0];
-    ret[1] = s_found_cells[1];
+    
+    //Reversed array - see scanCell
+    ret[1] = s_found_cells[0];
+    ret[0] = s_found_cells[1];
   
     return ret;
 }
