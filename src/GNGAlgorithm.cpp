@@ -216,7 +216,7 @@ void GNGAlgorithm::AddNewNode() {
     delete[] error_nodes_new;
 }
 
-void GNGAlgorithm::Adapt(GNGExample * ex) {
+void GNGAlgorithm::Adapt(const double * ex) {
     ;
     Time t1(boost::posix_time::microsec_clock::local_time());
 
@@ -225,7 +225,7 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
     
     GNGNode * nearest[2];
     if (m_toggle_uniformgrid) {
-        std::vector<int> nearest_index = ug->findNearest(ex->getPositionPtr(), 2); //TwoNearestNodes(ex->position);
+        std::vector<int> nearest_index = ug->findNearest(ex, 2); //TwoNearestNodes(ex->position);
 
         Time t2(boost::posix_time::microsec_clock::local_time());
         TimeDuration dt = t2 - t1;
@@ -234,20 +234,35 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
 
         times["uniform_grid_search"] += dt.total_microseconds();
         
+        
+        #ifdef DEBUG
         if (nearest_index[0] == nearest_index[1]) {
-            DBG(100, "Adapt::Found same nearest_indexes!~! "+to_string(nearest_index[0]))
- 
+            DBG(100, "Adapt::Found same nearest_indexes!~! "+to_string(nearest_index[0]));
             throw BasicException("Found same nearest_indexes");
-                    
             return; //something went wrong (-1==-1 też)
         }
+        #endif
 
+        
+        #ifdef DEBUG
+        
+        double error0 = m_g.getDist(nearest[0]->position, ex);
+        double error1 = m_g.getDist(nearest[1]->position, ex);
+        
+        if(error1 < error0){
+            throw BasicException("Failed UG - returned nodes in reversed order ?");
+        }
+        
+        
+        #endif
+        
+        
         nearest[0] = &m_g[nearest_index[1]];
         nearest[1] = &m_g[nearest_index[0]];
     } else {
         DBG(1, "GNGAlgorith::Adapt::calling TwoNearestNodes");
 
-        GNGNode ** tmp = TwoNearestNodes(ex->getPositionPtr());
+        GNGNode ** tmp = TwoNearestNodes(ex);
         DBG(1, "GNGAlgorith::Adapt::found TwoNearestNodes");
 
         nearest[0] = tmp[0];
@@ -267,7 +282,7 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
     DBG(4, "GNGAlgorith::Adapt::found nearest nodes to the drawn example " + to_string(*nearest[0]) + " " + to_string(*nearest[1]));
 
 
-    double error = m_g.getDist(nearest[0]->position, ex->getPositionPtr());
+    double error = m_g.getDist(nearest[0]->position, ex);
 
 
     DBG(3, "GNGAlgorith::Adapt::increasing error");
@@ -279,7 +294,7 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
 
     if (m_toggle_uniformgrid) ug->remove(nearest[0]->position);
     for (int i = 0; i < this->dim; ++i) {
-        nearest[0]->position[i] += m_eps_v * (ex->getPositionPtr()[i] - nearest[0]->position[i]);
+        nearest[0]->position[i] += m_eps_v * (ex[i] - nearest[0]->position[i]);
     }
     if (m_toggle_uniformgrid) ug->insert(nearest[0]->position, nearest[0]->nr);
 
@@ -289,7 +304,7 @@ void GNGAlgorithm::Adapt(GNGExample * ex) {
                 ug->remove(m_g[(*edg)->nr].position);
             
             for (int i = 0; i < this->dim; ++i) { //param accounting
-                m_g[(*edg)->nr].position[i] += m_eps_n * (ex->position[i] - m_g[(*edg)->nr].position[i]);
+                m_g[(*edg)->nr].position[i] += m_eps_n * (ex[i] - m_g[(*edg)->nr].position[i]);
             }
   
             if (m_toggle_uniformgrid) 
@@ -609,9 +624,9 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
     int iteration = 0;
     DBG(1, "GNGAlgorithm::gng_status="+to_string(this->gng_status));
     while (this->gng_status != GNG_TERMINATED) {
-        
-        
+
         while(this->gng_status != GNG_RUNNING) {
+           
             DBG(1, "GNGAlgorithm::status in main loop = "+to_string(this->gng_status));
             if(this->gng_status == GNG_TERMINATED) break;
             this->status_change_condition.wait(this->status_change_mutex);
@@ -621,19 +636,21 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
         
         for (s = 0; s < m_lambda; ++s) { //global counter!!
             ++iteration;
-
+   
             DBG(0, "GNGAlgorithm::draw example");
 
             GNGExample ex = g_db->drawExample();
+            Adapt(ex.getPositionPtr());
 
-            Adapt(&ex);
-
+            
+            
+            #ifdef DEBUG
             for (int i = 0; i <= m_g.getMaximumIndex(); ++i) { //another idea for storing list of actual nodes?
                 if (m_g[i].occupied && m_g[i].edgesCount == 0 && m_utility_option == None) {
                     DBG(40,"Error at " + to_string<int>(i));
                 }
             }
-
+            #endif
 
         }
 
@@ -654,7 +671,8 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
     }
     
     DBG(30, "GNGAlgorithm::Terminated server");
-    this->running =false;
+    this->running = false;
+
     t4 = boost::posix_time::microsec_clock::local_time();
     dt = t4 - t3;
     REPORT(times["adapt1"]);
@@ -662,5 +680,6 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
     REPORT(times["uniform_grid_search"]);
     REPORT(times["resize"]);
     REPORT(dt.total_microseconds() / (double) 1000000);
+ 
 }
 

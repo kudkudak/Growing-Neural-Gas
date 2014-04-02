@@ -13,20 +13,13 @@ using namespace std;
  */
 pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database=1000,
         int ms_loop = 5000) {
-    
-    
-    
-    
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();  
     config.uniformgrid_optimization = true;
     if(cnf) config=*cnf;
     config.databaseType = GNGConfiguration::DatabaseProbabilistic;
     
     GNGServer *s = GNGServer::constructTestServer(config);
-    
-//    GNGServer::setConfiguration(config); 
-//    GNGServer::getInstance()->run();
-    
+
     cout<<"Running server\n"<<flush;
     s->run();
     
@@ -58,7 +51,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     int iteration = 0;
     
     
-    //Should converge to 0.06-0.07 in 300-400 iterations
+    
     while(true){
        ++iteration;
        REPORT(iteration);
@@ -69,12 +62,14 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
        if(iteration >= ms_loop/500) break;
     }
     
-    
-    cout<< "testNewInterface::Terminating server\n";
+
     s->getAlgorithm().terminate();
     
-    while(s->getAlgorithm().running);
-    
+    int test;
+    while(s->getAlgorithm().running == true){
+        boost::this_thread::sleep(workTime);
+    }
+
     boost::this_thread::sleep(workTime);
 
             
@@ -83,7 +78,10 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
                /(s->getGraph().getNumberNodes()+0.));
     
     
+    
+    cout<<"Deleting\n";
     delete s;
+    cout<<"Deleted\n";
     
     return t;
  }
@@ -92,17 +90,33 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
 
 TEST(BasicTests, BasicConvergence){
     dbg.set_debug_level(12);
-    
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     pair<double, double> results = test_convergence(&config, 1000, 3000);
-    ASSERT_GE(fabs(results.first), 100.0);
-    ASSERT_LE(fabs(results.second), 40.0);
+    ASSERT_GE(fabs(results.first), 60.0);
+    ASSERT_LE(fabs(results.second), 50.0);
 }
 
+TEST(BasicTests, FewDimsSkewedUGConvergence){
+    dbg.set_debug_level(6);
+    GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
+    config.uniformgrid_optimization =  true;
+    config.max_nodes = 2000;
+    config.lazyheap_optimization =  true;
+    config.dim = 4;
+    config.axis = vector<double>(config.dim , 1.0);
+    config.axis[3] = 10.0;
+    config.axis[2] = 5.0;
+    config.orig = vector<double>(config.dim , 0.0);
+    config.orig[2] = -1.0;
+
+    pair<double, double> results = test_convergence(&config, 100, 60000);
+    
+    ASSERT_GE(results.first, 10.0);
+    ASSERT_LE(results.second, 50.0);
+}
 
 TEST(BasicTests, FewDimsUGConvergence){
-    dbg.set_debug_level(2);
-    
+    dbg.set_debug_level(6);
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.uniformgrid_optimization =  true;
     config.max_nodes = 2000;
@@ -156,4 +170,4 @@ TEST(BasicTests, BasicConvergeLazyHeapUG){
     ASSERT_GE(results.first, 10.0);
     ASSERT_LE(results.second, 50.0);
 }
-//
+

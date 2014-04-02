@@ -4,7 +4,7 @@
 ## Flags 
 CC=g++
 CINCLUDE=-O3 -I./inst/include -I./src -I/usr/share/R/include -I/usr/local/lib/R/site-library/Rcpp/include -I/usr/local/lib/R/site-library/RcppArmadillo/include -L/usr/local/lib
-CLIBS= -lboost_system -lpthread -lrt -lboost_thread
+CLIBS= -lboost_system -lpthread -lrt -lboost_thread -lgtest
 RFLAGS=$(shell Rscript scripts/generateflags.r)
 CFLAGS=-fPIC
 
@@ -36,7 +36,7 @@ DEPFILES := $(addprefix $(BUILD_DEBUG_DIR)/, $(CPPFILES:.cpp=.d))
 
 ## Main targets
 all: $(OBJFILES)
-	$(CC) $(OBJFILES) src/main.cpp -o main  $(CFLAGS) $(CLIBS) $(CINCLUDE) -O3
+	$(CC) $(OBJFILES) src/main.cpp -o main  $(CFLAGS) $(CLIBS) $(CINCLUDE) -O3 
 
 debug: $(DEBUGOBJFILES)
 	$(CC) $(DEBUGOBJFILES) src/main.cpp -o main  $(CFLAGS) $(CLIBS) $(CINCLUDE) -DDEBUG -ggdb -O0

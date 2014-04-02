@@ -4,12 +4,20 @@
     having done that we can make splitting more efficient
     because currently it has to look in 3^d cubes, and 
     for d>10 it is equivalent to looking at all points 
+    I would use external library
 * Refactor to bagging datasets, improve rejection sampling
 * Add example should pause the algorithm
 * Uniform Grid - add tests for skewed (non cube) space
 * Performance test only for uniform grid
 
+*TODO: visual test - common format visualisation igraph compatible
+
+* Graph refactoring
 
 * Refactor m_grow_rate -> m_shrink_rate
 
 * Exceptions
+
+* TODO: check for duplicates in unifrom grid (if in scanCell : why needed??
+
+* Check convergence in regards to the switched order in UG

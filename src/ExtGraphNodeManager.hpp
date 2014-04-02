@@ -22,22 +22,10 @@ template<class Node, class Edge >
 typename Node::EdgeIterator ExtGraphNodeManager<Node,Edge >::removeEdge(int a, int b){
         FOREACH(edg, g_pool[a]){
             if((*edg)->nr==b) {
-//                
-//                cout<<"erasing\n";
-//                cout<<this->reportPool()<<endl;
-//                cout<<((*edg)->nr)<<"->"<<((*edg)->rev->nr)<<endl;
-//                cout<<((long int)(*edg)->rev)<<endl;
-//                cout<<"TYPE\n";
-//                std::cout << typeid((**edg).rev).name() << '\n';
                 RAMGNGEdge * ptr_rev = (RAMGNGEdge*)((**edg).rev);
                 RAMGNGEdge * ptr = (RAMGNGEdge*)(&(**edg));
-               
-                
-                
-//                cout<<this->reportPool()<<endl;
+
                 g_pool[b].erase(find(g_pool[b].begin(), g_pool[b].end(), (*edg)->rev));
-//                cout<<this->reportPool()<<endl;
-        
                 edg = g_pool[a].erase(edg);
                 
                 
