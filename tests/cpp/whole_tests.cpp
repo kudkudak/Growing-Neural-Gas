@@ -1,14 +1,11 @@
 #include "gtest/gtest.h"
-
 #include "GNG.h"
-
-/** Include all tests */
 
 DebugCollector dbg;
 int GNGNode::dim =0; 
 
-//#include "basic_convergence.cpp"
-#include "graph_tests.cpp"
+#include "basic_convergence.cpp"
+
 
 
 int main(int argc, char **argv) {

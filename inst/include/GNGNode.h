@@ -62,6 +62,7 @@ public:
  
     
     GNGNode():error(0.0),error_cycle(0),occupied(false),nr(-1),edgesCount(0){
+        position = new double[dim];
     }
     
     ~GNGNode(){

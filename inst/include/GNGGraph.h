@@ -86,6 +86,10 @@ public:
     }
 };
 
+
+
+
+
 /* @note: Not thread safe
  * Can be used by external thread by has to be locked. All operations moving
  * whole memory sectory will unlock. Elegant solution: locking interface
@@ -98,31 +102,35 @@ public:
  *
  * TODO: change from pointer to keeping whole objects: Deleting
  * is inefficient in memory sense (fragmenting etc.)
+ * TODO; continuous memory for positions - much faster this way and easier for caching
  */
 template<class Node, class Edge, class Mutex = boost::mutex>
 class RAMGNGGraph : public GNGGraph {
     /** Mutex provided externally for synchronization*/
     Mutex * mutex;
     std::vector<Node*> g;
-    /** Indicates next free vertex */
-    std::vector<unsigned int> next_free;
 
-    unsigned int maximum_index;
+    int maximum_index;
     unsigned int nodes;
     unsigned int gng_dim;
-    unsigned int firstFree;
-public:
+    
+public:    
+    /** Indicates next free vertex */
+    std::vector<int> next_free;    
+    int firstFree;
+    
     typedef typename Node::EdgeIterator EdgeIterator;
 
-    RAMGNGGraph(Mutex* mutex, unsigned int dim, int starting_nodes) :
-    maximum_index(starting_nodes-1), mutex(mutex), gng_dim(dim), 
-    firstFree(-1), nodes(starting_nodes) {
+    RAMGNGGraph(Mutex* mutex, unsigned int dim, int initial_pool_size) :
+    maximum_index(-1), mutex(mutex), gng_dim(dim), 
+    firstFree(-1), nodes(0) {
         //Initialize graph data structures
-        g.resize(starting_nodes);
-        for (int i = 0; i < starting_nodes; ++i) g[i] = 0;
-        next_free.resize(starting_nodes);
-        for (int i = 0; i < starting_nodes - 1; ++i) next_free[i] = i + 1;
-        next_free[starting_nodes - 1] = -1;
+        g.resize(initial_pool_size);
+        for (int i = 0; i < initial_pool_size; ++i) g[i] = 0;
+        next_free.resize(initial_pool_size);
+        for (int i = 0; i < initial_pool_size - 1; ++i) next_free[i] = i + 1;
+        next_free[initial_pool_size - 1] = -1;
+        firstFree = 0;
     }
 
     virtual void lock() {
@@ -162,7 +170,7 @@ public:
     }
 
     unsigned int getNumberNodes() const {
-        return g.size();
+        return this->nodes;
     }
 
 
@@ -204,20 +212,25 @@ public:
 
         int createdNode = firstFree; //taki sam jak w g_node_pool
 
+     
         maximum_index = createdNode > maximum_index 
                 ? createdNode : maximum_index;
 
         g[createdNode] = new Node();
         g[createdNode]->occupied = true;
         g[createdNode]->nr = createdNode;
+        
+
+        
         firstFree = next_free[createdNode];
+        
+        
         g[createdNode]->edgesCount = 0;
 
         //  g_pool[createdNode].edges = new EdgeStorage();
 
 
         ++this->nodes; //zwiekszam licznik wierzcholkow //na koncu zeby sie nie wywalil przypadkowo
-
 
         memcpy(&(g[createdNode]->position[0]), position, sizeof (double) *(this->gng_dim)); //param
 
@@ -237,8 +250,10 @@ public:
             next_free[x] = firstFree;
             firstFree = x;
             delete g[x];
+            g[x] = 0;
+            return true;
         }
-        return true;
+        return false;
     }
 
     EdgeIterator removeEdge(int a, int b) {
@@ -261,7 +276,7 @@ public:
                 return edg;
             }
         }
-        DBG(10, "ExtGraphNodeManager()::removeEdge Not found edge!");
+        DBG(10, "ExtGraphNodeManager()::removeEdge Nots found edge!");
         return g[a]->end();
     }
 
@@ -305,23 +320,31 @@ public:
     ~RAMGNGGraph() {
         for (int i = 0; i < g.size(); ++i) {
             if (g[i]) {
-                FOREACH(edg, *g[i]) delete *edg;
+                FOREACH(edg, *g[i])
+                        delete *edg;
                 delete g[i];
             }
         }
     }
 private:
     void resizeGraph() {
+        //DBG(5, "GNGGraph::resizing graph from "+to_string(g.size()));
+        DBG(5, "GNGGraph::resizing");
         unsigned int previous_size = g.size();
         g.resize(2 * previous_size);
-        for (int i = previous_size; i < g.size(); ++i) {
+        for (int i = previous_size; i < 2 * previous_size; ++i) {
             g[i] = 0;
         }
         next_free.resize(2 * previous_size);
-        for (int i = previous_size - 1; i < g.size() - 1; ++i) {
+        for (int i = previous_size-1; i < 2 * previous_size - 1; ++i) {
             next_free[i] = i + 1;
         }
         next_free[g.size() - 1] = -1;
+        firstFree = previous_size;
+        DBG(5, "GNGGraph::resizing done");
+        DBG(5, to_string(firstFree));
+        DBG(5, to_string(next_free[previous_size]));
+        //DBG(5, "GNGGraph::resizing graph from "+to_string(g.size())+" done");
     }
 };
 

@@ -53,10 +53,12 @@ $(BUILD_DEBUG_DIR)/%.o:$(SRC_DIR)/%.cpp
 
 ## Tests
 test: debug
-	$(CC) $(DEBUGOBJFILES) tests/cpp/run_tests.cpp -o tests/cpp/run_tests $(CFLAGS) $(CLIBS) $(CINCLUDE) $(GTESTFLAGS) -DDEBUG -ggdb -O0
+	$(CC) $(DEBUGOBJFILES) tests/cpp/graph_tests.cpp -o tests/cpp/graph_tests $(CFLAGS) $(CLIBS) $(CINCLUDE) $(GTESTFLAGS) -DDEBUG -ggdb -O0
+	$(CC) $(DEBUGOBJFILES) tests/cpp/whole_tests.cpp -o tests/cpp/whole_tests $(CFLAGS) $(CLIBS) $(CINCLUDE) $(GTESTFLAGS) -DDEBUG -ggdb -O0
 
 test_performance: all
-	$(CC) $(OBJFILES) tests/cpp/run_tests.cpp -o tests/cpp/run_tests $(CFLAGS) $(CLIBS) $(CINCLUDE) $(GTESTFLAGS) -O3
+	$(CC) $(OBJFILES) tests/cpp/graph_tests.cpp -o tests/cpp/graph_tests $(CFLAGS) $(CLIBS) $(CINCLUDE) $(GTESTFLAGS) -O3
+	$(CC) $(OBJFILES) tests/cpp/whole_tests.cpp -o tests/cpp/whole_tests $(CFLAGS) $(CLIBS) $(CINCLUDE) $(GTESTFLAGS) -O3
 
 
 
@@ -69,7 +71,7 @@ test_performance: all
 
 ## Cleaning
 clean:
-	rm $(OBJFILES) $(DEPFILES) $(DEBUGOBJFILES) -f
+	rm $(OBJFILES) $(DEPFILES) $(DEBUGOBJFILES) $(TESTOBJFILES) -f
 
 # DO NOT DELETE
 
