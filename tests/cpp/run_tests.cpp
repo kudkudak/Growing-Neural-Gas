@@ -7,7 +7,8 @@
 DebugCollector dbg;
 int GNGNode::dim =0; 
 
-#include "basic_convergence.cpp"
+//#include "basic_convergence.cpp"
+#include "graph_tests.cpp"
 
 
 int main(int argc, char **argv) {

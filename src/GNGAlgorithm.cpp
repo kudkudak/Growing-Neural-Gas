@@ -13,18 +13,16 @@ using namespace std;
 
 GNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
     GNGNode ** largest = new GNGNode*[2];
-
     GNGNode * gngnode;
 
     FOREACH(it, errorHeap.getLazyList()) {
         gngnode = &m_g[*it];
-
         errorHeap.insert(gngnode->nr, gngnode->error_new);
     }
     errorHeap.getLazyList().clear();
-    
 
     ErrorNode max;
+    //Extract max until you get correct one (that is not lazy)
     do {
         max = errorHeap.extractMax();
 
@@ -327,14 +325,10 @@ void GNGAlgorithm::Adapt(const double * ex) {
 
     
     GNGNode::EdgeIterator edg = nearest[0]->begin();
-    while(edg!=nearest[0]->end()){
-        
+    while(edg!=nearest[0]->end()){        
         DBG(2, "Currently on edge to"+to_string((*edg)->nr));
-        
-        
 
         (*edg)->age++;
-
         (((*edg)->rev))->age++;
 
         if ((*edg)->nr == nearest[1]->nr) {
@@ -348,13 +342,8 @@ void GNGAlgorithm::Adapt(const double * ex) {
 
             int nr = (*edg)->nr;
 
-
             //Note that this is O(N), but average number of edges is very small, so it is OK
-            
             edg = m_g.removeEdge(nearest[0]->nr, nr);
-
-
-      
 
             if (m_g[nr].edgesCount == 0 && this->m_utility_option == None) {
 
@@ -417,7 +406,7 @@ int GNGAlgorithm::CalculateAccumulatedError() {
 
         REP(i, maximumIndex + 1) {
 
-            if (m_g[i].occupied) {
+            if (m_g.existsNode(i)) {
                 m_accumulated_error += m_g[i].error_new;
             }
         }
@@ -426,7 +415,7 @@ int GNGAlgorithm::CalculateAccumulatedError() {
 
         REP(i, maximumIndex + 1) {
 
-            if (m_g[i].occupied) {
+            if (m_g.existsNode(i)) {
                 m_accumulated_error += m_g[i].error;
             }
         }
@@ -439,7 +428,7 @@ void GNGAlgorithm::TestAgeCorrectness() {
 
     REP(i, maximumIndex + 1) {
 
-        if (m_g[i].occupied && m_g[i].edgesCount) {
+        if (m_g.existsNode(i) && m_g[i].edgesCount) {
 
             FOREACH(edg, m_g[i]) {
                 if ((*edg)->age > m_max_age) {
@@ -462,7 +451,7 @@ void GNGAlgorithm::ResizeUniformGrid() {
     int maximum_index = m_g.getMaximumIndex();
 
     REP(i, maximum_index + 1) 
-        if (m_g[i].occupied) ug->insert(m_g[i].position, m_g[i].nr);
+        if (m_g.existsNode(i)) ug->insert(m_g[i].position, m_g[i].nr);
     
 }
 
@@ -479,7 +468,7 @@ GNGNode ** GNGAlgorithm::LargestErrorNodes() {
     
     
     REP(i, m_g.getMaximumIndex() + 1) {
-        if (m_g[i].occupied) {
+        if (m_g.existsNode(i)) {
             error = std::max(error, m_g[i].error);
         }
     }
@@ -487,7 +476,7 @@ GNGNode ** GNGAlgorithm::LargestErrorNodes() {
     DBG(2, "LargestErrorNodes::found maximum error");
 
     REP(i, m_g.getMaximumIndex() + 1) {
-        if (m_g[i].occupied) {
+        if (m_g.existsNode(i)) {
             if (m_g[i].error == error) largest[0] = &m_g[i];
         }
     }
@@ -536,7 +525,7 @@ GNGNode ** GNGAlgorithm::TwoNearestNodes(const double * position) { //to the exa
     int start_index = 0;
     DBG(1, "GNGAlgorithm::just called TwoNearestNodes");
     DBG(1, "GNGAlgorithm::starting TwoNearestNodes");
-    while (!m_g[start_index].occupied) ++start_index;
+    while (!m_g.existsNode(start_index)) ++start_index;
     DBG(1, "GNGAlgorithm::just called TwoNearestNodes");
     double dist = m_g.getDist(position, m_g[start_index].position);
     nearest[0] = &m_g[start_index];
@@ -547,7 +536,7 @@ GNGNode ** GNGAlgorithm::TwoNearestNodes(const double * position) { //to the exa
 
     for (int i = start_index + 1; i <= m_g.getMaximumIndex(); ++i) { //another idea for storing list of actual nodes?
 
-        if (m_g[i].occupied) {
+        if (m_g.existsNode(i)) {
             DBG(1, "calculating new_dist\n");
  
             double new_dist = m_g.getDist(position, m_g[i].position);
@@ -565,12 +554,12 @@ GNGNode ** GNGAlgorithm::TwoNearestNodes(const double * position) { //to the exa
     
     start_index = 0;
 
-    while (!m_g[start_index].occupied || start_index == nearest[0]->nr) ++start_index;
+    while (!m_g.existsNode(start_index)|| start_index == nearest[0]->nr) ++start_index;
     dist = m_g.getDist(position, m_g[start_index].position);
     nearest[1] = &m_g[start_index];
 
     for (int i = start_index + 1; i <= m_g.getMaximumIndex(); ++i) { //another idea for storing list of actual nodes?
-        if (m_g[i].occupied && i != nearest[0]->nr) {
+        if (m_g.existsNode(i) && i != nearest[0]->nr) {
             double new_dist = m_g.getDist(position, m_g[i].position);
 
             if (dist > new_dist) {
@@ -629,6 +618,7 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
            
             DBG(1, "GNGAlgorithm::status in main loop = "+to_string(this->gng_status));
             if(this->gng_status == GNG_TERMINATED) break;
+            
             this->status_change_condition.wait(this->status_change_mutex);
         }
         
@@ -642,16 +632,13 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
             GNGExample ex = g_db->drawExample();
             Adapt(ex.getPositionPtr());
 
-            
-            
             #ifdef DEBUG
             for (int i = 0; i <= m_g.getMaximumIndex(); ++i) { //another idea for storing list of actual nodes?
-                if (m_g[i].occupied && m_g[i].edgesCount == 0 && m_utility_option == None) {
+                if (m_g.existsNode(i) && m_g[i].edgesCount == 0 && m_utility_option == None) {
                     DBG(40,"Error at " + to_string<int>(i));
                 }
             }
             #endif
-
         }
 
         DBG(1, "GNGAlgorithm::add new node");
