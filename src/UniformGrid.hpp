@@ -224,7 +224,7 @@ int UniformGrid<VectorContainer, ListContainer, T>::insert(double *p, T x) {
     if(!_inside(k)) return 0;
 
     
-    DBG(0,"UniformGrid:: "+to_string(k)+" inser");
+    DBG(0,"UniformGrid:: "+to_string(k)+" inserting "+to_string(x));
     
     m_grid[k].push_back(x);
     m_nodes++;

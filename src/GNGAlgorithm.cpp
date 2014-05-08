@@ -179,7 +179,7 @@ void GNGAlgorithm::AddNewNode() {
 
     DBG(4, "GNGAlgorith::AddNewNode::added " + to_string(m_g[new_node_index]));
     
-    m_g.removeEdge(error_nodes_new[0]->nr, error_nodes_new[1]->nr);
+    m_g.removeUDEdge(error_nodes_new[0]->nr, error_nodes_new[1]->nr);
  
     DBG(3, "GNGAlgorith::AddNewNode::removed edge beetwen " + to_string(error_nodes_new[0]->nr) + " and" + to_string(error_nodes_new[1]->nr));
     DBG(2, "GNGAlgorithm::AddNewNode::largest error node after removing edge : " + to_string(*error_nodes_new[0]));
@@ -223,8 +223,13 @@ void GNGAlgorithm::Adapt(const double * ex) {
     
     GNGNode * nearest[2];
     if (m_toggle_uniformgrid) {
+        
+        DBG(1, "GNGAlgorithm::Adapt::Graph size "+to_string(m_g.getNumberNodes()));
+        
         std::vector<int> nearest_index = ug->findNearest(ex, 2); //TwoNearestNodes(ex->position);
 
+        DBG(1, "GNGAlgorithm::Adapt::Found nearest");
+        
         Time t2(boost::posix_time::microsec_clock::local_time());
         TimeDuration dt = t2 - t1;
         
@@ -241,6 +246,8 @@ void GNGAlgorithm::Adapt(const double * ex) {
         }
         #endif
 
+        nearest[0] = &m_g[nearest_index[0]];
+        nearest[1] = &m_g[nearest_index[1]];
         
         #ifdef DEBUG
         
@@ -255,8 +262,7 @@ void GNGAlgorithm::Adapt(const double * ex) {
         #endif
         
         
-        nearest[0] = &m_g[nearest_index[1]];
-        nearest[1] = &m_g[nearest_index[0]];
+
     } else {
         DBG(1, "GNGAlgorith::Adapt::calling TwoNearestNodes");
 
@@ -324,6 +330,7 @@ void GNGAlgorithm::Adapt(const double * ex) {
     DBG(4, "GNGAlgorith::Adapt::commence scan of edges");
 
     
+    //TODO: assuming here GNGNode not any arbitrary node :/
     GNGNode::EdgeIterator edg = nearest[0]->begin();
     while(edg!=nearest[0]->end()){        
         DBG(2, "Currently on edge to"+to_string((*edg)->nr));
@@ -343,7 +350,7 @@ void GNGAlgorithm::Adapt(const double * ex) {
             int nr = (*edg)->nr;
 
             //Note that this is O(N), but average number of edges is very small, so it is OK
-            edg = m_g.removeEdge(nearest[0]->nr, nr);
+            edg = m_g.removeUDEdge(nearest[0]->nr, nr);
 
             if (m_g[nr].edgesCount == 0 && this->m_utility_option == None) {
 

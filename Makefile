@@ -28,6 +28,7 @@ DEBUGOBJFILES := $(addprefix $(BUILD_DEBUG_DIR)/, $(CPPFILES:.cpp=.o))
 
 TESTCPPFILES := $(foreach dir, $(CPP_TEST_DIR)/, $(notdir $(wildcard $(CPP_TEST_DIR)/*.cpp)))
 TESTOBJFILES := $(addprefix $(CPP_TEST_DIR)/, $(TESTCPPFILES:.cpp=.o))
+TESTEXECFILES := $(addprefix $(CPP_TEST_DIR)/, $(TESTCPPFILES:.cpp=))
 TESTSOURCES := $(addprefix $(CPP_TEST_DIR)/, $(TESTCPPFILES))
 
 ## Automatic dependency injection (from previous build)
@@ -71,7 +72,7 @@ test_performance: all
 
 ## Cleaning
 clean:
-	rm $(OBJFILES) $(DEPFILES) $(DEBUGOBJFILES) $(TESTOBJFILES) -f
+	rm main $(OBJFILES) $(DEPFILES) $(DEBUGOBJFILES) $(TESTOBJFILES) $(TESTEXECFILES) -f
 
 # DO NOT DELETE
 

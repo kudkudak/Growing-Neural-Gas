@@ -73,9 +73,20 @@ TEST(GraphTests, BasicGraphTest){
     
     g.removeUDEdge(0,2);
     
+    //Check memory consistency
+    ASSERT_EQ(g[0].position[3], 0.3);
+  
+    
     DBG(10, "Test OK");
     
     ASSERT_EQ(g[0].size(), 1);
+
+    for(int i=0;i<2*N_start;++i){
+        int idx = g.newNode(x);
+    }
+    
+    ASSERT_EQ(g.isEdge(0,1), true); 
+
 }
 
 int main(int argc, char **argv) {

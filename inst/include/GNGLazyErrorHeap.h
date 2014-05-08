@@ -54,12 +54,8 @@ public:
     }
     
     void updateLazy(int nr){
-        //#ifdef DEBUGdbg.push_back(1,"GNGLazyErrorHeap::update lazy of "+to_string(nr));
         m_buffer_size = std::max(m_buffer_size, nr + 1);
         checkBufferSize();
-        //#ifdef DEBUGdbg.push_back(1,"GNGLazyErrorHeap:: buffer adjusted");
-        //REPORT(m_buffer_size);
-        //REPORT(SIZE(m_buffer));
         if(m_buffer[nr]) super::remove(m_buffer[nr]);
         m_buffer[nr]=0;
         

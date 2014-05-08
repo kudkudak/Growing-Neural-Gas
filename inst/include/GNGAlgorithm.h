@@ -313,7 +313,7 @@ private:
                 FOREACH(edg, m_g[i]) {
                         int nr = (*edg)->nr;
                         ++edg;
-                        m_g.removeEdge(i, nr);
+                        m_g.removeUDEdge(i, nr);
                         
                         if(edg != m_g[i].end()) --edg;
                         else break;

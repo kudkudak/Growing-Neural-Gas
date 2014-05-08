@@ -88,7 +88,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
 
 
 TEST(BasicTests, BasicConvergence){
-    dbg.set_debug_level(12);
+    dbg.set_debug_level(0);
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     pair<double, double> results = test_convergence(&config, 1000, 3000);
     ASSERT_GE(fabs(results.first), 60.0);
