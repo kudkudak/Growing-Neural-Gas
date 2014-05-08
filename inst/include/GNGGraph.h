@@ -254,7 +254,7 @@ public:
                 //TODO: this should be tracked by GNGAlgorithm
                 g[createdNode].error = 0.0;
                 g[createdNode].error_cycle = 0;
-                g[createdNode].error_new = 0.0;
+             
 
                 return createdNode;
         }

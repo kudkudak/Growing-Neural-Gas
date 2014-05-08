@@ -202,7 +202,7 @@ private:
     
     void IncreaseErrorNew(GNGNode * node, double error){
         FixErrorNew(node);
-        node->error_new+=m_betha_powers[m_lambda-s]*error;
+        node->error+=m_betha_powers[m_lambda-s]*error;
         errorHeap.updateLazy(node->nr);
     }
     
@@ -217,7 +217,7 @@ private:
 //            m_betha_powers_to_n[i] = std::pow(m_betha, m_lambda * (double) (i));
 //        }
 //        
-        node->error_new = m_betha_powers_to_n[c - node->error_cycle] * node->error_new;
+        node->error = m_betha_powers_to_n[c - node->error_cycle] * node->error;
         node->error_cycle = c;
     }
     
@@ -239,12 +239,12 @@ private:
     
     void DecreaseErrorNew(GNGNode * node){
         FixErrorNew(node);
-        node->error_new = m_alpha*node->error_new;
+        node->error = m_alpha*node->error;
         errorHeap.updateLazy(node->nr);
     }
     
     void SetErrorNew(GNGNode * node, double error){
-        node->error_new = error;
+        node->error = error;
         node->error_cycle = c;
         errorHeap.insertLazy(node->nr);
     }

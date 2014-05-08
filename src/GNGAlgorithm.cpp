@@ -17,7 +17,7 @@ GNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
 
     FOREACH(it, errorHeap.getLazyList()) {
         gngnode = &m_g[*it];
-        errorHeap.insert(gngnode->nr, gngnode->error_new);
+        errorHeap.insert(gngnode->nr, gngnode->error);
     }
     errorHeap.getLazyList().clear();
 
@@ -33,7 +33,7 @@ GNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
 
         if (gngnode->error_cycle != c) {
             FixErrorNew(gngnode);
-            errorHeap.update(gngnode->nr, gngnode->error_new);
+            errorHeap.update(gngnode->nr, gngnode->error);
         } else {
             largest[0] = gngnode;
             int j = 0;
@@ -44,13 +44,13 @@ GNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
                 FixErrorNew(&m_g[(*edg)->nr]);
                 if (j == 1) {
                     largest[1] = &m_g[(*edg)->nr];
-                    error = largest[1]->error_new;
+                    error = largest[1]->error;
                     ;
                     continue;
                 }
 
 
-                double new_error = m_g[(*edg)->nr].error_new;
+                double new_error = m_g[(*edg)->nr].error;
                 if (error < new_error) {
                     error = new_error;
                     largest[1] = &m_g[(*edg)->nr];
@@ -201,7 +201,7 @@ void GNGAlgorithm::AddNewNode() {
     } else {
         DecreaseErrorNew(error_nodes_new[0]);
         DecreaseErrorNew(error_nodes_new[1]);
-        SetErrorNew(&m_g[new_node_index], (error_nodes_new[0]->error_new + error_nodes_new[1]->error_new) / 2);
+        SetErrorNew(&m_g[new_node_index], (error_nodes_new[0]->error + error_nodes_new[1]->error) / 2);
     }
 
     if (this->m_utility_option == BasicUtility) {
@@ -414,7 +414,7 @@ int GNGAlgorithm::CalculateAccumulatedError() {
         REP(i, maximumIndex + 1) {
 
             if (m_g.existsNode(i)) {
-                m_accumulated_error += m_g[i].error_new;
+                m_accumulated_error += m_g[i].error;
             }
         }
         return m_accumulated_error;

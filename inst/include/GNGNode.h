@@ -53,7 +53,6 @@ public:
 
     int error_cycle;
     double error;
-    double error_new;
 
 
     int edgesCount;
@@ -96,7 +95,6 @@ public:
     void reset(){
         error = 0.0;
         error_cycle = 0;
-        error_new = 0.0;
         nr = 0;
         position = 0;
         this->clear();
