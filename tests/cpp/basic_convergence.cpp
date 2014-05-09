@@ -11,7 +11,7 @@ using namespace std;
  * @returns pair<double, double> : nodes, mean_error
  */
 pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database=1000,
-        int ms_loop = 5000) {
+        int ms_loop = 5000, string save_filename="") {
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();  
     config.uniformgrid_optimization = true;
     if(cnf) config=*cnf;
@@ -78,19 +78,22 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     
     
     
-    cout<<"Deleting\n";
-    delete s;
-    cout<<"Deleted\n";
+    if(save_filename!=""){
+        cout<<"BasicTests::Saving to GraphML\n";
+        writeToGraphML(s->getGraph(), save_filename);
+    }
     
+ 
+    delete s;
     return t;
  }
 #include <cmath>
 
 
 TEST(BasicTests, BasicConvergence){
-    dbg.set_debug_level(0);
+    dbg.set_debug_level(12);
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
-    pair<double, double> results = test_convergence(&config, 1000, 3000);
+    pair<double, double> results = test_convergence(&config, 1000, 3000, "basic_convergence.graphml");
     ASSERT_GE(fabs(results.first), 60.0);
     ASSERT_LE(fabs(results.second), 50.0);
 }
