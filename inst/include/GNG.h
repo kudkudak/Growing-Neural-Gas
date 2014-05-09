@@ -30,6 +30,7 @@
 
 #include "GNGGraph.h"
 #include "GNGDatabase.h"
+#include "GNGDatabaseExtra.h"
 #include "GNGAlgorithm.h"
 
 #include "MemoryAllocator.h"

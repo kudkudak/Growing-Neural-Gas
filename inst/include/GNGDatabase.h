@@ -10,10 +10,6 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/bind.hpp>
-#include <boost/interprocess/containers/vector.hpp>
-#include <boost/interprocess/allocators/allocator.hpp>
-#include <boost/interprocess/offset_ptr.hpp>
-#include <boost/interprocess/sync/interprocess_mutex.hpp>
 
 #include <boost/shared_ptr.hpp>
 
@@ -28,136 +24,53 @@ typedef boost::interprocess::allocator<GNGExample, boost::interprocess::managed_
 typedef boost::interprocess::vector<GNGExample, SHGNGExampleDatabaseAllocator> SHGNGExampleDatabase;
 
 
-/*
-* @brief Example used by database.
-*
-* It is a vector of numbers. Any extension of GNGExample for simplicity has to 
- * add new information as extra dimensions, and after that
-* Database should interpret it and pass interpreted version to the algorithm module,.
-*
-* Every database is casting its examples to this type, because it contains all the information needed by the algorithm (position). All the
-* extensions are hidden from the algorithm (like probability).
-*
-* Every GNGExample can be created from double[] vector, and should be possible to be interpreted as double[] vector (by getPositionPtr),
-* which is in GNGExample O(1), but take longer for more sophisticated GNGExample classes
- * 
- * 
- * @note: Think over notion of parameters??
- * 
-*
-*/
-class GNGExample{
-    
-protected:
-    GNGExample(){}
-    int dim;
-public:
-    GNGExample(const double * vect, int _dim):position(_dim), dim(_dim){
-        memcpy(&position[0],vect,sizeof(double)*(this->getLength())); //TODO: +1 failure
-    }
-    GNGExample(int _dim):position(_dim), dim(_dim){
-    }
-    
-    
-    vector<double> position;
-
-    double& operator[](unsigned int i) {
-        return position[i];
-    }
-    const double& operator[](unsigned int i) const {
-        return position[i];
-    }
-    
-    void operator=(const GNGExample& ex){
-        memcpy(&position[0],ex.getPositionPtr(),sizeof(double)*(this->getLength()));
-        this->dim = ex.getLength();
-    }
-    
-    bool operator==(const GNGExample & ex) const{
-        if(this->getLength()!=ex.getLength()) return false;
-        for(int i;i<this->getLength();++i){
-            if(getPositionPtr()[i]-ex.getPositionPtr()[i]<-10e-10 ||
-                    getPositionPtr()[i]-ex.getPositionPtr()[i]>10e-10 )
-                return false;
-        }
-        return true;
-    }
-    
-    friend ostream & operator<<(ostream & out, const GNGExample & rhs) {
-        for(int i;i<rhs.getLength();++i)
-            out<<rhs.getPositionPtr()[i]<<",";
-        out<<std::endl;
-        return out;
-    }
-     
-    int getLength() const{
-        return dim;
-    }
-    
-    
-    int getDoubleEncodingLength() const{
-        return dim;
-    }
-    
-    const double * getDoubleEncoding() const{
-        return &this->position[0];
-    }
-    
-    /** Get double[] interpretation of GNGExample */
-    const double * getPositionPtr() const{
-        return &this->position[0];
-    }
-};
-
-
-/** Example used by GNGDatabaseProbabilistic*/
-class GNGExampleProbabilistic : public GNGExample{
-public:
-    GNGExampleProbabilistic(const double * vect, int _dim):GNGExample(_dim+1){
-        memcpy(&this->position[0],vect,sizeof(double)*(_dim+1)); //TODO: +1 failure
-        
-        dim = _dim;
-    }
-    GNGExampleProbabilistic(int _dim):GNGExample(_dim+1){
-        this->position[_dim]=1.0;
-        
-        dim = _dim;
-    }
-    double getProbability() const{
-        return this->position[dim];
-    }
-    
-    
-    int getDoubleEncodingLength() const{
-        return dim+1;
-    }
-};
-
-
-
 
 
 /** Database for growing neural gas interface
 *
-* @note For performance issue there is a very strong assumption : once written data point
-* doesn't change its pointer position. If it does, it should be very rare, and whole
-* algorithm should be stopped (GNGExamples are passed by pointers not copied, maybe it should be changed?)
+ * Example is its interiors just an double array with relevant data at different positions.
+ * What specifies 
+ * 
+* @note Drawing example is not very time-expensive comapred to other problems (like
+* neighbour search). Therefore it is locking on addExample and drawExample
 */
 class GNGDatabase
 {
 public:
     GNGDatabase(int dim): dim(dim){}
     
+    /*
+     * @returns Layout for example. We want examples to be laid in continous
+     * array of doubles for performance and storage convenience so basically
+     * an example can have any dimensionality and this function returns array
+     * with specified 3 checkpoints:
+     *    * Start of position data
+     *    * Start of vertex data (that will be majority voted in algorithm)
+     *    * Start of metadata (most likely probability of being sampled)
+     */
+    virtual std::vector<int> getDataLayout() const=0;
+    
     virtual int getDim() const{ return this->dim; }
-    virtual GNGExample drawExample() const=0 ;
-    virtual void addExample(const GNGExample * ex )=0;
-    virtual void removeExample(const GNGExample * ex)=0;
+
+    ///Returns index of example drawn
+    virtual unsigned int drawExample() const=0 ;
+    
+    ///Retrieves pointer to position 
+    virtual const double * getPosition(unsigned int) const=0;
+    
+    ///Retrieves pointer to metadata, with unsigned int as descriptor of meta
+    virtual const double * getMetaPtr(unsigned int, unsigned int) const=0;
+    
+    virtual void addExample(const double * ex )=0;
+    
+    virtual void removeExample(unsigned int)=0;
+    
     virtual int getSize() const=0;
     
     virtual ~GNGDatabase(){}
 private:
     GNGDatabase(const GNGDatabase& orig){}
-    int dim;
+    unsigned int dim;
     GNGDatabase(){}
 };
 
@@ -337,194 +250,6 @@ private:
 
 
 
-
-
-
-class GNGDatabaseMeshes: public GNGDatabase{
-public:
-    std::vector<GNGDatabase*> meshes;
-    
-    GNGDatabaseMeshes(): GNGDatabase(3){
-        __init_rnd();
-    }
-    
-    void removeExample(const GNGExample * ex){
-        throw 1; //not implemented
-    }
-    
-    void addMesh(GNGDatabase * mesh){
-        meshes.push_back(mesh);
-    }
-    
-    GNGExample drawExample() const{
-        int i = __int_rnd(0,SIZE(meshes)-1);
-        return meshes[i]->drawExample();
-    }
-    
-    void addExample(const GNGExample * ex){
-        throw 1;
-    }
-    int getSize() const{ return 100000000; }
-    ~GNGDatabaseMeshes(){
-        
-    }
-};
-
-
-
-/** Example database for GNG */
-class GNGDatabaseLine: public GNGDatabase{
-public:
-    double m_center[3];
-    double m_r;
-     int getSize() const{ return 100000000; }
-    
-    GNGDatabaseLine(double *center, double r): GNGDatabase(3){
-        memcpy(m_center,center,sizeof(double)*3);
-        m_r=r;
-        __init_rnd();
-    }
-    
-    void removeExample(const GNGExample * ex){
-        throw 1; //not implemented
-    }
-    
-   GNGExample drawExample() const{
-        GNGExample ret(3);
-
-        
-        ret.position[0] = m_center[0];
-        ret.position[1] =m_center[1];
-        ret.position[2] =((double)rand() / RAND_MAX)*m_r;
-      
-        
-        return ret;
-    }
-    
-    void addExample(const GNGExample * ex){
-     
-        throw 1;
-    }
-    
-    ~GNGDatabaseLine(){
-        
-    }
-};
-/** Example database for GNG */
- class GNGDatabaseSphere : public GNGDatabase{
-public:
-    double m_center[3];
-    double m_r;
-     int getSize() const{ return 100000000; }
-    
-    GNGDatabaseSphere(double *center, double r): GNGDatabase(3){
-        memcpy(m_center,center,sizeof(double)*3);
-        m_r=r;
-        __init_rnd();
-    }
-    
-    void removeExample(const GNGExample * ex){
-        throw 1; //not implemented
-    }
-    
-    GNGExample drawExample() const{
-        GNGExample ret(3);
-         
-     
-    
-        double alfa=6.18*((double)rand() / RAND_MAX);
-        double beta=3.14*((double)rand() / RAND_MAX);
-
-        
-       ret.position[0] = m_r*cos(beta) + m_center[0];
-        ret.position[1] = m_r*sin(beta)*cos(alfa)+ m_center[1];
-        ret.position[2] = m_r*sin(beta)*sin(alfa)+m_center[2];
-      
-        
-        return ret;
-    }
-    
-    void addExample(const GNGExample * ex){
-     
-        throw 1;
-    }
-    
-    ~GNGDatabaseSphere(){
-        
-    }
-};
-
-/** Example database for GNG */
-class GNGDatabaseRec : public GNGDatabase{
-public:
-     int getSize() const{ return 100000000; }
-    
-    GNGDatabaseRec(): GNGDatabase(3){
-        __init_rnd();
-    }
-    
-    void removeExample(const GNGExample * ex){
-        throw 1; //not implemented
-    }
-    
-   GNGExample drawExample() const{
-        GNGExample ret(3);
-
-        ret.position[0] = ((double)rand() / RAND_MAX);
-        ret.position[1] = ((double)rand() / RAND_MAX);
-        ret.position[2] = ((double)rand() / RAND_MAX);
-      
-        
-        return ret;
-    }
-    
-    void addExample(const GNGExample * ex){
-     
-        throw 1;
-    }
-    
-    ~GNGDatabaseRec(){
-        
-    }
-};
-
-/** Example database for GNG */
-class GNGDatabasePlane : public GNGDatabase{
-public:
-     
-     int getSize() const{ return 100000000; }
-     double m_a;
-     double m_center[3];
-     
-    GNGDatabasePlane(double * center, double a): GNGDatabase(3){
-        memcpy(m_center,center,sizeof(double)*3);
-        m_a=a;
-        __init_rnd();
-    }
-    
-    void removeExample(const GNGExample * ex){
-        throw 1; //not implemented
-    }
-    
-    GNGExample drawExample() const{
-        GNGExample ret(3);
-     
-        ret.position[1]=m_center[1];
-        ret.position[0]=m_a*((double)rand() / RAND_MAX)+m_center[0];
-        ret.position[2]=m_a*((double)rand() / RAND_MAX)+m_center[2];
-        
-        return ret;
-    }
-    
-    void addExample(const GNGExample * ex){
-     
-        throw 1;
-    }
-    
-    ~GNGDatabasePlane(){
-        
-    }
-};
 
 
 
