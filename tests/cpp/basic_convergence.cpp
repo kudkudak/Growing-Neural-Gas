@@ -11,7 +11,7 @@ using namespace std;
  * @returns pair<double, double> : nodes, mean_error
  */
 pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database=1000,
-        int ms_loop = 5000, string save_filename="") {
+        int ms_loop = 5000,  string save_filename="", vector<double> * extra_examples=0) {
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();  
     config.uniformgrid_optimization = true;
     if(cnf) config=*cnf;
@@ -19,25 +19,40 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     
     GNGServer *s = GNGServer::constructTestServer(config);
 
+
     cout<<"Running server\n"<<flush;
-    s->run();
+    s->run();   
     
+    //Probabilistic dataset
+
     
+
     cout<<"Allocating "<<(config.dim+1)*num_database<<endl<<flush;
     double * vect = new double[(config.dim+1)*num_database];
     for (int i = 0; i < num_database; ++i) {
         for(int j=0;j<= config.dim;++j)
-             vect[j+(i)*(config.dim+1)] = __double_rnd(0, 1);
+             if(j==0)
+                 vect[j+(i)*(config.dim+1)] = 0.0;
+             else
+                 vect[j+(i)*(config.dim+1)] = __double_rnd(0, 1);
     }
+    
     
     DBG(10, "Allocated examples\n");
     cout<<"Allocated examples\n";
     
-    
+    if(extra_examples){
+        DBG(14, "adding extra examples");
+        DBG(14, to_string(extra_examples->size()/(config.dim+1)));
+        s->addExamples(&(*extra_examples)[0], extra_examples->size()/(config.dim+1));
+        cout<<"Database size="<<s->getDatabase().getSize()<<endl;
+    }    
     
     s->addExamples(&vect[0], num_database);
-
     
+
+
+        
     delete[] vect;
     
     DBG(12, "testNewInterface::Server running");
@@ -76,8 +91,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
             s->getAlgorithm().CalculateAccumulatedError()
                /(s->getGraph().getNumberNodes()+0.));
     
-    
-    
+
     if(save_filename!=""){
         cout<<"BasicTests::Saving to GraphML\n";
         writeToGraphML(s->getGraph(), save_filename);
@@ -93,29 +107,35 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
 TEST(BasicTests, BasicConvergence){
     dbg.set_debug_level(12);
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
-    pair<double, double> results = test_convergence(&config, 1000, 3000, "basic_convergence.graphml");
+    pair<double, double> results = test_convergence(&config, 1000, 3000,   "basic_convergence.graphml");
     ASSERT_GE(fabs(results.first), 60.0);
     ASSERT_LE(fabs(results.second), 50.0);
 }
 
 TEST(BasicTests, FewDimsSkewedUGConvergence){
-    dbg.set_debug_level(6);
+    dbg.set_debug_level(10);
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.uniformgrid_optimization =  true;
-    config.max_nodes = 2000;
+    config.max_nodes = 1000;
     config.lazyheap_optimization =  true;
-    config.dim = 4;
-    config.axis = vector<double>(config.dim , 1.0);
-    config.axis[3] = 10.0;
-    config.axis[2] = 5.0;
-    config.orig = vector<double>(config.dim , 0.0);
-    config.orig[2] = -1.0;
+    config.dim = 5;
+    config.axis = vector<double>(config.dim , 20.0);
+    config.orig = vector<double>(config.dim , -1.0);
+    config.orig[2] = -4.0;
 
-    pair<double, double> results = test_convergence(&config, 100, 60000);
+    
+    vector<double> extra_examples(50000*(config.dim+1), 0.0);
+    for (int i = 0; i < 50000; ++i) {
+        for(int j=0;j<= config.dim;++j)
+             extra_examples[j+(i)*(config.dim+1)] = __double_rnd(0, 2)+(2.0);
+    }
+    
+    pair<double, double> results = test_convergence(&config, 100000, 60000, "fewdims.graphml", &extra_examples);
     
     ASSERT_GE(results.first, 10.0);
     ASSERT_LE(results.second, 50.0);
 }
+
 
 TEST(BasicTests, FewDimsUGConvergence){
     dbg.set_debug_level(6);
@@ -127,12 +147,11 @@ TEST(BasicTests, FewDimsUGConvergence){
     config.axis = vector<double>(config.dim , 1.0);
     config.orig = vector<double>(config.dim , 0.0);
 
-    pair<double, double> results = test_convergence(&config, 100, 60000);
+    pair<double, double> results = test_convergence(&config, 1000, 60000, "fewdimsugconvergence.graphml");
     
     ASSERT_GE(results.first, 10.0);
-    ASSERT_LE(results.second, 50.0);
+    ASSERT_LE(results.second, 5.0);
 }
-
 TEST(BasicTests, ManyDimsUGConvergence){
     dbg.set_debug_level(6);
     

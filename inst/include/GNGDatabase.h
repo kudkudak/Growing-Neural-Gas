@@ -243,7 +243,7 @@ public:
         GNGExampleProbabilistic * ex; //casting up the tree
         do{ //rejection sampling TODO: improve
          ex=&(*g_database)[__int_rnd(0,g_database->size()-1)];
-        }while(ex->position[this->getDim()]>__double_rnd(0,1.0));
+        }while(ex->position[this->getDim()]<__double_rnd(0,1.0));
 
 
         database_mutex->unlock();
@@ -251,12 +251,14 @@ public:
     }
 
     void addExample(const GNGExample * ex2){
+        
         if(ex2->getLength() != this->getDim()) throw invalid_argument("Wrong example dimensionality");
         
         const GNGExampleProbabilistic * ex2_casted = reinterpret_cast<const GNGExampleProbabilistic*>(ex2);
-        
+       
         database_mutex->lock();
         if(g_database->size() == g_database->capacity()) grow_database();
+        
         g_database->push_back(*ex2_casted); //operator= kopiowania, ale jest to struct wiec nie trzeba nic pisac
         database_mutex->unlock();
     }

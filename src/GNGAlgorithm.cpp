@@ -108,18 +108,27 @@ errorHeap(), dim(dim), m_toggle_uniformgrid(uniformgrid_optimization),
 
 void GNGAlgorithm::RandomInit() {
 
+    DBG(3, "RandomInit::Drawing examples");
     GNGExample ex1 = g_db -> drawExample();
     GNGExample ex2 = g_db -> drawExample();
-
+    DBG(3, "RandomInit::Drawn 2");
     int index = 0;
     while (ex2 == ex1 && index < 100) {
         ++index;
         ex2 = g_db -> drawExample();
     }
+    DBG(3, "RandomInit::Are distinct "+to_string(ex2.getPositionPtr()[0])+" "+to_string(ex2.getPositionPtr()[1]));
 
     m_g.newNode(ex1.getPositionPtr());
     m_g.newNode(ex2.getPositionPtr());
 
+    DBG(3, "RandomInit::created nodes graph size="+to_string(m_g.getNumberNodes()));
+    
+#ifdef DEBUG
+    assert(m_g.getNumberNodes()==2);
+#endif
+
+    
     if (m_toggle_uniformgrid) {
         ug->insert(m_g[0].position, 0);
         ug->insert(m_g[1].position, 1);

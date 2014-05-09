@@ -9,3 +9,4 @@ readFromGraphML<-function(filename){
    g = read.graph(filename, format=c("graphml"))
 }
 
+
