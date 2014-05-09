@@ -74,7 +74,7 @@ TEST(GraphTests, BasicGraphTest){
     g.removeUDEdge(0,2);
     
     //Check memory consistency
-    ASSERT_EQ(g[0].position[3], 0.3);
+    ASSERT_EQ(g[0].position[3], 0.4);
   
     
     DBG(10, "Test OK");
@@ -87,6 +87,9 @@ TEST(GraphTests, BasicGraphTest){
     
     ASSERT_EQ(g.isEdge(0,1), true); 
 
+    string graphml = writeToGraphML(g);
+    graphml = writeToGraphML(g, "test.graphml");
+    cout<<graphml;
 }
 
 int main(int argc, char **argv) {

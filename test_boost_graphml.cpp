@@ -21,8 +21,8 @@ int main(int argc, char *argv[])
   typedef adjacency_list<vecS, vecS, bidirectionalS, 
     Vertex > Graph;
 
-  const int num_vertices = 9;
-  Graph G(num_vertices);
+
+  Graph G(0);
 
   boost::graph_traits<Graph>::vertex_descriptor u, v;
   typedef boost::property<boost::vertex_index_t, int> VID_prop;

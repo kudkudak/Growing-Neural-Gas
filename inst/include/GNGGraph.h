@@ -57,6 +57,8 @@ public:
          */
         virtual bool existsNode(unsigned int) const = 0;
 
+        virtual int getDim() const = 0;
+        
         virtual GNGNode & operator[] (int i) = 0;
 
         virtual unsigned int getNumberNodes() const = 0;
@@ -119,10 +121,14 @@ template < class Node, class Edge, class Mutex = boost::mutex > class RAMGNGGrap
         maximum_index;
         unsigned int
         nodes;
+
         unsigned int
         gng_dim;
-
 public:
+
+        
+
+        
         /** Indicates next free vertex */
         std::vector < int > next_free;
         int
@@ -350,6 +356,10 @@ public:
                 }
                 delete[]positions;
         }
+
+        virtual int getDim() const{
+            return gng_dim;
+        }        
 private:
         void
         resizeGraph() {
@@ -386,6 +396,28 @@ private:
                 //DBG(5, "GNGGraph::resizing graph from "+to_string(g.size())+" done");
         }
 };
+
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/graphml.hpp>
+
+using namespace boost;
+using namespace std;
+using boost::get;
+struct boost_vertex_desc
+{
+    int index;
+    double error;
+    /* GraphML doesn't allow for array types*/
+    double v0, v1, v2;
+    std::string position_dump;
+};
+struct boost_edge_desc{
+    double dist;
+};
+
+
+std::string writeToGraphML(GNGGraph &g, string filename="");
 
 
 #endif
