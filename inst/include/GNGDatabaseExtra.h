@@ -22,7 +22,7 @@
 #include "Utils.h"
 #include "DebugCollector.h"
 #include "GNGGlobals.h"
-#include "GNGDatabase.h"
+#include "GNGDataset.h"
 
 class GNGDatabaseMeshes: public GNGDatabase{
 public:

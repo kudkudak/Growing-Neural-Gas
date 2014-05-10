@@ -26,18 +26,16 @@ public:
         RAMMemory
     } graph_storage;
 
-    /* Not used */
-    enum ExamplesType{
-        NoneType,
-        SimpleType,
-        ProbabilisticType
-    } examples_type;
-    
-    enum DatabaseType{
-        NoneDatabaseType,
-        DatabaseSimple,
-        DatabaseProbabilistic
+  
+    enum DatasetType{
+        NoneDatasetType,
+        DatasetSeq,
+        DatasetSampling,
+        DatasetSamplingProb
     };
+    
+
+    
     int message_bufor_size;
     /**Maximum number of nodes*/
     int max_nodes;//=1000;
@@ -66,7 +64,7 @@ public:
     /**Dimensionality of examples*/
     int dim;
     /**Type of used database*/
-    DatabaseType databaseType;
+    DatasetType datasetType;
     /**Id of the server*/
     int serverId;
     
@@ -75,11 +73,20 @@ public:
     
     bool interprocess_communication; /**< Should server listen for incommin connection from other processes? Not possible in the current version */
    
+
+    
+    /** Dataset layout */
+    
+    ///Dimensionality of vertex extra data (will be possible to vote on this data among vertices)
+    unsigned int dataset_vertex_dim;
+    
     
     /** Get default configuration of GNG Server */
     static GNGConfiguration getDefaultConfiguration(){
         GNGConfiguration default_configuration;
-     
+        
+        default_configuration.dataset_vertex_dim = 0;
+
         default_configuration.starting_nodes = 100;
         
         default_configuration.message_bufor_size = 10000*sizeof(double);

@@ -13,7 +13,7 @@
 
 #include "GNGGlobals.h"
 #include "GNGGraph.h"
-#include "GNGDatabase.h"
+#include "GNGDataset.h"
 #include "UniformGrid.h"
 #include "GNGLazyErrorHeap.h"
 
@@ -37,8 +37,9 @@ public:
     void runAlgorithm();
     
     /**Construct main algorithm object, that will hold mid-results
-    * @param g SHGNGGraph object implementing graph interface
-    * @param db GNGDatbase object
+     * @param alg_memory_lock When locked algorithm is not running anything that is memory dangerous
+    * @param g GNGGraph object implementing graph interface
+    * @param db GNGDataset object
     * @param boundingbox_origin Starting point for reference system
     * @param boundingbox_axis Axis lengths for reference system
     * @param l Starting box size for uniform grid. Advised to be set to axis[0]/4 (TODO: move to the end of parameters list)
@@ -49,9 +50,11 @@ public:
     * @param lambda Every lambda new vertex is added
     * @param eps_v See original paper(TODO: add description)
     * @param eps_n See original paper (TODO: add description)
-     * @param dim Dimensionality
+    * @param dim Dimensionality
     */
-    GNGAlgorithm(GNGGraph * g,GNGDatabase* db, 
+    GNGAlgorithm(boost::mutex & dataset_lock,
+
+    		GNGGraph * g, GNGDataset * db,
         double * boundingbox_origin, double * boundingbox_axis, double l,int max_nodes=1000,
         int max_age=200, double alpha=0.95, double betha=0.9995, double lambda=200,
         double eps_v=0.05, double eps_n=0.0006, int dim=3,
@@ -118,7 +121,7 @@ public:
     
     virtual ~GNGAlgorithm(){
         delete [] m_betha_powers_to_n;
-        delete []m_betha_powers;
+        delete [] m_betha_powers;
     }
     
     enum GngStatus{
@@ -148,7 +151,7 @@ private:
         }
    } 
     
-
+   boost::mutex & m_dataset_lock;
     
     double m_error; //error of the network
     int m_lambda; //lambda parameter
@@ -175,7 +178,7 @@ private:
     int s,c;
     
     GNGGraph & m_g;
-    GNGDatabase* g_db;
+    GNGDataset * g_db;
     UniformGrid< std::vector<Node>, Node, int> * ug;
     GNGLazyErrorHeap errorHeap;
 

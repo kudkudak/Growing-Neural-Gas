@@ -15,7 +15,7 @@
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/offset_ptr.hpp>
 #include "SHMemoryManager.h"
-#include "GNGDatabase.h"
+#include "GNGDataset.h"
 #include "GNGGlobals.h"
 #include <cmath>
 #include <vector>

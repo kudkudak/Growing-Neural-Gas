@@ -100,7 +100,9 @@ struct BasicException : public std::exception
    std::string s;
    BasicException(std::string ss) : s(ss) {}
    ~BasicException() throw () {} // Updated
-   const char* what() const throw() { return s.c_str(); }
+   const char* what() const throw() { 
+       return s.c_str(); 
+   }
 };
 
 

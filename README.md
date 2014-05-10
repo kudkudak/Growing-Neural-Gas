@@ -86,8 +86,11 @@ installed to your search paths.
 See instructions:
 http://code.google.com/p/tonatiuh/wiki/InstallingGoogleTestForLinux
 
-#Futher work
----
-Documentation and compiling as an R package
+#Contributors
+---------
+Feel free to contribute to the code. Contributions should be posted as pull requests. For now
+there is not automatic testing, so make sure that tests located in tests/ folder are passing. 
+
+Please use Google C++ naming convention: http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
 
 

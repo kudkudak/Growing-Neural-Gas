@@ -66,13 +66,13 @@ GNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
 
 GNGGraph* GNGGraphAccessHack::pool=0;
 
-GNGAlgorithm::GNGAlgorithm(GNGGraph * g, GNGDatabase* db,
+GNGAlgorithm::GNGAlgorithm(boost::mutex& alg_memory_lock, GNGGraph * g, GNGDataset* db,
          double * boundingbox_origin,
         double * boundingbox_axis, double l, int max_nodes,
         int max_age, double alpha, double betha, double lambda,
         double eps_v, double eps_n, int dim, bool uniformgrid_optimization, 
         bool lazyheap_optimization
-        ) :
+        ) : m_dataset_lock(alg_memory_lock),
 m_g(*g), g_db(db), c(0), s(0),
 m_max_nodes(max_nodes), m_max_age(max_age),
 m_alpha(alpha), m_betha(betha), m_lambda(lambda),
@@ -109,8 +109,8 @@ errorHeap(), dim(dim), m_toggle_uniformgrid(uniformgrid_optimization),
 void GNGAlgorithm::RandomInit() {
 
     DBG(3, "RandomInit::Drawing examples");
-    GNGExample ex1 = g_db -> drawExample();
-    GNGExample ex2 = g_db -> drawExample();
+    int ex1 = g_db -> drawExample();
+    int ex2 = g_db -> drawExample();
     DBG(3, "RandomInit::Drawn 2");
     int index = 0;
     while (ex2 == ex1 && index < 100) {
@@ -119,8 +119,11 @@ void GNGAlgorithm::RandomInit() {
     }
     DBG(3, "RandomInit::Are distinct "+to_string(ex2.getPositionPtr()[0])+" "+to_string(ex2.getPositionPtr()[1]));
 
-    m_g.newNode(ex1.getPositionPtr());
-    m_g.newNode(ex2.getPositionPtr());
+    const double * ex1_ptr = g_db->getPosition(ex1);
+    const double * ex2_ptr = g_db->getPosition(ex2);
+
+    m_g.newNode(ex1_ptr);
+    m_g.newNode(ex2_ptr);
 
     DBG(3, "RandomInit::created nodes graph size="+to_string(m_g.getNumberNodes()));
     
@@ -597,7 +600,7 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
     
     DBG(3, "GNGAlgorithm::runAlgorithm()");
     
-    c = 0;
+    int counter = 0;
     s = 0;
 
     Time t1, t2, t3, t4;
@@ -607,10 +610,10 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 
     boost::posix_time::millisec workTime(100);
     while (g_db->getSize() < 2) {
-        ++c; //TODO: refactor
+        ++counter;
         boost::this_thread::sleep(workTime);
 
-        if (c % 10 != 0) continue;
+        if (counter % 10 != 0) continue;
         int size = g_db->getSize();
         DBG(2, "GNGAlgorithm::check size of the db " + to_string(size));
         
@@ -631,10 +634,8 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
     while (this->gng_status != GNG_TERMINATED) {
 
         while(this->gng_status != GNG_RUNNING) {
-           
             DBG(1, "GNGAlgorithm::status in main loop = "+to_string(this->gng_status));
             if(this->gng_status == GNG_TERMINATED) break;
-            
             this->status_change_condition.wait(this->status_change_mutex);
         }
         
@@ -645,8 +646,11 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
    
             DBG(0, "GNGAlgorithm::draw example");
 
-            GNGExample ex = g_db->drawExample();
-            Adapt(ex.getPositionPtr());
+            unsigned int ex = g_db->drawExample();
+
+            m_dataset_lock.lock();
+            Adapt(g_db->getPosition(ex));
+            m_dataset_lock.unlock();
 
             #ifdef DEBUG
             for (int i = 0; i <= m_g.getMaximumIndex(); ++i) { //another idea for storing list of actual nodes?
@@ -661,12 +665,11 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 
         t1 = boost::posix_time::microsec_clock::local_time();
         AddNewNode();
-//        if (m_toggle_uniformgrid && ug->getDensity() > m_density_threshold) ResizeUniformGrid();
         if (m_toggle_uniformgrid && ug->check_grow()) 
             ResizeUniformGrid();
         t2 = boost::posix_time::microsec_clock::local_time();
         dt = t2 - t1;
-//        times["resize"] += dt.total_microseconds();
+        times["resize"] += dt.total_microseconds();
         ++c; //epoch
         if (!m_toggle_lazyheap ) DecreaseAllErrors();
         if (this->m_utility_option == BasicUtility) decrease_all_utility();

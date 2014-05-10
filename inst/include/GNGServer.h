@@ -23,7 +23,7 @@
 
 #include "GNGGlobals.h"
 #include "GNGGraph.h"
-#include "GNGDatabase.h"
+#include "GNGDataset.h"
 #include "GNGAlgorithm.h"
 
 #include "Utils.h"
@@ -31,6 +31,20 @@
 
 /** Holds together all logic and objects.*/
 class GNGServer{
+    /** Mutex used for synchronization of algorithm with other modules*/
+    boost::mutex alg_phase_adapt_lock, alg_phase_new_lock, alg_whole_lock;
+    /** Mutex used for synchronization of graph access*/
+    boost::mutex grow_mutex;
+    
+    /** Singleton mutex*/
+    static boost::mutex static_lock;
+    
+    std::auto_ptr<GNGAlgorithm> gngAlgorithm;
+    std::auto_ptr<GNGGraph > gngGraph;
+    std::auto_ptr<GNGDataset> gngDataset;
+ 
+    static GNGConfiguration current_configuration;
+    
     /**Construct GNGServer using configuration*/
     GNGServer(GNGConfiguration configuration){
         DBG(10, "GNGServer()::constructing GNGServer");
@@ -38,32 +52,23 @@ class GNGServer{
         
         if(!configuration.check_correctness()) 
             throw BasicException("Invalid configuration passed to GNGServer");
-        if(configuration.interprocess_communication) throw BasicException("Current version doesn't allow for crossprocess communication");
+        
+        if(configuration.interprocess_communication) 
+            throw BasicException("Current version doesn't allow for crossprocess communication");
         
         this->current_configuration = configuration; //assign configuration
         
         DBG(1, "GNGServer() dim = "+to_string(GNGNode::dim));
 
         /** Set up dimensionality **/
-        GNGNode tmp;
-        tmp.dim = current_configuration.dim;
+        GNGNode::dim = current_configuration.dim;
 
         DBG(1, "GNGServer() dim = "+to_string(GNGNode::dim));
 
 
         
-        /** Construct Shared Memory if allowed **/
-//        if(crossprocess_communication)
-//            this->shm = std::auto_ptr<SHMemoryManager>(new SHMemoryManager("Server"+to_string<int>(current_configuration.serverId)));
-        if(current_configuration.graph_storage == GNGConfiguration::SharedMemory){
-            throw BasicException("Not supported SharedMemory configuration");     
-//            if(!crossprocess_communication) throw BasicException("SharedMemory configuration with switched off crossproces_communication");
-//            this->shm->new_named_segment("GraphStorage",current_configuration.graph_memory_bound)
-//            BoostSHMemoryAllocator * boostSHMemoryAllocator = new BoostSHMemoryAllocator(this->shm->get_named_segment("GraphStorage"));
-//            SHGNGNode::mm = boostSHMemoryAllocator;
-//            SHGNGNode::alloc_inst = new ShmemAllocatorGNG(this->shm->get_named_segment("GraphStorage")->get_segment_manager());
-        }
-        else if(current_configuration.graph_storage == GNGConfiguration::RAMMemory){
+
+        if(current_configuration.graph_storage == GNGConfiguration::RAMMemory){
             //Nothing to do here
         }else{
             throw BasicException("Not supported GNGConfiguration type");
@@ -77,13 +82,19 @@ class GNGServer{
 
 
         /** Construct database **/
-        if(current_configuration.databaseType == GNGConfiguration::DatabaseProbabilistic){
-                boost::shared_ptr<std::vector<GNGExampleProbabilistic> > 
-                g_database(new std::vector<GNGExampleProbabilistic>());
-                this->gngDatabase = std::auto_ptr<GNGDatabase>(
-                        new GNGDatabaseProbabilistic<std::vector<GNGExampleProbabilistic>, boost::mutex >
-                        (&database_mutex_thread, g_database, current_configuration.dim));
-        }else if(current_configuration.databaseType == GNGConfiguration::DatabaseSimple){
+        if(current_configuration.datasetType == GNGConfiguration::DatasetSampling){
+                this->gngDataset = std::auto_ptr<GNGDataset>(
+                        new GNGDatasetSampling<GNGDatasetStorageRAM>
+                        (&alg_phase_adapt_lock, current_configuration.dim, current_configuration.
+                        dataset_vertex_dim, 0));
+        }
+        if(current_configuration.datasetType == GNGConfiguration::DatasetSampling){
+                this->gngDataset = std::auto_ptr<GNGDataset>(
+                        new GNGDatasetSampling<GNGDatasetStorageRAM>
+                        (&alg_phase_adapt_lock, current_configuration.dim, current_configuration.
+                        dataset_vertex_dim, 1, 0));
+        }        
+        else{
             throw BasicException("Database type not supported");
         }
 
@@ -117,7 +128,7 @@ class GNGServer{
         /** Initiliaze main computing object **/
         this->gngAlgorithm = std::auto_ptr<GNGAlgorithm>(new GNGAlgorithm
         ( this->gngGraph.get(), //I do not want algorithm to depend on boost
-                this->gngDatabase.get(),
+                this->gngDataset.get(),
                 &current_configuration.orig[0],
                 &current_configuration.axis[0],
                 current_configuration.axis[0]*1.1, //only 2^dim //TODO: min 
@@ -141,8 +152,8 @@ class GNGServer{
 
 
     /** Run GNG Server - runs in separate thread and returns control
-* @note Runs one extra threads for communication.
-*/
+    * @note Runs one extra threads for communication.
+    */
     void _run() {
 
         DBG(10, "GNGServer::run::proceeding to algorithm");
@@ -152,28 +163,6 @@ class GNGServer{
     }
 
 
-    /** Mutex used for synchronization in database*/
-    boost::mutex database_mutex_thread;
-    /** Mutex used for synchronization of graph access*/
-    boost::mutex grow_mutex;
-    
-    std::auto_ptr<GNGAlgorithm> gngAlgorithm;
-    std::auto_ptr<GNGGraph > gngGraph;
-    std::auto_ptr<GNGDatabase> gngDatabase;
-    
-    
-//    int listening_daemon_sleep_time;
-    static GNGConfiguration current_configuration;
-    static boost::mutex static_lock;
-//    boost::mutex message_bufor_mutex;
-//    
-//    /**
-//    * Locking communication bufor in interprocess communication
-//    * Deallocated in destructor
-//    **/
-//    boost::interprocess::interprocess_mutex * message_bufor_mutex;
-//
-//
 
 
     /**Section : protocol handling messages regardless of the source*/
@@ -187,19 +176,20 @@ class GNGServer{
         DBG(1, "GNGServer::_handle_AddExamples adding examples");
         if(current_configuration.databaseType==GNGConfiguration::DatabaseProbabilistic)
             for(int i=0;i<count;++i){
-                GNGExampleProbabilistic ex(&examples[i*(current_configuration.dim+1)],current_configuration.dim); //decoding
-                gngDatabase->addExample(&ex);
+                GNGExampleProbabilistic ex(&examples[i*(current_configuration.dim+1)],
+                        current_configuration.dim); //decoding
+                gngDataset->addExample(&ex);
             }
         else if(current_configuration.databaseType==GNGConfiguration::DatabaseSimple)
              for(int i=0;i<count;++i){
                 GNGExampleProbabilistic ex(&examples[i*current_configuration.dim],current_configuration.dim); //decoding
-                gngDatabase->addExample(&ex);
+                gngDataset->addExample(&ex);
             }
         else{
             DBG(100,"Not supported database type" );
             throw BasicException("Not supported database type");
         }
-        int tmp = gngDatabase->getSize();
+        int tmp = gngDataset->getSize();
         DBG(7, "GNGServer::Database size "+to_string(tmp));
     }
     
@@ -245,7 +235,7 @@ public:
         return *this->gngGraph.get();
     }
      GNGDatabase & getDatabase(){
-        return *this->gngDatabase.get();
+        return *this->gngDataset.get();
     }
     
     

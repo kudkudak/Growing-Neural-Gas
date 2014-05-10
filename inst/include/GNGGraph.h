@@ -11,7 +11,6 @@
 #include <string>
 #include <sstream>
 
-#include "SHMemoryManager.h"
 #include "GNGNode.h"
 #include "GNGGlobals.h"
 
@@ -71,7 +70,7 @@ public:
                 0;
 
         /* Initialize node with position attribute */
-        virtual int newNode(double const *position) = 0;
+        virtual int newNode(const double  *position) = 0;
 
         virtual bool deleteNode(int x) = 0;
 
@@ -93,7 +92,8 @@ public:
 
 
 
-/* @note: Not thread safe
+/* @note: Not thread safe. To be used from one thread only!
+ * 
  * Can be used by external thread by has to be locked. All operations moving
  * whole memory sectory will unlock. Elegant solution: locking interface
  *
@@ -154,15 +154,7 @@ public:
                 firstFree = 0;
         }
 
-        virtual void
-        lock() {
-                mutex->lock();
-        }
 
-        virtual void
-        unlock() {
-                mutex->unlock();
-        }
         /** This is specific for GNG Graph - e
          * each node is assigned index. It fetches maximum node index
          */
@@ -170,12 +162,14 @@ public:
         getMaximumIndex() const {
                 return this->maximum_index;
         }
-        /*
+        /* @note NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
          * @return True if exists node in the graph
          */ virtual bool
         existsNode(unsigned i) const {
                 return i < nodes && occupied[i];
         }
+              
+        ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         bool isEdge(int a, int b) const {
 
                 FOREACH(edg, g[a]) {
@@ -184,7 +178,8 @@ public:
                 }
                 return false;
         }
-
+        
+        ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         const double *getPosition(int nr) const {
                 return g[nr].position;
         }
@@ -192,13 +187,14 @@ public:
         getNumberNodes() const {
                 return this->nodes;
         }
-        //TODO: problem when growing ! Should be called *ONLY* by GNGAlgorithm/** 
-        //@note Should be called *ONLY* by GNGAlgorithm */
+        
+        ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         Node &
         operator[] (int i) {
                 return g[i];
         }
 
+        ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         double
         getDist(int a, int b) {
                 //        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
@@ -213,6 +209,7 @@ public:
                 return distance;
         }
 
+        ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         double
         getDist(const double *pos_a, const double *pos_b) const {
                 //        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
@@ -223,6 +220,8 @@ public:
 
                 return distance;
         }
+        
+        ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         int
         newNode(const double *position) {
                 if (firstFree == -1) {
@@ -264,7 +263,8 @@ public:
 
                 return createdNode;
         }
-
+        
+        ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         bool deleteNode(int x) {
                 if (existsNode(x)) {
                         --nodes;
@@ -281,6 +281,7 @@ public:
                 return false;
         }
 
+        ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         EdgeIterator removeUDEdge(int a, int b) {
 
                 FOREACH(edg, g[a]) {
@@ -305,6 +306,7 @@ public:
                 return g[a].end();
         }
 
+        ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         void
         addUDEdge(int a, int b) {
                 if (a == b)
@@ -320,6 +322,7 @@ public:
                 g[b].edgesCount++;
         }
 
+        ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         void
         addDEdge(int a, int b) {
                 throw "Not implemented";
@@ -329,7 +332,7 @@ public:
         }
 
 
-
+        ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         std::string reportPool() {
                 std::stringstream ss;
                 for (unsigned int i = 0; i < g.size(); ++i) {
@@ -347,6 +350,7 @@ public:
                 return ss.str();
         }
 
+        
         ~RAMGNGGraph() {
                 for (int i = 0; i < g.size(); ++i) {
                         if (occupied[i]) {
@@ -359,8 +363,19 @@ public:
 
         virtual int getDim() const{
             return gng_dim;
-        }        
+        }      
+        
+        virtual void
+        lock() {
+                mutex->lock();
+        }
+
+        virtual void
+        unlock() {
+                mutex->unlock();
+        }
 private:
+        ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         void
         resizeGraph() {
                 //DBG(5, "GNGGraph::resizing graph from "+to_string(g.size()));

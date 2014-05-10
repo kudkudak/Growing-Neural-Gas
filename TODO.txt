@@ -1,6 +1,9 @@
+* Error when lazyheap is turned on
+
+* Add locks for dataset
+
 * Add bigmemory dataset
 
-* Add translation dataset
 
 * Uniform grid for massive dimensionality data (sparse vector from boost?)
     having done that we can make splitting more efficient
@@ -10,16 +13,9 @@
 
 * Refactor to bagging datasets, improve rejection sampling
 
-* Add example should pause the algorithm - no, it shouldn't,
-however there should be a mutex when getting sample
-
-* TODO: visual test - common format visualisation igraph compatible
 
 * Error to GNGAlgorithm
 
-* Graph refactoring
-
-* Refactor m_grow_rate -> m_shrink_rate
 
 * Exceptions
 

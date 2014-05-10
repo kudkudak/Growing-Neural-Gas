@@ -29,8 +29,8 @@
 #include "GNGNode.h"
 
 #include "GNGGraph.h"
-#include "GNGDatabase.h"
-#include "GNGDatabaseExtra.h"
+#include "GNGDataset.h"
+
 #include "GNGAlgorithm.h"
 
 #include "MemoryAllocator.h"
