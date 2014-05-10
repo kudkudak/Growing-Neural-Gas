@@ -8,6 +8,7 @@
 #define GNGDATABASE_H
 
 #include <algorithm>
+#include <string.h>
 #include <vector>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -27,6 +28,9 @@
  * 
 * @note Drawing example is not very time-expensive comapred to other problems (like
 * neighbour search). Therefore it is locking on addExample and drawExample
+*
+* @note Takes ownership of the memory inserted. Copy memory before inserting if you
+* want to use this memory afterwards!!
 */
 class GNGDataset
 {
@@ -59,17 +63,21 @@ public:
     ///Retrieves pointer to vertex data, with unsigned int as descriptor of meta
     virtual const double * getVertexData(unsigned int) const=0;
     
-    virtual void addExamples(const void *, unsigned int count)=0;
+    ///Inserts examples to the dataset, @note: Takes ownership of the memory for performance issues
+    virtual void insertExamples(void *, unsigned int count, unsigned int size)=0;
     
     virtual void removeExample(unsigned int)=0;
     
     virtual int getSize() const=0;
     
     virtual ~GNGDataset(){}
-private:
+
     GNGDataset(const GNGDataset& orig){}
 
     GNGDataset(){}
+
+private:
+
 };
 
 
@@ -87,18 +95,16 @@ private:
  */
 template<class BaseType, class StorageType>
 class GNGDatasetStorage{
+protected:
     unsigned int dim_;
 public:
-    typedef typename  BaseType baseType;
-    typedef typename  StorageType storageType;
+    typedef BaseType baseType;
+    typedef StorageType storageType;
     
     GNGDatasetStorage(unsigned int dim): dim_(dim)
     {
     }
-
     
-
-
     int dim() const{
         return dim_;
     }    
@@ -107,10 +113,10 @@ public:
     virtual const BaseType * getData(unsigned int) const=0;
  
     virtual unsigned int getSize() const=0;
-    ///Add examples to memory
-    virtual void addData(StorageType *,  unsigned int) =0;
+    ///Add examples to memory, @note Takes ownership of the memory for performance issues
+    virtual void addData(StorageType *,  unsigned int, unsigned int) =0;
     ///Will take ownership of x, no copy involved
-    virtual void take(StorageType *) =0;
+    virtual void take(StorageType *,  unsigned int) =0;
 
     virtual ~GNGDatasetStorage(){
 
@@ -119,49 +125,66 @@ public:
 
 
 ///Most basic RAM storage
-class GNGDatasetStorageRAM: GNGDatasetStorage<double, std::vector<double> >{
-    std::vector<double> * storage_;
+class GNGDatasetStorageRAM: public GNGDatasetStorage<double, double >{
+protected:
+    double * storage_;
     unsigned int num_examples_;
     bool init_;
+    unsigned int storage_size_;
 public:
     ///Note that dimensionality is not equal to dimensionality of position pointer
     GNGDatasetStorageRAM(unsigned int dim): 
-    	GNGDatasetStorage<double, std::vector<double> >(dim), init_(false), num_examples_(0){
-        storage_ = new std::vector<double>();
-        storage_->resize(10);
+    	GNGDatasetStorage<double, double >(dim),
+    	init_(false), num_examples_(0){
+    	storage_size_ = dim_*10;
+    	storage_ = new double[storage_size_];
+
+
     }
     virtual const double * getData(unsigned int idx) const{
-        if(idx > storage_->size()*dim()) return 0;
-        return &(*storage_)[idx*dim()];
+        if(idx*dim_ > storage_size_) return 0;
+        return &storage_[idx*dim_];
     }
-    virtual void take(std::vector<double> * mem){
-        delete storage_; //no auto_ptr because assigment handling is not automatically deleting
+    virtual void take(double * mem, unsigned int count){
+        delete [] storage_; //no auto_ptr because assigment handling is not automatically deleting
         storage_ = mem;
-        num_examples_ = storage_->size();
+        num_examples_ = count;
+        storage_size_ = count*dim_;
     }
     virtual unsigned int getSize() const{
-        return storage_->size()/dim();
+        return storage_size_/dim_;
     }
     
-    virtual void addData(std::vector<double> * x, unsigned int count){
+    virtual void addData(double * x, unsigned int count, unsigned int size){
+    	assert(size == count*dim_);
+
+
         //Always take first batch, do not copy
         if(!init_){
             init_ = true;
-            return take(x);
+            return take(x, count);
         }
         
         
-        if(x->size() + num_examples_ > storage_->size() ){
-            if(storage_->size() < 2e6)
-                storage_->resize(2*storage_->size());   
+        if((count + num_examples_)*dim_ > storage_size_ ){
+            if(storage_size_ < 2e6)
+                resize(2*storage_size_);
             else
-                storage_->resize((unsigned int)(1.2*storage_->size()));      
-         }
-        std::copy(x->begin(), x->end(), storage_->begin() + num_examples_*dim());
-        num_examples_ += x->size()/dim();
+                resize((unsigned int)(1.2*storage_size_));
+        }
+        memcpy(storage_, x, sizeof(double)*count*dim_);
+        delete[] x;
+        num_examples_ += count;
     }
     ~GNGDatasetStorageRAM(){
         delete storage_;
+    }
+private:
+    void resize(unsigned int new_size){
+    	//realloc is bad practice in C++, but I want to keep it as double * array
+    	//in case we want to use SHM for instance.
+    	storage_ = (double*) realloc(storage_, new_size*sizeof(double));
+    	storage_size_ = new_size;
     }
 };
 
@@ -170,6 +193,7 @@ public:
 template<class Storage>
 class GNGDatasetSampling: public GNGDataset
 {
+protected:
     const unsigned int pos_dim_, meta_dim_, vertex_dim_;
     const unsigned int prob_location_;
     
@@ -187,13 +211,14 @@ public:
     */
     GNGDatasetSampling(boost::mutex *mutex, unsigned int pos_dim, 
             unsigned int vertex_dim, unsigned int meta_dim, unsigned int prob_location=-1): 
+    storage_(pos_dim+vertex_dim+meta_dim),
     mutex_(mutex), pos_dim_(pos_dim), vertex_dim_(meta_dim_), meta_dim_(prob_location),
     prob_location_(prob_location)
     {
         //Data layout 
-        data_layout_.push_back(pos_dim);
+        data_layout_.push_back(pos_dim_);
         data_layout_.push_back(meta_dim_);
-        data_layout_.push_back(vertex_dim_)
+        data_layout_.push_back(vertex_dim_);
         
         __init_rnd();
     }
@@ -201,35 +226,35 @@ public:
 
     
      ///Retrieves pointer to position 
-    const Storage::baseType * getPosition(unsigned int i) const{
+    const typename Storage::baseType * getPosition(unsigned int i) const{
         boost::mutex::scoped_lock(*mutex_);
         
-        return &storage_.getData()[0];
+        return &storage_.getData(i)[0];
     }
     
     ///Retrieves pointer to metadata, with unsigned int
-    const Storage::baseType * getMetaData(unsigned int i) const{
+    const typename Storage::baseType * getMetaData(unsigned int i) const{
         boost::mutex::scoped_lock(*mutex_);
         
         if(meta_dim_==0) return 0;
         
-        return &storage_.getData()[pos_dim_+vertex_dim_];
+        return &storage_.getData(i)[pos_dim_+vertex_dim_];
     }
 
     ///Retrieves pointer to vertex data, with unsigned int as descriptor of meta
-    const Storage::baseType * getVertexData(unsigned int i) const{
+    const typename Storage::baseType * getVertexData(unsigned int i) const{
         boost::mutex::scoped_lock(*mutex_);
         
         if(vertex_dim_==0) return 0;
         
-        return &storage_.getData()[pos_dim_];
+        return &storage_.getData(i)[pos_dim_];
     }
     
     
     unsigned int drawExample() const{
         boost::mutex::scoped_lock(*mutex_);
         if(prob_location_==-1){
-            return index = __int_rnd(0,storage_.getSize()-1);
+            return __int_rnd(0,storage_.getSize()-1);
         }else{
             const double * ex;
             unsigned int index;
@@ -244,11 +269,11 @@ public:
         }
     }
     
-    void addExamples(const void * memptr, unsigned int count){
-    	const Storage::storageType * examples =
-    			reinterpret_cast<Storage::storageType *>(memptr);
+    void insertExamples(void * memptr, unsigned int count, unsigned int size){
+    	 typename Storage::storageType * examples =
+    			reinterpret_cast< typename Storage::storageType *>(memptr);
         boost::mutex::scoped_lock(*mutex_);
-        storage_.addData(examples, count);
+        storage_.addData(examples, count, size);
     }
     
     virtual std::vector<int> getDataLayout() const{

@@ -32,7 +32,7 @@
 /** Holds together all logic and objects.*/
 class GNGServer{
     /** Mutex used for synchronization of algorithm with other modules*/
-    boost::mutex alg_phase_adapt_lock, alg_phase_new_lock, alg_whole_lock;
+    boost::mutex alg_memory_lock;
     /** Mutex used for synchronization of graph access*/
     boost::mutex grow_mutex;
     
@@ -85,13 +85,14 @@ class GNGServer{
         if(current_configuration.datasetType == GNGConfiguration::DatasetSampling){
                 this->gngDataset = std::auto_ptr<GNGDataset>(
                         new GNGDatasetSampling<GNGDatasetStorageRAM>
-                        (&alg_phase_adapt_lock, current_configuration.dim, current_configuration.
+                        (&alg_memory_lock, current_configuration.dim, current_configuration.
                         dataset_vertex_dim, 0));
         }
-        if(current_configuration.datasetType == GNGConfiguration::DatasetSampling){
+        if(current_configuration.datasetType == GNGConfiguration::DatasetSamplingProb){
+        	    //Add probability to layout
                 this->gngDataset = std::auto_ptr<GNGDataset>(
                         new GNGDatasetSampling<GNGDatasetStorageRAM>
-                        (&alg_phase_adapt_lock, current_configuration.dim, current_configuration.
+                        (&alg_memory_lock, current_configuration.dim, current_configuration.
                         dataset_vertex_dim, 1, 0));
         }        
         else{
@@ -127,7 +128,8 @@ class GNGServer{
         
         /** Initiliaze main computing object **/
         this->gngAlgorithm = std::auto_ptr<GNGAlgorithm>(new GNGAlgorithm
-        ( this->gngGraph.get(), //I do not want algorithm to depend on boost
+        ( alg_memory_lock,
+        		this->gngGraph.get(), //I do not want algorithm to depend on boost
                 this->gngDataset.get(),
                 &current_configuration.orig[0],
                 &current_configuration.axis[0],
@@ -171,24 +173,20 @@ class GNGServer{
         return vector<double>();
     }
     
-    void _handle_AddExamples(double * examples, int count){
+    void _handle_AddExamples(double * examples,unsigned int count, unsigned int size){
+    	DBG(5, "GNGServer::Adding examples with "+to_string(gngDataset->getDataDim())+" dimensionality");
+
+    	if(count*gngDataset->getDataDim() != size)
+    		throw BasicException("Wrong dimensionality. "
+    				"Check if you have added all field to "
+    				"position (for instance probability)");
+
+
+
+
         //Handle coding
         DBG(1, "GNGServer::_handle_AddExamples adding examples");
-        if(current_configuration.databaseType==GNGConfiguration::DatabaseProbabilistic)
-            for(int i=0;i<count;++i){
-                GNGExampleProbabilistic ex(&examples[i*(current_configuration.dim+1)],
-                        current_configuration.dim); //decoding
-                gngDataset->addExample(&ex);
-            }
-        else if(current_configuration.databaseType==GNGConfiguration::DatabaseSimple)
-             for(int i=0;i<count;++i){
-                GNGExampleProbabilistic ex(&examples[i*current_configuration.dim],current_configuration.dim); //decoding
-                gngDataset->addExample(&ex);
-            }
-        else{
-            DBG(100,"Not supported database type" );
-            throw BasicException("Not supported database type");
-        }
+        gngDataset->insertExamples(examples, count, size);
         int tmp = gngDataset->getSize();
         DBG(7, "GNGServer::Database size "+to_string(tmp));
     }
@@ -203,8 +201,8 @@ public:
         return new GNGServer(config);
     }
     
-    void addExamples(double * examples, int count){
-        this->_handle_AddExamples(examples, count);
+    void addExamples(double * examples, unsigned int count, unsigned int size){
+        this->_handle_AddExamples(examples, count, size);
     }
     
     
@@ -234,7 +232,7 @@ public:
      GNGGraph & getGraph(){
         return *this->gngGraph.get();
     }
-     GNGDatabase & getDatabase(){
+     GNGDataset & getDatabase(){
         return *this->gngDataset.get();
     }
     

@@ -103,7 +103,7 @@ public:
         
         default_configuration.serverId = 0;
         default_configuration.dim = 3;
-        default_configuration.databaseType = DatabaseSimple;
+        default_configuration.datasetType = DatasetSampling;
         default_configuration.max_nodes=1000;       
         default_configuration.uniformgrid_optimization=false; 
         default_configuration.graph_memory_bound = 200000*sizeof(double);

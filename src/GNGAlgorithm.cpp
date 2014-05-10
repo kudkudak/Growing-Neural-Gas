@@ -117,7 +117,6 @@ void GNGAlgorithm::RandomInit() {
         ++index;
         ex2 = g_db -> drawExample();
     }
-    DBG(3, "RandomInit::Are distinct "+to_string(ex2.getPositionPtr()[0])+" "+to_string(ex2.getPositionPtr()[1]));
 
     const double * ex1_ptr = g_db->getPosition(ex1);
     const double * ex2_ptr = g_db->getPosition(ex2);

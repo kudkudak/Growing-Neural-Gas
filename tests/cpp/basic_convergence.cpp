@@ -11,11 +11,11 @@ using namespace std;
  * @returns pair<double, double> : nodes, mean_error
  */
 pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database=1000,
-        int ms_loop = 5000,  string save_filename="", vector<double> * extra_examples=0) {
+        int ms_loop = 5000,  string save_filename="", double* extra_examples=0, int extra_samples_size=0) {
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();  
     config.uniformgrid_optimization = true;
     if(cnf) config=*cnf;
-    config.databaseType = GNGConfiguration::DatabaseProbabilistic;
+    config.datasetType = GNGConfiguration::DatasetSamplingProb;
     
     GNGServer *s = GNGServer::constructTestServer(config);
 
@@ -25,7 +25,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     
     //Probabilistic dataset
 
-    
+    //Layout pos0 pos1 pos2 .. posDim-1 prob
 
     cout<<"Allocating "<<(config.dim+1)*num_database<<endl<<flush;
     double * vect = new double[(config.dim+1)*num_database];
@@ -43,17 +43,13 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     
     if(extra_examples){
         DBG(14, "adding extra examples");
-        DBG(14, to_string(extra_examples->size()/(config.dim+1)));
-        s->addExamples(&(*extra_examples)[0], extra_examples->size()/(config.dim+1));
+        s->addExamples(&extra_examples[0], extra_samples_size/(config.dim+1), extra_samples_size);
         cout<<"Database size="<<s->getDatabase().getSize()<<endl;
     }    
     
-    s->addExamples(&vect[0], num_database);
+    s->addExamples(&vect[0], num_database, num_database*(config.dim+1));
     
 
-
-        
-    delete[] vect;
     
     DBG(12, "testNewInterface::Server running");
 
@@ -123,14 +119,15 @@ TEST(BasicTests, FewDimsSkewedUGConvergence){
     config.orig = vector<double>(config.dim , -1.0);
     config.orig[2] = -4.0;
 
-    
-    vector<double> extra_examples(50000*(config.dim+1), 0.0);
+    //vector would be better here obviously.
+    double * extra_examples = new double[50000*(config.dim+1)];
     for (int i = 0; i < 50000; ++i) {
         for(int j=0;j<= config.dim;++j)
              extra_examples[j+(i)*(config.dim+1)] = __double_rnd(0, 2)+(2.0);
     }
     
-    pair<double, double> results = test_convergence(&config, 100000, 60000, "fewdims.graphml", &extra_examples);
+    pair<double, double> results = test_convergence(&config, 100000, 60000, "fewdims.graphml",
+    		extra_examples, 50000*(config.dim+1));
     
     ASSERT_GE(results.first, 10.0);
     ASSERT_LE(results.second, 50.0);
