@@ -37,6 +37,7 @@ DEPFILES := $(addprefix $(BUILD_DEBUG_DIR)/, $(CPPFILES:.cpp=.d))
 
 ## Main targets
 all: $(OBJFILES)
+	echo "All depends on " $(OBJFILES)
 	$(CC) $(OBJFILES) src/main.cpp -o main  $(CFLAGS) $(CLIBS) $(CINCLUDE) -O3 
 
 debug: $(DEBUGOBJFILES)
@@ -56,10 +57,12 @@ $(BUILD_DEBUG_DIR)/%.o:$(SRC_DIR)/%.cpp
 test: debug
 	$(CC) $(DEBUGOBJFILES) tests/cpp/graph_tests.cpp -o tests/cpp/graph_tests $(CFLAGS) $(CLIBS) $(CINCLUDE) $(GTESTFLAGS) -DDEBUG -ggdb -O0
 	$(CC) $(DEBUGOBJFILES) tests/cpp/whole_tests.cpp -o tests/cpp/whole_tests $(CFLAGS) $(CLIBS) $(CINCLUDE) $(GTESTFLAGS) -DDEBUG -ggdb -O0
+	$(CC) $(DEBUGOBJFILES) tests/cpp/database_tests.cpp -o tests/cpp/database_tests $(CFLAGS) $(CLIBS) $(CINCLUDE) $(GTESTFLAGS) -DDEBUG -ggdb -O0
 
 test_performance: all
 	$(CC) $(OBJFILES) tests/cpp/graph_tests.cpp -o tests/cpp/graph_tests $(CFLAGS) $(CLIBS) $(CINCLUDE) $(GTESTFLAGS) -O3
 	$(CC) $(OBJFILES) tests/cpp/whole_tests.cpp -o tests/cpp/whole_tests $(CFLAGS) $(CLIBS) $(CINCLUDE) $(GTESTFLAGS) -O3
+	$(CC) $(OBJFILES) tests/cpp/database_tests.cpp -o tests/cpp/database_tests $(CFLAGS) $(CLIBS) $(CINCLUDE) $(GTESTFLAGS) -O3
 
 
 

@@ -117,6 +117,9 @@ void GNGAlgorithm::RandomInit() {
         ++index;
         ex2 = g_db -> drawExample();
     }
+    DBG(3, "RandomInit::database_size = "+to_string(g_db->getSize()));
+    DBG(3, "RandomInit::drawn "+to_string(ex1)+" "+to_string(ex2));
+
 
     const double * ex1_ptr = g_db->getPosition(ex1);
     const double * ex2_ptr = g_db->getPosition(ex2);
@@ -126,9 +129,9 @@ void GNGAlgorithm::RandomInit() {
 
     DBG(3, "RandomInit::created nodes graph size="+to_string(m_g.getNumberNodes()));
     
-#ifdef DEBUG
-    assert(m_g.getNumberNodes()==2);
-#endif
+	#ifdef DEBUG
+		assert(m_g.getNumberNodes()==2);
+	#endif
 
     
     if (m_toggle_uniformgrid) {

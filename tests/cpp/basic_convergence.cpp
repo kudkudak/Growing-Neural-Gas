@@ -33,8 +33,10 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
         for(int j=0;j<= config.dim;++j)
              if(j==0)
                  vect[j+(i)*(config.dim+1)] = 0.0;
-             else
+             else if(j<config.dim)
                  vect[j+(i)*(config.dim+1)] = __double_rnd(0, 1);
+             else
+            	 vect[j+(i)*(config.dim+1)] = 0.5;
     }
     
     
@@ -43,17 +45,25 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     
     if(extra_examples){
         DBG(14, "adding extra examples");
-        s->addExamples(&extra_examples[0], extra_samples_size/(config.dim+1), extra_samples_size);
+        s->insertExamples(&extra_examples[0],
+        		extra_samples_size/(config.dim+1), extra_samples_size);
         cout<<"Database size="<<s->getDatabase().getSize()<<endl;
     }    
     
-    s->addExamples(&vect[0], num_database, num_database*(config.dim+1));
-    
-
-    
+    s->insertExamples(&vect[0], num_database, num_database*(config.dim+1));
+    cout<<"Database size="<<s->getDatabase().getSize()<<endl;
+    cout<<"Dimensionality of example is "<<s->getDatabase().getDataDim()<<endl;
+    for(int i=0;i<10;++i){
+    	cout<<"Exemplary sample (testing memory correctness):\n";
+    	int ex = s->getDatabase().drawExample();
+    	write_array(s->getDatabase().getPosition(ex), s->getDatabase().getPosition(ex)+(config.dim+1));
+    }
     DBG(12, "testNewInterface::Server running");
 
    
+
+
+
     boost::posix_time::millisec workTime(500);
 
     cout<< "testNewInterface::Collecting results\n";
@@ -101,7 +111,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
 
 
 TEST(BasicTests, BasicConvergence){
-    dbg.set_debug_level(12);
+    dbg.set_debug_level(10);
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     pair<double, double> results = test_convergence(&config, 1000, 3000,   "basic_convergence.graphml");
     ASSERT_GE(fabs(results.first), 60.0);
@@ -120,14 +130,15 @@ TEST(BasicTests, FewDimsSkewedUGConvergence){
     config.orig[2] = -4.0;
 
     //vector would be better here obviously.
-    double * extra_examples = new double[50000*(config.dim+1)];
-    for (int i = 0; i < 50000; ++i) {
+    int num_extra=50000;
+    double * extra_examples = new double[num_extra*(config.dim+1)];
+    for (int i = 0; i < num_extra; ++i) {
         for(int j=0;j<= config.dim;++j)
              extra_examples[j+(i)*(config.dim+1)] = __double_rnd(0, 2)+(2.0);
     }
     
     pair<double, double> results = test_convergence(&config, 100000, 60000, "fewdims.graphml",
-    		extra_examples, 50000*(config.dim+1));
+    		extra_examples, num_extra*(config.dim+1));
     
     ASSERT_GE(results.first, 10.0);
     ASSERT_LE(results.second, 50.0);

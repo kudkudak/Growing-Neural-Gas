@@ -114,7 +114,7 @@ public:
  
     virtual unsigned int getSize() const=0;
     ///Add examples to memory, @note Takes ownership of the memory for performance issues
-    virtual void addData(StorageType *,  unsigned int, unsigned int) =0;
+    virtual void insertData(StorageType *,  unsigned int, unsigned int) =0;
     ///Will take ownership of x, no copy involved
     virtual void take(StorageType *,  unsigned int) =0;
 
@@ -155,7 +155,7 @@ public:
         return storage_size_/dim_;
     }
     
-    virtual void addData(double * x, unsigned int count, unsigned int size){
+    virtual void insertData(double * x, unsigned int count, unsigned int size){
     	assert(size == count*dim_);
 
 
@@ -168,11 +168,13 @@ public:
         
         if((count + num_examples_)*dim_ > storage_size_ ){
             if(storage_size_ < 2e6)
-                resize(2*storage_size_);
+                resize(max(2*storage_size_,  (count + num_examples_)*dim_));
             else
-                resize((unsigned int)(1.2*storage_size_));
+                resize(max((unsigned int)(1.2*storage_size_), (count + num_examples_)*dim_));
         }
-        memcpy(storage_, x, sizeof(double)*count*dim_);
+
+        //Copy to storage
+        memcpy(storage_ + num_examples_*dim_, x, sizeof(double)*count*dim_);
         delete[] x;
         num_examples_ += count;
     }
@@ -212,14 +214,15 @@ public:
     GNGDatasetSampling(boost::mutex *mutex, unsigned int pos_dim, 
             unsigned int vertex_dim, unsigned int meta_dim, unsigned int prob_location=-1): 
     storage_(pos_dim+vertex_dim+meta_dim),
-    mutex_(mutex), pos_dim_(pos_dim), vertex_dim_(meta_dim_), meta_dim_(prob_location),
+    mutex_(mutex), pos_dim_(pos_dim), vertex_dim_(vertex_dim), meta_dim_(meta_dim),
     prob_location_(prob_location)
     {
         //Data layout 
         data_layout_.push_back(pos_dim_);
-        data_layout_.push_back(meta_dim_);
         data_layout_.push_back(vertex_dim_);
+        data_layout_.push_back(meta_dim_);
         
+
         __init_rnd();
     }
     
@@ -263,7 +266,7 @@ public:
             do{ 
              index = __int_rnd(0,storage_.getSize()-1);   
              ex=storage_.getData(index);
-            }while(ex[pos_dim_+meta_dim_+vertex_dim_+prob_location_]<__double_rnd(0,1.0));
+            }while(ex[pos_dim_+vertex_dim_+prob_location_]<__double_rnd(0,1.0));
             
             return index;    
         }
@@ -273,7 +276,7 @@ public:
     	 typename Storage::storageType * examples =
     			reinterpret_cast< typename Storage::storageType *>(memptr);
         boost::mutex::scoped_lock(*mutex_);
-        storage_.addData(examples, count, size);
+        storage_.insertData(examples, count, size);
     }
     
     virtual std::vector<int> getDataLayout() const{

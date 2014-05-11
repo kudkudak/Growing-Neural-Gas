@@ -83,6 +83,7 @@ class GNGServer{
 
         /** Construct database **/
         if(current_configuration.datasetType == GNGConfiguration::DatasetSampling){
+        	DBG(11, "GNGServer::Constructing Normal Sampling Prob Dataset");
                 this->gngDataset = std::auto_ptr<GNGDataset>(
                         new GNGDatasetSampling<GNGDatasetStorageRAM>
                         (&alg_memory_lock, current_configuration.dim, current_configuration.
@@ -90,6 +91,7 @@ class GNGServer{
         }
         if(current_configuration.datasetType == GNGConfiguration::DatasetSamplingProb){
         	    //Add probability to layout
+        		DBG(11, "GNGServer::Constructing Sampling Prob Dataset");
                 this->gngDataset = std::auto_ptr<GNGDataset>(
                         new GNGDatasetSampling<GNGDatasetStorageRAM>
                         (&alg_memory_lock, current_configuration.dim, current_configuration.
@@ -173,7 +175,7 @@ class GNGServer{
         return vector<double>();
     }
     
-    void _handle_AddExamples(double * examples,unsigned int count, unsigned int size){
+    void _handle_InsertExamples(double * examples,unsigned int count, unsigned int size){
     	DBG(5, "GNGServer::Adding examples with "+to_string(gngDataset->getDataDim())+" dimensionality");
 
     	if(count*gngDataset->getDataDim() != size)
@@ -201,8 +203,8 @@ public:
         return new GNGServer(config);
     }
     
-    void addExamples(double * examples, unsigned int count, unsigned int size){
-        this->_handle_AddExamples(examples, count, size);
+    void insertExamples(double * examples, unsigned int count, unsigned int size){
+        this->_handle_InsertExamples(examples, count, size);
     }
     
     
