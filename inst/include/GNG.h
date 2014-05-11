@@ -6,7 +6,7 @@
  */
 
 #ifndef GNGINCLUDE_H
-#define	GNGINCLUDE_H
+#define	 GNGINCLUDE_H
 
 #include <boost/interprocess/containers/vector.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
@@ -43,6 +43,9 @@
 #include "GNGConfiguration.h"
 #include "GNGServer.h"
 #include "GNGClient.h"
+
+
+
 
 #endif	/* GNGINCLUDE_H */
 

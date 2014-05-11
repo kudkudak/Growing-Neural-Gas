@@ -11,12 +11,12 @@
 
 #ifdef DEBUG
 #define DBG(level, text) dbg.push_back(level, text);
-#define REPORT_PRODUCTION(x) cout<<#x<<"="<<(x)<<endl<<std::flush;
-#define REPORT(x) cout<<#x<<"="<<(x)<<endl<<std::flush;
+#define REPORT_PRODUCTION(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
+#define REPORT(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
 #else
 #define DBG(level, text)
 #define REPORT(x)
-#define REPORT_PRODUCTION(x) cout<<#x<<"="<<(x)<<endl<<std::flush;
+#define REPORT_PRODUCTION(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
 #endif
 
 #include <cstdio>
@@ -65,18 +65,18 @@ double __double_rnd(double min, double max);
 template<class T>
 void write_array(T* begin, T*end){
 	for(;begin!=end;++begin){
-		std::cout<<*begin<<",";
+		std::cerr<<*begin<<",";
 	}
-	std::cout<<endl;
+	std::cerr<<endl;
 }
 
 
 template<class T>
 void write_cnt(T begin, T end){
 	for(;begin!=end;++begin){
-		std::cout<<*begin<<",";
+		std::cerr<<*begin<<",";
 	}
-	std::cout<<endl;
+	std::cerr<<endl;
 }
 
 template<class T>

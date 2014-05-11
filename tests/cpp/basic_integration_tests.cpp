@@ -1,10 +1,12 @@
+#include "GNG.h"
 #include "GNGServer.h"
 #include "Utils.h"
-
+#include "gtest/gtest.h"
 #include <algorithm>
 #include <utility>
 #include <vector>
 using namespace std;
+
 
 
 /** Run GNGAlgorithm on cube (3-dimensional) with given parameters
@@ -20,14 +22,14 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     GNGServer *s = GNGServer::constructTestServer(config);
 
 
-    cout<<"Running server\n"<<flush;
+    cerr<<"Running GNGServer3\n"<<flush;
     s->run();   
     
     //Probabilistic dataset
 
     //Layout pos0 pos1 pos2 .. posDim-1 prob
 
-    cout<<"Allocating "<<(config.dim+1)*num_database<<endl<<flush;
+    cerr<<"Allocating "<<(config.dim+1)*num_database<<endl<<flush;
     double * vect = new double[(config.dim+1)*num_database];
     for (int i = 0; i < num_database; ++i) {
         for(int j=0;j<= config.dim;++j)
@@ -41,20 +43,20 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     
     
     DBG(10, "Allocated examples\n");
-    cout<<"Allocated examples\n";
+    cerr<<"Allocated examples\n";
     
     if(extra_examples){
-        cout<<"Adding extra examples\n";
+        cerr<<"Adding extra examples\n";
         s->insertExamples(&extra_examples[0],
         		extra_samples_size/(config.dim+1), extra_samples_size);
-        cout<<"Database size="<<s->getDatabase().getSize()<<endl;
+        cerr<<"Database size="<<s->getDatabase().getSize()<<endl;
     }    
-    cout<<"Adding main examples\n";
+    cerr<<"Adding main examples\n";
     s->insertExamples(&vect[0], num_database, num_database*(config.dim+1));
-    cout<<"Database size="<<s->getDatabase().getSize()<<endl;
-    cout<<"Dimensionality of example is "<<s->getDatabase().getDataDim()<<endl;
+    cerr<<"Database size="<<s->getDatabase().getSize()<<endl;
+    cerr<<"Dimensionality of example is "<<s->getDatabase().getDataDim()<<endl;
     for(int i=0;i<10;++i){
-    	cout<<"Exemplary sample (testing memory correctness):\n";
+    	cerr<<"Exemplary sample (testing memory correctness):\n";
     	int ex = s->getDatabase().drawExample();
     	write_array(s->getDatabase().getPosition(ex), s->getDatabase().getPosition(ex)+(config.dim+1));
     }
@@ -66,7 +68,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
 
     boost::posix_time::millisec workTime(500);
 
-    cout<< "testNewInterface::Collecting results\n";
+    cerr<< "testNewInterface::Collecting results\n";
     
     int iteration = 0;
     
@@ -99,7 +101,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     
 
     if(save_filename!=""){
-        cout<<"BasicTests::Saving to GraphML\n";
+        cerr<<"BasicTests::Saving to GraphML\n";
         writeToGraphML(s->getGraph(), save_filename);
     }
     
@@ -177,7 +179,7 @@ TEST(BasicTests, ManyDimsUGConvergence){
 
 
 TEST(BasicTests, ManyDimsNoUG){
-    cout<<"BasicTests::ManyDimsNoUG"<<endl;
+    cerr<<"BasicTests::ManyDimsNoUG"<<endl;
     dbg.set_debug_level(12);
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.uniformgrid_optimization =  false;

@@ -44,7 +44,6 @@ public:
     double s_found_cells_dist[4];
     int s_search_query;
 
-    //TODO: rewrite to vector.
     int *s_center;
     int s_radius;
     int *s_pos;
@@ -128,9 +127,9 @@ public:
         neighbourhood_size = int(pow(3.0, (double)gng_dim));
         
         
-        m_density_threshold = m_density_threshold;
-        m_density_threshold_min = m_density_threshold_min;
-        m_grow_factor = m_grow_factor;
+        this->m_density_threshold = m_density_threshold;
+        this->m_density_threshold_min = m_density_threshold_min;
+        this->m_grow_factor = m_grow_factor;
         
         s_center = new int[this->gng_dim];
      

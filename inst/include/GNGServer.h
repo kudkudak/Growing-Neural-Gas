@@ -36,6 +36,8 @@ class GNGServer{
     /** Mutex used for synchronization of graph access*/
     boost::mutex grow_mutex;
     
+
+
     /** Singleton mutex*/
     static boost::mutex static_lock;
     
@@ -47,6 +49,8 @@ class GNGServer{
     
     /**Construct GNGServer using configuration*/
     GNGServer(GNGConfiguration configuration){
+
+
         DBG(10, "GNGServer()::constructing GNGServer");
         
         
@@ -66,7 +70,8 @@ class GNGServer{
         DBG(1, "GNGServer() dim = "+to_string(GNGNode::dim));
 
 
-        
+        grow_mutex.unlock();
+        alg_memory_lock.unlock();
 
         if(current_configuration.graph_storage == GNGConfiguration::RAMMemory){
             //Nothing to do here

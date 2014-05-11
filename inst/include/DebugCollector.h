@@ -50,7 +50,7 @@ public:
 
     void set_debug_level(int debug_level){ m_debug_level = debug_level; }
     void push_back(int level, std::string line){
-                if(level>= m_debug_level) std::cout<<line<<std::endl<<std::flush;
+                if(level>= m_debug_level) std::cerr<<line<<std::endl<<std::flush;
     }
 private:
 

@@ -1,12 +1,8 @@
 #include "gtest/gtest.h"
 #include "GNG.h"
 
-DebugCollector dbg;
-int GNGNode::dim =0; 
 
-#include "basic_convergence.cpp"
-
-
+#include "basic_integration_tests.cpp"
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

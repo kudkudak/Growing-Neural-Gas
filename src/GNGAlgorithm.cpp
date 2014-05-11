@@ -419,13 +419,14 @@ void GNGAlgorithm::Adapt(const double * ex) {
 
 int GNGAlgorithm::CalculateAccumulatedError() {
 	//@note: this function can be called from outside so it has to synchronize
-	m_g.lock();
 
+	//TODO: Why does it lock?
 
     int maximumIndex = m_g.getMaximumIndex();
     m_accumulated_error = 0.0;
 
     if (this->m_toggle_lazyheap) {
+    	m_g.lock();
         int maximumIndex = m_g.getMaximumIndex();
         m_accumulated_error = 0.0;
 
@@ -435,19 +436,22 @@ int GNGAlgorithm::CalculateAccumulatedError() {
                 m_accumulated_error += m_g[i].error;
             }
         }
+        m_g.unlock();
         return m_accumulated_error;
     } else {
-
+    	m_g.lock();
         REP(i, maximumIndex + 1) {
 
             if (m_g.existsNode(i)) {
                 m_accumulated_error += m_g[i].error;
             }
         }
+        m_g.unlock();
         return m_accumulated_error;
+
     }
 
-    m_g.unlock();
+//
 }
 
 void GNGAlgorithm::TestAgeCorrectness() {
