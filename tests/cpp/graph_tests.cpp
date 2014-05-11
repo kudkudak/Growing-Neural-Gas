@@ -23,7 +23,7 @@ TEST(GraphTests, BasicGraphTest){
     DBG(1, "BasicGraphTest::dim = "+to_string(GNGNode::dim));
     
     boost::mutex grow_mutex;
-    RAMGNGGraph<GNGNode, GNGEdge> g(&grow_mutex, 6, N_start );
+    RAMGNGGraph<GNGNode, GNGEdge> g(&grow_mutex,  GNGNode::dim , N_start );
     
     ASSERT_EQ(g.existsNode(0), false);
     ASSERT_EQ(g.getNumberNodes(), 0);
@@ -39,6 +39,17 @@ TEST(GraphTests, BasicGraphTest){
     //Enforce growing
     x[0]*=100;
     
+
+    cout<<"Getting size before regrowing\n"<<g[0].size()<<" "<<g[0].capacity()<<endl<<flush;
+
+    g.deleteNode(2);
+    cout<<"Checking writing before growing\n";
+    string graphml = writeToGraphML(g);
+
+    int idx = g.newNode(x);
+    ASSERT_EQ(idx, 2);
+
+
     ASSERT_EQ(g[N_start-2].nr, N_start-2); //Check memory consistency
     ASSERT_EQ(g.newNode(x), N_start);
     ASSERT_EQ(g.getNumberNodes(), N_start+1);
@@ -67,11 +78,32 @@ TEST(GraphTests, BasicGraphTest){
     
     DBG(10, "Test OK");
     
+    cout<<"Getting size\n"<<g[0].size()<<" "<<g[0].capacity()<<endl<<flush;
+
+
     g.addUDEdge(0,1);
     g.addUDEdge(0,2);
     g.addUDEdge(2,5);
     
+    cout<<"Adding edges ok. Removing edge \n"<<flush;
+
+
+    ASSERT_EQ(g.isEdge(0,2), true);
     g.removeUDEdge(0,2);
+    ASSERT_EQ(g.isEdge(0,1), true);
+    ASSERT_EQ(g.isEdge(0,2), false);
+    ASSERT_EQ(g[0].size(), 1);
+    ASSERT_EQ(g[5].size(), 1);
+
+    cout<<"Removing edge ok. Writing to graphml\n"<<flush;
+
+    for(int i=0;i<g.getMaximumIndex();++i){
+    	if(g.existsNode(i))
+    		ASSERT_EQ(g[i].position[1], 0.2);
+    }
+
+    graphml = writeToGraphML(g);
+    cout<<graphml;
     
     //Check memory consistency
     ASSERT_EQ(g[0].position[3], 0.4);
@@ -79,17 +111,23 @@ TEST(GraphTests, BasicGraphTest){
     
     DBG(10, "Test OK");
     
-    ASSERT_EQ(g[0].size(), 1);
 
-    for(int i=0;i<2*N_start;++i){
+    cout<<"Growing\n"<<flush;
+
+
+    //Check regrowing
+    for(int i=0;i<20*N_start;++i){
+    	cout<<"Adding "<<i<<endl;
         int idx = g.newNode(x);
+        cout<<"Added. Adding edge";
+        int cn = __int_rnd(0, i);
+        while(!g.existsNode(cn)){
+        	cn = __int_rnd(0, i);
+        }
+        g.addUDEdge(idx, cn);
     }
     
-    ASSERT_EQ(g.isEdge(0,1), true); 
-
-    string graphml = writeToGraphML(g);
-    graphml = writeToGraphML(g, "test.graphml");
-    cout<<graphml;
+    cout<<g.reportPool();
 }
 
 int main(int argc, char **argv) {

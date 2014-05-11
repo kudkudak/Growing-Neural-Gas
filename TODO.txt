@@ -1,3 +1,7 @@
+To remember:
+   * dataset is taking examples, not just copying (performacne/memory issues)
+   * graph is not thread safe - we have to lock it and unlock it (performance issues)
+
 * Error when lazyheap is turned on
 
 * Add locks for dataset
@@ -11,7 +15,6 @@
     for d>10 it is equivalent to looking at all points 
     I would use external library
 
-* Refactor to bagging datasets, improve rejection sampling
 
 
 * Error to GNGAlgorithm

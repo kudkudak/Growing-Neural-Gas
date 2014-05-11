@@ -11,10 +11,12 @@
 
 #ifdef DEBUG
 #define DBG(level, text) dbg.push_back(level, text);
+#define REPORT_PRODUCTION(x) cout<<#x<<"="<<(x)<<endl<<std::flush;
 #define REPORT(x) cout<<#x<<"="<<(x)<<endl<<std::flush;
 #else
 #define DBG(level, text)
 #define REPORT(x)
+#define REPORT_PRODUCTION(x) cout<<#x<<"="<<(x)<<endl<<std::flush;
 #endif
 
 #include <cstdio>

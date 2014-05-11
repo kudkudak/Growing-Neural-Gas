@@ -53,13 +53,9 @@ public:
 
     int error_cycle;
     double error;
-
-
     int edgesCount;
     double * position;
-
     int nr;
-
     bool _position_owner;
 
 
@@ -72,6 +68,7 @@ public:
     GNGNode(double * position) :
     _position_owner(false), error(0.0), error_cycle(0), 
      nr(-1), edgesCount(0), position(position) {
+
         this->reserve(GNGNode::dim);
         if (!position) {
             position = new double[dim];
@@ -79,12 +76,26 @@ public:
         }
     }
 
+    GNGNode(const GNGNode & rhs){
+
+        error_cycle = rhs.error_cycle;
+        error = rhs.error;
+        edgesCount = rhs.edgesCount;
+        position = rhs.position;
+        nr = rhs.nr;
+        _position_owner = rhs._position_owner;
+
+    	std::vector<GNGEdge*>::operator=(rhs);
+
+    	this->reserve(GNGNode::dim);
+    }
+
+
     /*
      * Construct empty GNGNode - not initialized storage!
      */
     GNGNode() : _position_owner(false), error(0.0), error_cycle(0),
-    nr(-1), edgesCount(0), position(position) {
-        this->reserve(GNGNode::dim);
+    nr(-1), edgesCount(0), position(0) {
 
     }
 

@@ -115,7 +115,8 @@ template < class Node, class Edge, class Mutex = boost::mutex > class RAMGNGGrap
         std::vector < Node > g;
         std::vector < bool > occupied;
 
-        double *positions;           //as continuous array for speed/caching purposes
+        //TODO: change to vector
+        std::vector<double> positions;  //as continuous array for speed/caching purposes, could be vector
 
         int
         maximum_index;
@@ -139,9 +140,11 @@ public:
         RAMGNGGraph(Mutex * mutex, unsigned int dim,
                     int initial_pool_size):maximum_index(-1), mutex(mutex),
                 gng_dim(dim), firstFree(-1), nodes(0) {
-                positions = new double[initial_pool_size * gng_dim];
+                positions.resize(initial_pool_size * gng_dim);
                 //Initialize graph data structures
                 g.resize(initial_pool_size);
+
+                for(int i=0;i<initial_pool_size;++i) g[i].reserve(gng_dim);
 
                 occupied.resize(initial_pool_size);
 
@@ -267,7 +270,10 @@ public:
         ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         bool deleteNode(int x) {
                 if (existsNode(x)) {
-                        --nodes;
+                		//TODO: add automatic erasing edges
+                        assert(g[x].size() == 0);
+
+                		--nodes;
                         if (maximum_index == x)
                                 maximum_index = maximum_index - 1;
 
@@ -358,7 +364,7 @@ public:
                                         delete *edg;
                         }
                 }
-                delete[]positions;
+
         }
 
         virtual int getDim() const{
@@ -382,29 +388,39 @@ private:
                 DBG(5, "GNGGraph::resizing");
                 unsigned int previous_size = g.size();
                 //Grow positions pool
-                double *old_positions = positions;
-                positions = new double[2 * g.size() * gng_dim];
-                memcpy(positions, old_positions, sizeof(double) * g.size() * gng_dim);
-                delete[] old_positions;
+
+
+                positions.resize(2 * previous_size * gng_dim);
+
 
                 //Reassign memory pointers
-                for(int i=0;i<previous_size;++i)
+                for(int i=0;i<previous_size;++i){
                     g[i].position = &positions[i*gng_dim];
-                
+
+                }
                 
                 
                 g.resize(2 * previous_size);
+
+                for(int i=0;i<previous_size;++i){
+                    g[i].position = &positions[i*gng_dim];
+                }
+
+                
                 occupied.resize(2 * previous_size);
                 for (int i = previous_size; i < 2 * previous_size; ++i) {
-                        g[i].reset();
+//                        g[i].reset();
+//                        g[i].reserve(gng_dim); //for speed purposes
                         occupied[i] = false;
                 }
+
                 next_free.resize(2 * previous_size);
                 for (int i = previous_size - 1; i < 2 * previous_size - 1; ++i) {
                         next_free[i] = i + 1;
                 }
                 next_free[g.size() - 1] = -1;
                 firstFree = previous_size;
+
                 DBG(5, "GNGGraph::resizing done");
                 DBG(5, to_string(firstFree));
                 DBG(5, to_string(next_free[previous_size]));

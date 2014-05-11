@@ -158,13 +158,11 @@ public:
     virtual void insertData(double * x, unsigned int count, unsigned int size){
     	assert(size == count*dim_);
 
-
         //Always take first batch, do not copy
         if(!init_){
             init_ = true;
             return take(x, count);
         }
-        
         
         if((count + num_examples_)*dim_ > storage_size_ ){
             if(storage_size_ < 2e6)
@@ -175,8 +173,11 @@ public:
 
         //Copy to storage
         memcpy(storage_ + num_examples_*dim_, x, sizeof(double)*count*dim_);
+
         delete[] x;
+
         num_examples_ += count;
+
     }
     ~GNGDatasetStorageRAM(){
         delete storage_;
@@ -185,7 +186,15 @@ private:
     void resize(unsigned int new_size){
     	//realloc is bad practice in C++, but I want to keep it as double * array
     	//in case we want to use SHM for instance.
-    	storage_ = (double*) realloc(storage_, new_size*sizeof(double));
+
+    	//storage_ = (double*) realloc(storage_, new_size*sizeof(double));
+
+    	//TODO: why fails..
+    	double * old_storage = storage_;
+    	storage_ = new double[new_size];
+    	memcpy(storage_, old_storage, num_examples_*dim_*sizeof(double));
+    	delete[] old_storage;
+
     	storage_size_ = new_size;
     }
 };

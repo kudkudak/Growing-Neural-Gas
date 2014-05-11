@@ -44,12 +44,12 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     cout<<"Allocated examples\n";
     
     if(extra_examples){
-        DBG(14, "adding extra examples");
+        cout<<"Adding extra examples\n";
         s->insertExamples(&extra_examples[0],
         		extra_samples_size/(config.dim+1), extra_samples_size);
         cout<<"Database size="<<s->getDatabase().getSize()<<endl;
     }    
-    
+    cout<<"Adding main examples\n";
     s->insertExamples(&vect[0], num_database, num_database*(config.dim+1));
     cout<<"Database size="<<s->getDatabase().getSize()<<endl;
     cout<<"Dimensionality of example is "<<s->getDatabase().getDataDim()<<endl;
@@ -74,10 +74,10 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     
     while(true){
        ++iteration;
-       REPORT(iteration);
+       REPORT_PRODUCTION(iteration);
        boost::this_thread::sleep(workTime);
-       REPORT(s->getGraph().getNumberNodes()); 
-       REPORT(s->getAlgorithm().CalculateAccumulatedError()
+       REPORT_PRODUCTION(s->getGraph().getNumberNodes());
+       REPORT_PRODUCTION(s->getAlgorithm().CalculateAccumulatedError()
                /(s->getGraph().getNumberNodes()+0.)); 
        if(iteration >= ms_loop/500) break;
     }
@@ -194,8 +194,9 @@ TEST(BasicTests, BasicConvergeLazyHeapUG){
     dbg.set_debug_level(12);
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.lazyheap_optimization = true;
+    config.max_nodes = 2000;
     config.uniformgrid_optimization = true;
-    pair<double, double> results = test_convergence(&config, 1000, 1000);
+    pair<double, double> results = test_convergence(&config, 10000, 1000);
     ASSERT_GE(results.first, 10.0);
     ASSERT_LE(results.second, 50.0);
 }

@@ -79,7 +79,7 @@ m_alpha(alpha), m_betha(betha), m_lambda(lambda),
 m_eps_v(eps_v), m_eps_n(eps_n),
 m_density_threshold(0.1), m_grow_rate(1.5),
 errorHeap(), dim(dim), m_toggle_uniformgrid(uniformgrid_optimization),
-        m_toggle_lazyheap(lazyheap_optimization), running(false), m_utility_option(None)
+        m_toggle_lazyheap(lazyheap_optimization), running(false), m_utility_option(None), m_error(0.0)
 {
     DBG(1, "GNGAlgorithm:: Constructing object");
     
@@ -418,6 +418,10 @@ void GNGAlgorithm::Adapt(const double * ex) {
 }
 
 int GNGAlgorithm::CalculateAccumulatedError() {
+	//@note: this function can be called from outside so it has to synchronize
+	m_g.lock();
+
+
     int maximumIndex = m_g.getMaximumIndex();
     m_accumulated_error = 0.0;
 
@@ -442,6 +446,8 @@ int GNGAlgorithm::CalculateAccumulatedError() {
         }
         return m_accumulated_error;
     }
+
+    m_g.unlock();
 }
 
 void GNGAlgorithm::TestAgeCorrectness() {

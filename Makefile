@@ -3,7 +3,7 @@
 
 ## Flags 
 CC=g++
-CINCLUDE=-O3 -I./inst/include -I./src -I/usr/share/R/include -I/usr/local/lib/R/site-library/Rcpp/include -I/usr/local/lib/R/site-library/RcppArmadillo/include -L/usr/local/lib
+CINCLUDE=-I./inst/include -I./src -I/usr/share/R/include -I/usr/local/lib/R/site-library/Rcpp/include -I/usr/local/lib/R/site-library/RcppArmadillo/include -L/usr/local/lib
 CLIBS= -lboost_system -lpthread -lrt -lboost_thread -lgtest
 RFLAGS=$(shell Rscript scripts/generateflags.r)
 CFLAGS=-fPIC
