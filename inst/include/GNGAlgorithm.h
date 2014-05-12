@@ -63,6 +63,9 @@ public:
         );
    
     
+    ///Retrieve closest node's gng_index to the example
+    unsigned int GetClosest(const double * ex);
+
     double getAccumulatedError() const { return m_accumulated_error; }
     const GNGGraph & get_graph(){ return m_g; }
 

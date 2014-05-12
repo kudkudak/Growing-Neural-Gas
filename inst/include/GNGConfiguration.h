@@ -6,7 +6,7 @@
  */
 
 #ifndef GNGCONFIGURATION_H
-#define	GNGCONFIGURATION_H
+#define	 GNGCONFIGURATION_H
 
 #include <vector>
 
@@ -17,7 +17,8 @@
  */
 class GNGConfiguration{
 public:
-    GNGConfiguration(): dim(-1), serverId(-1){}
+	GNGConfiguration(){
+	}
 
 
     enum GraphNodeStorage{

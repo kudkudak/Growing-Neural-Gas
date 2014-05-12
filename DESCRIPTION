@@ -5,11 +5,10 @@ Title: Online, very fact big-data clustering algorithm Growing Neural Gas implem
     for R written in C++. 
 Author: Stanislaw Jastrzebski <staszek.jastrzebski@gmail.com>
 Maintainer: Stanislaw Jastrzebski <staszek.jastrzebski@gmail.com>
-Depends: Rcpp (>= 0.10.4), BH
-Enhances: biganalytics, bigtabulate, synchronicity
+Depends: Rcpp (>= 0.10.4), BH(>= 1.54.0)
 LinkingTo: BH, Rcpp
 Suggests: RUnit
-Description: Cluster big amounts of data using lightspeed implementation of Growing Neural Gas.
+Description: Cluster big amounts of data using online lightspeed implementation of Growing Neural Gas.
 OS_type: unix
 License: LGPL-3
 Packaged: 2014-01-08 22:39:25 UTC; staszek

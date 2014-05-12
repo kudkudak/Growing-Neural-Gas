@@ -228,6 +228,18 @@ void GNGAlgorithm::AddNewNode() {
     delete[] error_nodes_new;
 }
 
+unsigned int GNGAlgorithm::GetClosest(const double * ex){
+    if (m_toggle_uniformgrid) {
+        std::vector<int> nearest_index = ug->findNearest(ex, 2); //TwoNearestNodes(ex->position);
+        return nearest_index[0];
+    } else {
+        GNGNode ** tmp = TwoNearestNodes(ex);
+        int ret_index = tmp[0]->nr;
+        delete[] tmp;
+        return ret_index;
+    }
+}
+
 void GNGAlgorithm::Adapt(const double * ex) {
     ;
     Time t1(boost::posix_time::microsec_clock::local_time());

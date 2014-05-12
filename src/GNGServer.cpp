@@ -2,6 +2,117 @@
 
 
 
+GNGServer::GNGServer(GNGConfiguration configuration){
+
+
+    DBG(10, "GNGServer()::constructing GNGServer");
+
+
+    if(!configuration.check_correctness())
+        throw BasicException("Invalid configuration passed to GNGServer");
+
+    if(configuration.interprocess_communication)
+        throw BasicException("Current version doesn't allow for crossprocess communication");
+
+    this->current_configuration = configuration; //assign configuration
+
+    DBG(1, "GNGServer() dim = "+to_string(GNGNode::dim));
+
+    /** Set up dimensionality **/
+    GNGNode::dim = current_configuration.dim;
+
+    DBG(1, "GNGServer() dim = "+to_string(GNGNode::dim));
+
+
+    grow_mutex.unlock();
+    alg_memory_lock.unlock();
+
+    if(current_configuration.graph_storage == GNGConfiguration::RAMMemory){
+        //Nothing to do here
+    }else{
+        throw BasicException("Not supported GNGConfiguration type");
+    }
+
+//        if(configuration.interprocess_communication){
+//            this->shm->new_named_segment("MessageBufor",current_configuration.message_bufor_size);
+//            this->message_bufor_mutex = this->shm->get_named_segment("MessageBufor")->construct<
+//                    boost::interprocess::interprocess_mutex>("MessageBuforMutex")();
+//        }
+
+
+    /** Construct database **/
+    if(current_configuration.datasetType == GNGConfiguration::DatasetSampling){
+    	DBG(11, "GNGServer::Constructing Normal Sampling Prob Dataset");
+            this->gngDataset = std::auto_ptr<GNGDataset>(
+                    new GNGDatasetSampling<GNGDatasetStorageRAM>
+                    (&alg_memory_lock, current_configuration.dim, current_configuration.
+                    dataset_vertex_dim, 0));
+    }
+    if(current_configuration.datasetType == GNGConfiguration::DatasetSamplingProb){
+    	    //Add probability to layout
+    		DBG(11, "GNGServer::Constructing Sampling Prob Dataset");
+            this->gngDataset = std::auto_ptr<GNGDataset>(
+                    new GNGDatasetSampling<GNGDatasetStorageRAM>
+                    (&alg_memory_lock, current_configuration.dim, current_configuration.
+                    dataset_vertex_dim, 1, 0));
+    }
+    else{
+        throw BasicException("Database type not supported");
+    }
+
+
+    DBG(10, "GNGServer()::gngDatabase constructed");
+
+    /** Construct graph **/
+    if(current_configuration.graph_storage == GNGConfiguration::SharedMemory){
+        throw BasicException("Not supported SharedMemory configuration");
+//            SharedMemoryGraphStorage * storage
+//                    = this->shm->get_named_segment("GraphStorage")->
+//                    construct<SharedMemoryGraphStorage >("storage")(GNGServer::START_NODES);
+//            this->gngGraph = std::auto_ptr<ExtGNGGraph<SharedMemoryGraphStorage> >(
+//                    new SHGNGGraph<SharedMemoryGraphStorage>(&this->gngAlgorithmControl->grow_mutex, storage,
+//                    configuration.dim));
+//            DBG(10, "GNGServer()::constructed shared graph");
+    }
+    else if(current_configuration.graph_storage == GNGConfiguration::RAMMemory){
+
+        this->gngGraph = std::auto_ptr<RAMGNGGraph<GNGNode, GNGEdge> >(
+                new RAMGNGGraph<GNGNode, GNGEdge>(&grow_mutex,
+                current_configuration.dim, current_configuration.starting_nodes));
+    }else{
+        throw BasicException("Not supported GNGConfiguration type");
+    }
+
+
+
+    DBG(10, "GNGServer()::constructing algorithm object");
+
+    /** Initiliaze main computing object **/
+    this->gngAlgorithm = std::auto_ptr<GNGAlgorithm>(new GNGAlgorithm
+    ( alg_memory_lock,
+    		this->gngGraph.get(), //I do not want algorithm to depend on boost
+            this->gngDataset.get(),
+            &current_configuration.orig[0],
+            &current_configuration.axis[0],
+            current_configuration.axis[0]*1.1, //only 2^dim //TODO: min
+            current_configuration.max_nodes,
+            current_configuration.max_age,
+            current_configuration.alpha,
+            current_configuration.beta,
+            current_configuration.lambda,
+            current_configuration.eps_v,
+            current_configuration.eps_n,
+            current_configuration.dim,
+            current_configuration.uniformgrid_optimization,
+            current_configuration.lazyheap_optimization
+    ));
+
+
+    DBG(10, "GNGServer()::constructed algorithm object");
+
+
+}
+
 GNGConfiguration GNGServer::current_configuration = GNGConfiguration::getDefaultConfiguration();
 boost::mutex GNGServer::static_lock;
 

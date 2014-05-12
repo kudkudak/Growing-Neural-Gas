@@ -64,7 +64,7 @@ std::string writeToGraphML(GNGGraph &g, string filename){
 
   //Construct properties getters
   dynamic_properties p;
-  p.property("index", boost::get(&boost_vertex_desc::index, boost_g));
+  p.property("gng_index", boost::get(&boost_vertex_desc::index, boost_g));
   p.property("v0", boost::get(&boost_vertex_desc::v0, boost_g));
   p.property("v1", boost::get(&boost_vertex_desc::v1, boost_g));
   p.property("v2", boost::get(&boost_vertex_desc::v2, boost_g));
