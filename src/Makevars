@@ -8,4 +8,4 @@ RCPPARMAINCL :=	$(shell echo 'RcppArmadillo:::CxxFlags()' | $(R_HOME)/bin/R --va
 
 PKG_CPPFLAGS := -I../inst/include -I. $(shell $(R_HOME)/bin/R CMD config CPPFLAGS)
 PKG_CXXFLAGS := $(RCPPFLAGS) $(RCPPINCL) $(RCPPARMAINCL) $(RINSIDEINCL) $(shell $(R_HOME)/bin/R CMD config CXXFLAGS) -g -pthread -fpic
-PKG_LIBS := $(RLDFLAGS) $(RRPATH) $(RBLAS) $(RLAPACK) $(RCPPLIBS) $(RINSIDELIBS) -lboost_thread -lrt
+PKG_LIBS := $(RLDFLAGS) $(RRPATH) $(RBLAS) $(RLAPACK) $(RCPPLIBS) $(RINSIDELIBS) -lboost_thread -lrt -lpthread

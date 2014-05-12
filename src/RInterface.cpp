@@ -7,6 +7,9 @@
 
 using namespace Rcpp;
 
+DebugCollector dbg;
+int GNGNode::dim =0;
+
 //
 RCPP_MODULE(gng_module){
 	/// GNGConfiguration class
