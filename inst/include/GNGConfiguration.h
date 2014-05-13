@@ -8,6 +8,13 @@
 #ifndef GNGCONFIGURATION_H
 #define	 GNGCONFIGURATION_H
 
+//#ifdef RCPP_INTERFACE
+
+#include <Rcpp.h>
+using namespace Rcpp;
+
+//#endif
+
 #include <vector>
 
 /**
@@ -18,7 +25,50 @@
 class GNGConfiguration{
 public:
 	GNGConfiguration(){
+		//Not reusing code because of peculiar problem with Rcpp
+
+        dataset_vertex_dim = 0;
+
+        starting_nodes = 100;
+
+        message_bufor_size = 10000*sizeof(double);
+
+        orig.push_back(0.0);
+        orig.push_back(0.0);
+        orig.push_back(0.0);
+
+        axis.push_back(1.0);
+        axis.push_back(1.0);
+        axis.push_back(1.0);
+
+        graph_storage = RAMMemory;
+
+        serverId = 0;
+        dim = 3;
+        datasetType = DatasetSampling;
+        max_nodes=1000;
+        uniformgrid_optimization=false;
+        graph_memory_bound = 200000*sizeof(double);
+
+        lazyheap_optimization=false;
+        max_age=200;
+        alpha=0.95;
+        beta=0.9995;
+        lambda=200;
+        eps_v=0.05;
+        eps_n=0.0006;
+
+        interprocess_communication = false;
 	}
+
+
+//#ifdef RCPP_INTERFACE
+//	GNGConfiguration(SEXP _xp){
+//		//Rcpp::XPtr<GNGConfiguration> ptr(_xp);
+////		operator=(as<GNGConfiguration>(_xp));
+//
+//	}
+//#endif
 
 
     enum GraphNodeStorage{
@@ -118,6 +168,7 @@ public:
         default_configuration.eps_n=0.0006; 
         
         default_configuration.interprocess_communication = false;
+
         
         return default_configuration;
     }

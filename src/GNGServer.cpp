@@ -2,7 +2,9 @@
 
 
 
-GNGServer::GNGServer(GNGConfiguration configuration){
+GNGServer::GNGServer(GNGConfiguration * configuration_ptr){
+
+	GNGConfiguration configuration = *configuration_ptr;
 
 
     DBG(10, "GNGServer()::constructing GNGServer");
@@ -48,7 +50,7 @@ GNGServer::GNGServer(GNGConfiguration configuration){
                     (&alg_memory_lock, current_configuration.dim, current_configuration.
                     dataset_vertex_dim, 0));
     }
-    if(current_configuration.datasetType == GNGConfiguration::DatasetSamplingProb){
+    else if(current_configuration.datasetType == GNGConfiguration::DatasetSamplingProb){
     	    //Add probability to layout
     		DBG(11, "GNGServer::Constructing Sampling Prob Dataset");
             this->gngDataset = std::auto_ptr<GNGDataset>(
@@ -57,7 +59,10 @@ GNGServer::GNGServer(GNGConfiguration configuration){
                     dataset_vertex_dim, 1, 0));
     }
     else{
-        throw BasicException("Database type not supported");
+    	cerr<<"Passed dataset type "<<current_configuration.datasetType<<endl;
+    	cerr<<GNGConfiguration::DatasetSampling<<endl;
+    	cerr<<GNGConfiguration::DatasetSamplingProb<<endl;
+        throw BasicException("Database type not supported "+to_string(current_configuration.datasetType));
     }
 
 

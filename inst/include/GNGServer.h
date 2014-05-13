@@ -29,19 +29,33 @@
 #include "Utils.h"
 
 
+//#ifdef RCPP_INTERFACE
+
+#include <Rcpp.h>
+#include <armadillo>
+
+
+using namespace Rcpp;
+using namespace arma;
+
+//#endif
 
 
 
 /** Holds together all logic and objects.*/
 class GNGServer{
 public:
+    /**Construct GNGServer using configuration*/
+    GNGServer(GNGConfiguration * configuration_ptr);
+
+
     void run() {
         boost::thread workerThread(boost::bind(&GNGServer::_run, this));
     }
 
     
     static GNGServer * constructTestServer(GNGConfiguration config){
-        return new GNGServer(config);
+        return new GNGServer(&config);
     }
     
 
@@ -56,6 +70,15 @@ public:
         this->_handle_InsertExamples(examples, count, size);
     }
     
+//#ifdef RCPP_INTERFACE
+	void RinsertExamples(Rcpp::NumericMatrix & ex){
+		arma::mat points(ex.begin(), ex.nrow(), ex.ncol(), false);
+		arma::inplace_trans( points, "lowmem");
+		cout<<"Examples "<<points.n_rows<<endl;
+		this->insertExamples(points.memptr(),(unsigned int)points.n_cols, (unsigned int)points.n_rows*points.n_cols);
+	}
+//#endif
+
     ///Calculate error per node
     double calculateAvgErrorNode() {
     	return this->getAlgorithm().CalculateAccumulatedError()/(this->getGraph().getNumberNodes()+0.0f);
@@ -71,7 +94,10 @@ public:
     	getAlgorithm().terminate();
     }
 
-
+    GNGConfiguration getConfiguration(){
+    	//TODO: don't use singleton here
+    	return GNGServer::current_configuration;
+    }
 
 
     static void setConfiguration(GNGConfiguration configuration){
@@ -84,7 +110,7 @@ public:
     /** Get singleton of GNGServer (thread safe) */
     static GNGServer& getInstance(){
         boost::mutex::scoped_lock sc(static_lock);
-        static GNGServer gngServer(current_configuration);
+        static GNGServer gngServer(&current_configuration);
         return gngServer;
     }
 
@@ -186,8 +212,6 @@ private:
 
     static GNGConfiguration current_configuration;
 
-    /**Construct GNGServer using configuration*/
-    GNGServer(GNGConfiguration configuration);
 
 
     /** Run GNG Server - runs in separate thread and returns control

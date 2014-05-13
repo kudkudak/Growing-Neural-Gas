@@ -2,11 +2,11 @@ To remember:
    * dataset is taking examples, not just copying (performacne/memory issues)
    * graph is not thread safe - we have to lock it and unlock it (performance issues)
 
-* Error when lazyheap is turned on
+For production code:
+   * uncommend IFDEF for RcppInterface. Commented out for syntax parsing in Eclipse (STUPID ECLIPSE)
 
-* Add locks for dataset
 
-* Add bigmemory dataset
+* Add bigmemory dataset, or/and reading csv
 
 
 * Uniform grid for massive dimensionality data (sparse vector from boost?)
@@ -15,12 +15,3 @@ To remember:
     for d>10 it is equivalent to looking at all points 
     I would use external library
 
-
-
-* Error to GNGAlgorithm
-
-
-* Exceptions
-
-
-* Check delete in GNGNode
