@@ -5,9 +5,12 @@
 
 #include "GNGServer.h"
 #include "GNGConfiguration.h"
-#include <RcppArmadillo.h>
+#include <Rcpp.h>
 #include <armadillo>
 
+
+using namespace Rcpp;
+using namespace arma;
 
 /*
 * This class defines proxy to GNGServer. In most cases it simply calls methods from GNGServer
@@ -29,9 +32,9 @@ public:
 	void insertExamples(Rcpp::NumericMatrix & ex){
 
 
-
 		arma::mat points(ex.begin(), ex.nrow(), ex.ncol(), false);
 		arma::inplace_trans( points, "lowmem");
+		server->insertExamples(points.memptr(), points.n_cols, points.n_rows*points.n_cols);
 	}
 
 
