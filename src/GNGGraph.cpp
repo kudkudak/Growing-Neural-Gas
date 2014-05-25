@@ -6,7 +6,7 @@
 
 using namespace std;
 std::string writeToGraphML(GNGGraph &g, string filename){
-  //TODO: change to undirected
+
 
   typedef adjacency_list<vecS, vecS, undirectedS, 
     boost_vertex_desc , boost_edge_desc> Graph;
@@ -53,9 +53,11 @@ std::string writeToGraphML(GNGGraph &g, string filename){
             desc e;
             bool b;
             FOREACH(edg, g[i]){
-                add_edge(map_desc[g[i].nr], map_desc[(*edg)->nr],  boost_g);
-                boost::tie(e, b) = edge(map_desc[g[i].nr], map_desc[(*edg)->nr],  boost_g);
-                edge_dist[e] = g.getDist(i, (*edg)->nr);
+            	if(g[i].nr > (*edg)->nr){ //directed!
+					add_edge(map_desc[g[i].nr], map_desc[(*edg)->nr],  boost_g);
+					boost::tie(e, b) = edge(map_desc[g[i].nr], map_desc[(*edg)->nr],  boost_g);
+					edge_dist[e] = g.getDist(i, (*edg)->nr);
+            	}
             }
             
       }

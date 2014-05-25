@@ -22,7 +22,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     GNGServer *s = GNGServer::constructTestServer(config);
 
 
-    cerr<<"Running GNGServer3\n"<<flush;
+//    cerr<<"Running GNGServer3\n"<<flush;
     s->run();   
     
     //Probabilistic dataset

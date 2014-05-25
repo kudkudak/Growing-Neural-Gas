@@ -435,6 +435,7 @@ private:
 using namespace boost;
 using namespace std;
 using boost::get;
+
 struct boost_vertex_desc
 {
     int index;
@@ -443,6 +444,7 @@ struct boost_vertex_desc
     double v0, v1, v2;
     std::string position_dump;
 };
+
 struct boost_edge_desc{
     double dist;
 };

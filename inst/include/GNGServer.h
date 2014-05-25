@@ -47,10 +47,20 @@ class GNGServer{
 public:
     /**Construct GNGServer using configuration*/
     GNGServer(GNGConfiguration * configuration_ptr);
-
+    bool m_current_dataset_memory_was_set;
+    bool m_running_thread_created;
 
     void run() {
-        boost::thread workerThread(boost::bind(&GNGServer::_run, this));
+    	if(!m_running_thread_created){
+    		boost::thread workerThread(boost::bind(&GNGServer::_run, this));
+    		m_running_thread_created = true;
+    	}else{
+    		gngAlgorithm->run();
+    	}
+    }
+
+    void setDebugLevel(int level){
+    	dbg.set_debug_level(level);
     }
 
     
@@ -59,24 +69,103 @@ public:
     }
     
 
+
     ///Export graph to GraphML format
     void exportsToGraphML(std::string filename){
+    	gngGraph->lock();
     	assert(filename != "");
     	writeToGraphML(getGraph(), filename);
+    	gngGraph->unlock();
     }
 
     ///Insert examples
     void insertExamples(double * examples, unsigned int count, unsigned int size){
-        this->_handle_InsertExamples(examples, count, size);
+        this->_handle_addExamples(examples, count, size);
     }
     
+    unsigned int getNumberNodes() const{
+    	gngGraph->lock();
+    	int nr = this->gngGraph->getNumberNodes();
+    	gngGraph->unlock();
+    	return nr;
+    }
+
+    double getMeanError() const{
+    	if(this->getNumberNodes() == 0) return 0.0;
+
+    	return this->gngAlgorithm->CalculateAccumulatedError()/(0.0+this->getNumberNodes());
+    }
+
+
+
+
 //#ifdef RCPP_INTERFACE
+
+
+    ///Moderately slow function returning node descriptors
+    Rcpp::List getNode(unsigned int gng_index){
+    	gngGraph->lock();
+
+    	if(!gngGraph->existsNode(gng_index)){
+    		List ret;
+    		return ret;
+    	}
+
+    	GNGNode & n = getGraph()[gng_index];
+    	NumericVector pos(n.position, n.position + gngDataset->getGNGDim());
+
+    	List ret;
+    	ret["pos"] = pos;
+    	ret["error"] = n.error;
+
+    	vector<unsigned int> neigh(n.size());
+    	GNGNode::EdgeIterator edg = n.begin();
+    	unsigned i = 0;
+    	while(edg!=n.end()){
+    		neigh[i++] = (*edg)->nr;
+    	    ++edg;
+    	}
+
+    	ret["neighbours"] = IntegerVector(neigh.begin(), neigh.end());
+
+    	gngGraph->unlock();
+
+    	return ret;
+    }
+
 	void RinsertExamples(Rcpp::NumericMatrix & ex){
-		arma::mat points(ex.begin(), ex.nrow(), ex.ncol(), false);
-		arma::inplace_trans( points, "lowmem");
-		cout<<"Examples "<<points.n_rows<<endl;
-		this->insertExamples(points.memptr(),(unsigned int)points.n_cols, (unsigned int)points.n_rows*points.n_cols);
+		if(m_current_dataset_memory_was_set){
+			throw "You cannot set example memory pool more than once!";
+		}
+
+		arma::mat * points = new arma::mat(ex.begin(), ex.nrow(), ex.ncol(), false);
+		arma::inplace_trans( *points, "lowmem");
+		this->_handle_addExamples(points->memptr(),(unsigned int)points->n_cols,
+				(unsigned int)points->n_rows*points->n_cols);
 	}
+	void RsetExamples(Rcpp::NumericMatrix & ex){
+		//Release previous if was present
+		if(m_current_dataset_memory_was_set){
+			throw "You cannot set example memory pool more than once!";
+		}
+		//We have to fix the object
+		R_PreserveObject(wrap(ex));
+
+
+
+		arma::mat * points = new arma::mat(ex.begin(), ex.nrow(), ex.ncol(), false);
+		arma::inplace_trans( *points, "lowmem");
+		this->_handle_addExamples(points->memptr(),(unsigned int)points->n_cols,
+				(unsigned int)points->n_rows*points->n_cols, true);
+	}
+
+	void dumpMemory(){
+		for(int i=0; i<gngDataset->getSize()*gngDataset->getDataDim();++i){
+			cout<<gngDataset->getMemoryPtr()[i]<<" ";
+		}
+		cout<<endl;
+	}
+	//TODO: add getNode
 //#endif
 
     ///Calculate error per node
@@ -232,20 +321,26 @@ private:
         return vector<double>();
     }
 
-    void _handle_InsertExamples(double * examples,unsigned int count, unsigned int size){
+    void _handle_addExamples(double * examples,unsigned int count, unsigned int size, bool set=false){
     	DBG(5, "GNGServer::Adding examples with "+to_string(gngDataset->getDataDim())+" dimensionality");
 
-    	if(count*gngDataset->getDataDim() != size)
+    	if(count*gngDataset->getDataDim() != size){
+    		DBG(10, "Wrong dimensionality is "+to_string(size)+" expected "+
+    				to_string(count*gngDataset->getDataDim()) + " data dim " + to_string(gngDataset->getDataDim()));
     		throw BasicException("Wrong dimensionality. "
     				"Check if you have added all field to "
     				"position (for instance probability)");
-
+    	}
 
 
 
         //Handle coding
         DBG(1, "GNGServer::_handle_AddExamples adding examples");
-        gngDataset->insertExamples(examples, count, size);
+        if(!set)
+        	gngDataset->insertExamples(examples, count, size);
+        else
+        	gngDataset->setExamples(examples, count, size);
+
         int tmp = gngDataset->getSize();
         DBG(7, "GNGServer::Database size "+to_string(tmp));
     }

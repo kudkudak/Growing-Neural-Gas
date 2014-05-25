@@ -63,13 +63,18 @@ public:
     ///Retrieves pointer to vertex data, with unsigned int as descriptor of meta
     virtual const double * getVertexData(unsigned int) const=0;
     
-    ///Inserts examples to the dataset, @note: Takes ownership of the memory for performance issues
+    ///Inserts examples to the dataset
     virtual void insertExamples(void *, unsigned int count, unsigned int size)=0;
     
+    //Set examples (takes ownership of the memory)
+    virtual void setExamples(void *, unsigned int count, unsigned int size)=0;
+
     virtual void removeExample(unsigned int)=0;
     
     virtual int getSize() const=0;
     
+    virtual const double * getMemoryPtr() const = 0;
+
     virtual ~GNGDataset(){}
 
     GNGDataset(const GNGDataset& orig){}
@@ -109,12 +114,17 @@ public:
         return dim_;
     }    
     
+    virtual const double * getMemoryPtr() const =0 ;
     
     virtual const BaseType * getData(unsigned int) const=0;
  
     virtual unsigned int getSize() const=0;
-    ///Add examples to memory, @note Takes ownership of the memory for performance issues
+    ///Add examples to memory,
     virtual void insertData(StorageType *,  unsigned int, unsigned int) =0;
+
+    ///Sets data @note Takes ownership of the memory for performance issues
+    virtual void setData(StorageType *,  unsigned int, unsigned int) =0;
+
     ///Will take ownership of x, no copy involved
     virtual void take(StorageType *,  unsigned int) =0;
 
@@ -132,6 +142,9 @@ protected:
     bool init_;
     unsigned int storage_size_;
 public:
+    const double * getMemoryPtr() const{
+    	return storage_;
+    }
     ///Note that dimensionality is not equal to dimensionality of position pointer
     GNGDatasetStorageRAM(unsigned int dim): 
     	GNGDatasetStorage<double, double >(dim),
@@ -155,14 +168,13 @@ public:
         return storage_size_/dim_;
     }
     
+
+    virtual void setData(double * x, unsigned int count, unsigned int size){
+         take(x, count);
+    }
+
     virtual void insertData(double * x, unsigned int count, unsigned int size){
     	assert(size == count*dim_);
-
-        //Always take first batch, do not copy
-        if(!init_){
-            init_ = true;
-            return take(x, count);
-        }
         
         if((count + num_examples_)*dim_ > storage_size_ ){
             if(storage_size_ < 2e6)
@@ -174,11 +186,12 @@ public:
         //Copy to storage
         memcpy(storage_ + num_examples_*dim_, x, sizeof(double)*count*dim_);
 
-        delete[] x;
+        //delete[] x;
 
         num_examples_ += count;
 
     }
+
     ~GNGDatasetStorageRAM(){
         delete storage_;
     }
@@ -193,6 +206,7 @@ private:
     	double * old_storage = storage_;
     	storage_ = new double[new_size];
     	memcpy(storage_, old_storage, num_examples_*dim_*sizeof(double));
+
     	delete[] old_storage;
 
     	storage_size_ = new_size;
@@ -234,7 +248,11 @@ public:
 
         __init_rnd();
     }
+
     
+    const double * getMemoryPtr() const{
+    	return storage_.getMemoryPtr();
+    }
 
     
      ///Retrieves pointer to position 
@@ -287,7 +305,12 @@ public:
         boost::mutex::scoped_lock(*mutex_);
         storage_.insertData(examples, count, size);
     }
-    
+    void setExamples(void * memptr, unsigned int count, unsigned int size){
+    	 typename Storage::storageType * examples =
+    			reinterpret_cast< typename Storage::storageType *>(memptr);
+        boost::mutex::scoped_lock(*mutex_);
+        storage_.setData(examples, count, size);
+    }
     virtual std::vector<int> getDataLayout() const{
     	return data_layout_;
     }

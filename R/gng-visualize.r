@@ -1,5 +1,19 @@
-#' Draw graph using rgl - assumes >=3 dimensions and draws 3 first
-visualizeIGraphRGL<-function(g, radius=NULL){
+
+gng.plot3d<-function(gngServer){
+  tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
+  gngServer$export_to_graphml(tmp_name)
+  print("Reading GraphML dumped")
+  .visualizeIGraphRGL(.readFromGraphML(tmp_name))
+}
+gng.plot2d<-function(gngServer){
+  tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
+  gngServer$export_to_graphml(tmp_name)
+  print("Reading GraphML dumped")
+  .visualizeIGraph2d(.readFromGraphML(tmp_name))
+}
+
+#' Draw igraph using rgl - assumes >=3 dimensions and draws 3 first
+.visualizeIGraphRGL<-function(g, radius=NULL){
   library(multicore)
   library(rgl)
   library(igraph)
@@ -10,9 +24,9 @@ visualizeIGraphRGL<-function(g, radius=NULL){
   nodes <- length(V(g))
  
     # Init 3d data
-    x_lines <- c(0,0)
-    y_lines <- c(0,0)
-    z_lines <- c(0,0)
+    x_lines <- c(1:4*nodes)
+    y_lines <- c(1:4*nodes)
+    z_lines <- c(1:4*nodes)
     k<-1
     m<-1
     x<-c(1:nodes)
@@ -51,17 +65,18 @@ visualizeIGraphRGL<-function(g, radius=NULL){
     rgl.bg(color="black")
     axes3d(edges="bbox")
     rgl.spheres(x,y,z, radius = radius) #,radius=cx*error_scale, color=rgb(cx,cy,cz))
-    rgl.lines(x_lines,y_lines,z_lines,color="bisque")
+
+    rgl.lines(x_lines[1:k-1],y_lines[1:k-1],z_lines[1:k-1],color="bisque")
 }
 
 
 #' Visualize igraph using igraph plot
 #' It will layout graph using v0 and v1 coordinates
 #' @note It is quite slow, works for graphs < 2000 nodes
-visualizeIGraph2d<-function(g){
-  g<-as.undirected(g)
+.visualizeIGraph2d<-function(g){
+  #g<-as.undirected(g)
   L<-cbind(V(g)$v0, V(g)$v1)
-  l = fastgreedy.community(as.undirected(g))
+  l = fastgreedy.community(g)#as.undirected(g))
   col<-rainbow(length(l))
   plot.igraph(g,vertex.size=3.0,vertex.label=NA,vertex.color=col[membership(l)],layout=L)
 }

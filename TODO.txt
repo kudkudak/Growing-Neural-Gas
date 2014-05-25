@@ -8,6 +8,8 @@ For production code:
 
 * Add bigmemory dataset, or/and reading csv
 
+* Minor:
+   Check all constants alpha and beta in particular
 
 * Uniform grid for massive dimensionality data (sparse vector from boost?)
     having done that we can make splitting more efficient

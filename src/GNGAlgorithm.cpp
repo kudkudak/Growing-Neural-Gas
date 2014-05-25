@@ -429,7 +429,7 @@ void GNGAlgorithm::Adapt(const double * ex) {
 
 }
 
-int GNGAlgorithm::CalculateAccumulatedError() {
+double GNGAlgorithm::CalculateAccumulatedError() {
 	//@note: this function can be called from outside so it has to synchronize
 
 	//TODO: Why does it lock?
@@ -452,6 +452,7 @@ int GNGAlgorithm::CalculateAccumulatedError() {
         return m_accumulated_error;
     } else {
     	m_g.lock();
+    	m_accumulated_error = 0.0;
         REP(i, maximumIndex + 1) {
 
             if (m_g.existsNode(i)) {

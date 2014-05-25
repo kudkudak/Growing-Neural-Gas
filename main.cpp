@@ -20,10 +20,10 @@ using namespace std;
 DebugCollector dbg;
 int GNGNode::dim =0;
 
-int main(int argc, char** argv) {
-	cout<<"Running main\n";
-//    ::testing::InitGoogleTest(&argc, argv);
-//    return RUN_ALL_TESTS();
-	return 0;
+int main(int argc, char** argv){
+
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+//	return 0;
 }
 

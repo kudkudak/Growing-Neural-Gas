@@ -11,7 +11,11 @@
 //#ifdef RCPP_INTERFACE
 
 #include <Rcpp.h>
+#include <armadillo>
+
+
 using namespace Rcpp;
+using namespace arma;
 
 //#endif
 
@@ -52,8 +56,8 @@ public:
 
         lazyheap_optimization=false;
         max_age=200;
-        alpha=0.95;
-        beta=0.9995;
+        alpha=0.5;
+        beta=0.99;
         lambda=200;
         eps_v=0.05;
         eps_n=0.0006;
@@ -62,12 +66,33 @@ public:
 	}
 
 
+
+
 //#ifdef RCPP_INTERFACE
 //	GNGConfiguration(SEXP _xp){
 //		//Rcpp::XPtr<GNGConfiguration> ptr(_xp);
 ////		operator=(as<GNGConfiguration>(_xp));
 //
 //	}
+
+	void setUniformGridAxis(NumericVector v){
+		axis.clear();
+		for(int i=0;i<v.size();++i){
+			axis.push_back(v(i));
+		}
+	}
+	NumericVector getUniformGridAxis(){
+		return NumericVector(axis.begin(), axis.end());
+	}
+	void setUniformGridOrigin(NumericVector v){
+		orig.clear();
+		for(int i=0;i<v.size();++i){
+			orig.push_back(v(i));
+		}
+	}
+	NumericVector getUniformGridOrigin(){
+		return NumericVector(orig.begin(), orig.end());
+	}
 //#endif
 
 
@@ -114,8 +139,8 @@ public:
     
     /**Dimensionality of examples*/
     int dim;
-    /**Type of used database*/
-    DatasetType datasetType;
+    /**Type of used database, unsgined int for compabititlity with Rcpp**/
+    unsigned int datasetType;
     /**Id of the server*/
     int serverId;
     

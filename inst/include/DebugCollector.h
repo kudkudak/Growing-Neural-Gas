@@ -49,6 +49,7 @@ public:
     }
 
     void set_debug_level(int debug_level){ m_debug_level = debug_level; }
+    void set_debug_level_max(int debug_level){ m_debug_level = std::max(debug_level, m_debug_level); }
     void push_back(int level, std::string line){
                 if(level>= m_debug_level) std::cerr<<line<<std::endl<<std::flush;
     }

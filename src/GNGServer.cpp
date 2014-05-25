@@ -3,6 +3,8 @@
 
 
 GNGServer::GNGServer(GNGConfiguration * configuration_ptr){
+    m_current_dataset_memory_was_set = false;
+    m_running_thread_created = false;
 
 	GNGConfiguration configuration = *configuration_ptr;
 
@@ -17,8 +19,6 @@ GNGServer::GNGServer(GNGConfiguration * configuration_ptr){
         throw BasicException("Current version doesn't allow for crossprocess communication");
 
     this->current_configuration = configuration; //assign configuration
-
-    DBG(1, "GNGServer() dim = "+to_string(GNGNode::dim));
 
     /** Set up dimensionality **/
     GNGNode::dim = current_configuration.dim;
@@ -62,6 +62,7 @@ GNGServer::GNGServer(GNGConfiguration * configuration_ptr){
     	cerr<<"Passed dataset type "<<current_configuration.datasetType<<endl;
     	cerr<<GNGConfiguration::DatasetSampling<<endl;
     	cerr<<GNGConfiguration::DatasetSamplingProb<<endl;
+    	DBG(11, "GNGServer::Not recognized dataset");
         throw BasicException("Database type not supported "+to_string(current_configuration.datasetType));
     }
 
