@@ -18,6 +18,10 @@ int GNGNode::dim =0;
 RCPP_EXPOSED_CLASS(GNGConfiguration)
 RCPP_EXPOSED_CLASS(GNGServer)
 
+void finalizer_of_gng_server(GNGServer * ptr){
+	DBG(10, "Called finalizer of GNGServer");
+//	delete ptr;
+}
 
 RCPP_MODULE(gng_module){
 	/// GNGConfiguration class
@@ -62,7 +66,8 @@ RCPP_MODULE(gng_module){
 			.method("get_number_nodes", &GNGServer::getNumberNodes)
 			.method("export_to_graphml", &GNGServer::exportsToGraphML)
 			.method("get_node", &GNGServer::getNode)
-			.method("insert_examples", &GNGServer::RinsertExamples);
+			.method("insert_examples", &GNGServer::RinsertExamples)
+			.finalizer(&finalizer_of_gng_server);
 }
 
 

@@ -31,6 +31,10 @@ public:
 	GNGConfiguration(){
 		//Not reusing code because of peculiar problem with Rcpp
 
+		orig.clear();
+
+		axis.clear();
+
         dataset_vertex_dim = 0;
 
         starting_nodes = 100;
@@ -161,6 +165,10 @@ public:
     static GNGConfiguration getDefaultConfiguration(){
         GNGConfiguration default_configuration;
         
+        default_configuration.orig.clear();
+
+        default_configuration.axis.clear();
+
         default_configuration.dataset_vertex_dim = 0;
 
         default_configuration.starting_nodes = 100;
@@ -200,11 +208,22 @@ public:
     
     /**Validate server configuration. *Not working now**/
     bool check_correctness(){
-        GNGConfiguration empty_configuration;
-        return dim == axis.size() && dim == orig.size() &&
-                //We do not allow for massive dimensionality with uniformgrid - it begins to be slow, and
-                //it scales exponentially (memory))
-                (dim < 20 || ! uniformgrid_optimization);
+    	DBG(10, "Dim="+to_string(dim)+" axis.size() = "+to_string(axis.size())+" dim="+to_string(orig.size()));
+
+    	cerr<<"Test\n";
+
+    	if(! (dim < 20 || ! uniformgrid_optimization)){
+    		DBG(20, "ERROR: Too big dimensionality for uniformgrid_optimization");
+    		cerr<<"ERROR: Too big dimensionality for uniformgrid_optimization\n";
+    		return false;
+    	}
+    	if(! (!uniformgrid_optimization or (dim == axis.size() && dim == orig.size()))){
+    		DBG(20, "ERROR: dimensionality doesn't agree with axis and orig");
+    		cerr<<"ERROR: dimensionality doesn't agree with axis and orig"<<endl;
+    		return false;
+    	}
+
+        return true;
     }
 //    
 //    /**Python like update of configuration*/

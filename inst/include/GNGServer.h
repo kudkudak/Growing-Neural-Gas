@@ -101,7 +101,7 @@ public:
 
 //#ifdef RCPP_INTERFACE
 
-
+    SEXP m_current_dataset_memory; //will be deleted in ~delete
     ///Moderately slow function returning node descriptors
     Rcpp::List getNode(unsigned int gng_index){
     	gngGraph->lock();
@@ -132,8 +132,7 @@ public:
 
     	return ret;
     }
-
-	void RinsertExamples(Rcpp::NumericMatrix & ex){
+	void RinsertExamples(Rcpp::NumericMatrix &  ex){
 		if(m_current_dataset_memory_was_set){
 			throw "You cannot set example memory pool more than once!";
 		}
@@ -148,6 +147,7 @@ public:
 		if(m_current_dataset_memory_was_set){
 			throw "You cannot set example memory pool more than once!";
 		}
+		m_current_dataset_memory = wrap(ex);
 		//We have to fix the object
 		R_PreserveObject(wrap(ex));
 
@@ -281,6 +281,15 @@ public:
 //    }
 
     ~GNGServer(){
+    	DBG(10, "GNGServer::destructor called");
+#ifdef RcppInterface
+
+    	if(m_current_dataset_memory_was_set){
+    		R_ReleaseObject(m_current_dataset_memory);
+
+    	}
+    	//R Matrix will be deleted from R level
+#endif
 //        this->shm->get_named_segment("MessageBufor")->destroy_ptr(this->message_bufor_mutex);
     }
 

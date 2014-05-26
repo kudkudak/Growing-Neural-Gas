@@ -141,6 +141,7 @@ protected:
     unsigned int num_examples_;
     bool init_;
     unsigned int storage_size_;
+    bool ownership_memory_;
 public:
     const double * getMemoryPtr() const{
     	return storage_;
@@ -151,7 +152,7 @@ public:
     	init_(false), num_examples_(0){
     	storage_size_ = dim_*10;
     	storage_ = new double[storage_size_];
-
+    	ownership_memory_ = true;
 
     }
     virtual const double * getData(unsigned int idx) const{
@@ -163,6 +164,7 @@ public:
         storage_ = mem;
         num_examples_ = count;
         storage_size_ = count*dim_;
+        ownership_memory_ = false;
     }
     virtual unsigned int getSize() const{
         return storage_size_/dim_;
@@ -190,10 +192,12 @@ public:
 
         num_examples_ += count;
 
+
     }
 
     ~GNGDatasetStorageRAM(){
-        delete storage_;
+        if(ownership_memory_)
+        	delete storage_;
     }
 private:
     void resize(unsigned int new_size){
@@ -207,9 +211,12 @@ private:
     	storage_ = new double[new_size];
     	memcpy(storage_, old_storage, num_examples_*dim_*sizeof(double));
 
-    	delete[] old_storage;
+    	if(ownership_memory_)
+    		delete[] old_storage;
 
     	storage_size_ = new_size;
+
+    	ownership_memory_ = true;
     }
 };
 
@@ -249,6 +256,9 @@ public:
         __init_rnd();
     }
 
+    ~GNGDatasetSampling(){
+    	DBG(10, "GNGDatasetSampling:: destroying");
+    }
     
     const double * getMemoryPtr() const{
     	return storage_.getMemoryPtr();

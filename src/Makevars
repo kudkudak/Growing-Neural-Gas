@@ -6,6 +6,6 @@ RCPPLIBS := $(shell echo 'Rcpp:::LdFlags()' | $(R_HOME)/bin/R --vanilla --slave)
 RCPPARMAINCL :=	$(shell echo 'RcppArmadillo:::CxxFlags()' | $(R_HOME)/bin/R --vanilla --slave)	
 
 
-PKG_CPPFLAGS := -DDEBUG -I../inst/include -I. $(shell $(R_HOME)/bin/R CMD config CPPFLAGS)
-PKG_CXXFLAGS := -DDEBUG $(RCPPFLAGS) $(RCPPINCL) $(RCPPARMAINCL) $(RINSIDEINCL) $(shell $(R_HOME)/bin/R CMD config CXXFLAGS) -g -pthread -fpic
-PKG_LIBS := -DDEBUG $(RLDFLAGS) $(RRPATH) $(RBLAS) $(RLAPACK) $(RCPPLIBS) $(RINSIDELIBS) -lboost_thread -lrt -lpthread
+PKG_CPPFLAGS := -O3 -I../inst/include -I. $(shell $(R_HOME)/bin/R CMD config CPPFLAGS)
+PKG_CXXFLAGS := $(RCPPFLAGS) $(RCPPINCL) $(RCPPARMAINCL) $(RINSIDEINCL) $(shell $(R_HOME)/bin/R CMD config CXXFLAGS) -g -pthread -fpic  
+PKG_LIBS := $(RLDFLAGS) $(RRPATH) $(RBLAS) $(RLAPACK) $(RCPPLIBS) $(RINSIDELIBS) -lboost_thread -lrt -lpthread
