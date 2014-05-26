@@ -269,6 +269,7 @@ public:
         
         ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         bool deleteNode(int x) {
+        	 this->lock();
                 if (existsNode(x)) {
                 		//TODO: add automatic erasing edges
                         assert(g[x].size() == 0);
@@ -281,15 +282,16 @@ public:
                         next_free[x] = firstFree;
                         firstFree = x;
                         g[x].reset();
-
+                        this->unlock();
                         return true;
                 }
+                this->unlock();
                 return false;
         }
 
         ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         EdgeIterator removeUDEdge(int a, int b) {
-
+        	    this->lock();
                 FOREACH(edg, g[a]) {
                         if ((*edg)->nr == b) {
                                 Edge *ptr_rev = (Edge *) ((**edg).rev);
@@ -304,10 +306,11 @@ public:
 
                                 g[a].edgesCount--;
                                 g[b].edgesCount--;
-
+                                this->unlock();
                                 return edg;
                         }
                 }
+                this->unlock();
                 DBG(10, "ExtGraphNodeManager()::removeEdge Nots found edge!");
                 return g[a].end();
         }
@@ -315,6 +318,7 @@ public:
         ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         void
         addUDEdge(int a, int b) {
+        	this->lock();
                 if (a == b)
                         throw "Added loop to the graph";
 
@@ -326,11 +330,13 @@ public:
 
                 g[a].edgesCount++;
                 g[b].edgesCount++;
+             this->unlock();
         }
 
         ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         void
         addDEdge(int a, int b) {
+
                 throw "Not implemented";
 
                 g[a].push_back(new Edge(b));

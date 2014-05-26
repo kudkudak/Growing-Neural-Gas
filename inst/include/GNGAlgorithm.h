@@ -155,6 +155,10 @@ private:
     
    boost::mutex & m_dataset_lock;
     
+
+
+
+
     double m_error; //error of the network
     int m_lambda; //lambda parameter
     double m_eps_v, m_eps_n; //epsilon of the winner and of the neighbour

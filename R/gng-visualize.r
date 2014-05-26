@@ -1,3 +1,4 @@
+library(igraph)
 
 gng.plot3d<-function(gngServer){
   tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
@@ -6,6 +7,7 @@ gng.plot3d<-function(gngServer){
   .visualizeIGraphRGL(.readFromGraphML(tmp_name))
 }
 gng.plot2d<-function(gngServer){
+  print("plot2d")
   tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
   gngServer$export_to_graphml(tmp_name)
   print("Reading GraphML dumped")
@@ -24,9 +26,9 @@ gng.plot2d<-function(gngServer){
   nodes <- length(V(g))
  
     # Init 3d data
-    x_lines <- c(1:4*nodes)
-    y_lines <- c(1:4*nodes)
-    z_lines <- c(1:4*nodes)
+    x_lines <- c(1:2*length(E(g)))
+    y_lines <- c(1:2*length(E(g)))
+    z_lines <- c(1:2*length(E(g)))
     k<-1
     m<-1
     x<-c(1:nodes)

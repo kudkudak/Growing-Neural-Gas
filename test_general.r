@@ -20,6 +20,14 @@ for(i in 1:400000){
   mat[i,4]=mat[i,1]
 }
 
+mat<-matrix(0,400000,3)
+
+for(i in 1:400000){
+  mat[i,1:3] = spherePoint()
+  mat[i,3]=mat[i,1]
+}
+
+
 mo
 g = mo$GNGConfiguration
 s = mo$GNGServer
@@ -28,14 +36,14 @@ gngConfig = new(g)
 gngConfig$beta
 gngConfig$alpha
 gngConfig$eps_v
-gngConfig$max_nodes = 600000
+gngConfig$max_nodes = 600
 gngConfig$set_uniform_grid_axis(c(2,2,2))
 gngConfig$set_uniform_grid_origin(c(-1,-1,-1))
 gngConfig$uniformgrid_optimization = TRUE
 gngConfig$get_uniform_grid_axis( )
 gngConfig$lazyheap_optimization = TRUE
 gngConfig$eps_n
-gngConfig$dataset_type = 3 # DatasetBaggingProb
+gngConfig$dataset_type = 1 # DatasetBaggingProb
 gngServer = new(s, gngConfig)
 gngServer$set_debug_level(15)
 gngServer$set_memory_move_examples(mat)

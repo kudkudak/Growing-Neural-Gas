@@ -52,7 +52,7 @@ public:
     virtual int getGNGDim() const =0;
 
     ///Returns index of example drawn
-    virtual unsigned int drawExample() const=0 ;
+    virtual unsigned int drawExample()=0 ;
     
     ///Retrieves pointer to position 
     virtual const double * getPosition(unsigned int) const=0;
@@ -223,7 +223,7 @@ private:
 
 ///Storage :< GNGDatabaseStorage
 template<class Storage>
-class GNGDatasetSampling: public GNGDataset
+class GNGDatasetSimple: public GNGDataset
 {
 protected:
     const unsigned int pos_dim_, meta_dim_, vertex_dim_;
@@ -233,6 +233,8 @@ protected:
     Storage storage_;
     std::vector<int> data_layout_;
     
+    bool sampling_;
+    unsigned int current_example_;
    
 public:
 
@@ -241,23 +243,25 @@ public:
     * @param prob_location If prob location is -1 (by default) means there 
     * is no probability data in meta data. If there is then 
     */
-    GNGDatasetSampling(boost::mutex *mutex, unsigned int pos_dim, 
-            unsigned int vertex_dim, unsigned int meta_dim, unsigned int prob_location=-1): 
+    GNGDatasetSimple(boost::mutex *mutex, unsigned int pos_dim,
+            unsigned int vertex_dim, unsigned int meta_dim, unsigned int prob_location=-1,
+            bool sampling=true):
     storage_(pos_dim+vertex_dim+meta_dim),
     mutex_(mutex), pos_dim_(pos_dim), vertex_dim_(vertex_dim), meta_dim_(meta_dim),
-    prob_location_(prob_location)
+    prob_location_(prob_location), sampling_(sampling), current_example_(0)
     {
         //Data layout 
         data_layout_.push_back(pos_dim_);
         data_layout_.push_back(vertex_dim_);
         data_layout_.push_back(meta_dim_);
         
+        assert(sampling_ or prob_location_==-1);
 
         __init_rnd();
     }
 
-    ~GNGDatasetSampling(){
-    	DBG(10, "GNGDatasetSampling:: destroying");
+    ~GNGDatasetSimple(){
+    	DBG(10, "GNGDatasetSimple:: destroying");
     }
     
     const double * getMemoryPtr() const{
@@ -291,21 +295,33 @@ public:
     }
     
     
-    unsigned int drawExample() const{
+    unsigned int drawExample() {
         boost::mutex::scoped_lock(*mutex_);
-        if(prob_location_==-1){
-            return __int_rnd(0,storage_.getSize()-1);
+
+        if(sampling_){
+        	if(prob_location_==-1){
+        		return __int_rnd(0,storage_.getSize()-1);
+        	}else{
+        		const double * ex;
+        		unsigned int index;
+
+        		//Sample
+        		do{
+        			index = __int_rnd(0,storage_.getSize()-1);
+        			ex=storage_.getData(index);
+        		}while(ex[pos_dim_+vertex_dim_+prob_location_]<__double_rnd(0,1.0));
+
+        		return index;
+        	}
         }else{
-            const double * ex;
-            unsigned int index;
-            
-            //Sample
-            do{ 
-             index = __int_rnd(0,storage_.getSize()-1);   
-             ex=storage_.getData(index);
-            }while(ex[pos_dim_+vertex_dim_+prob_location_]<__double_rnd(0,1.0));
-            
-            return index;    
+        	unsigned int tmp = current_example_;
+
+        	current_example_ = (current_example_+1)%(storage_.getSize());
+
+        	//could be (current_eample_++)%(storage_.getSize()) probably :p
+
+        	return tmp;
+
         }
     }
     

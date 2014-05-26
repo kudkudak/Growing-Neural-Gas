@@ -67,6 +67,7 @@ RCPP_MODULE(gng_module){
 			.method("export_to_graphml", &GNGServer::exportsToGraphML)
 			.method("get_node", &GNGServer::getNode)
 			.method("insert_examples", &GNGServer::RinsertExamples)
+			.method("get_error_statistics", &GNGServer::getErrorStatistics)
 			.finalizer(&finalizer_of_gng_server);
 }
 

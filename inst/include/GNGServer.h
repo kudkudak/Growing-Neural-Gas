@@ -44,15 +44,37 @@ using namespace arma;
 
 /** Holds together all logic and objects.*/
 class GNGServer{
+    bool m_current_dataset_memory_was_set;
+    bool m_running_thread_created;
+    boost::thread* collect_statistics_thread;
+
+    /** Mutex used for synchronization of algorithm with other modules*/
+    boost::mutex alg_memory_lock;
+    /** Mutex used for synchronization of graph access*/
+    boost::mutex grow_mutex;
+    /** Mutex used for synchronization of graph access*/
+    boost::mutex stat_mutex;
+
+
+    /** Singleton mutex*/
+    static boost::mutex static_lock;
+
+    std::auto_ptr<GNGAlgorithm> gngAlgorithm;
+    std::auto_ptr<GNGGraph > gngGraph;
+    std::auto_ptr<GNGDataset> gngDataset;
+
+    static GNGConfiguration current_configuration;
 public:
     /**Construct GNGServer using configuration*/
     GNGServer(GNGConfiguration * configuration_ptr);
-    bool m_current_dataset_memory_was_set;
-    bool m_running_thread_created;
+
+
 
     void run() {
     	if(!m_running_thread_created){
-    		boost::thread workerThread(boost::bind(&GNGServer::_run, this));
+    		boost::thread workerThread1(boost::bind(&GNGServer::_run, this));
+//    		collect_statistics_thread = new boost::thread(boost::bind(&GNGServer::_collect_statics, this));
+
     		m_running_thread_created = true;
     	}else{
     		gngAlgorithm->run();
@@ -92,11 +114,34 @@ public:
 
     double getMeanError() const{
     	if(this->getNumberNodes() == 0) return 0.0;
-
-    	return this->gngAlgorithm->CalculateAccumulatedError()/(0.0+this->getNumberNodes());
+    	double error = this->gngAlgorithm->CalculateAccumulatedError();
+    	return error/(0.0+this->getNumberNodes());
     }
 
+    //Error statistics cyclic queue
 
+    unsigned int error_statistics_size;
+    vector<double> error_statistics;
+    unsigned int error_statistics_end;
+    unsigned int error_statistics_start;
+    unsigned int error_statistics_delay_ms;
+    vector<double> getErrorStatistics(){
+    	stat_mutex.lock();
+
+        	vector<double> x;
+        	x.reserve(error_statistics_size);
+
+        	if(error_statistics_start!=error_statistics_end){
+        		int idx = error_statistics_start;
+        		while(idx != error_statistics_end){
+        			x.push_back(error_statistics[idx]);
+        			idx = (idx + 1)%error_statistics_size;
+        		}
+        	}
+        stat_mutex.unlock();
+
+        	return x;
+        }
 
 
 //#ifdef RCPP_INTERFACE
@@ -132,6 +177,12 @@ public:
 
     	return ret;
     }
+
+
+    Rcpp::NumericVector RgetErrorStatistics(){
+    	vector<double> x = getErrorStatistics();
+    	return NumericVector(x.begin(), x.end());
+    }
 	void RinsertExamples(Rcpp::NumericMatrix &  ex){
 		if(m_current_dataset_memory_was_set){
 			throw "You cannot set example memory pool more than once!";
@@ -165,8 +216,11 @@ public:
 		}
 		cout<<endl;
 	}
-	//TODO: add getNode
-//#endif
+
+
+
+
+	//#endif
 
     ///Calculate error per node
     double calculateAvgErrorNode() {
@@ -180,7 +234,9 @@ public:
 
     ///Terminate algorithm
     void terminate(){
+//    	collect_statistics_thread->interrupt();
     	getAlgorithm().terminate();
+//    	collect_statistics_thread->join();
     }
 
     GNGConfiguration getConfiguration(){
@@ -294,32 +350,43 @@ public:
     }
 
 private:
-    /** Mutex used for synchronization of algorithm with other modules*/
-    boost::mutex alg_memory_lock;
-    /** Mutex used for synchronization of graph access*/
-    boost::mutex grow_mutex;
-
-
-
-    /** Singleton mutex*/
-    static boost::mutex static_lock;
-
-    std::auto_ptr<GNGAlgorithm> gngAlgorithm;
-    std::auto_ptr<GNGGraph > gngGraph;
-    std::auto_ptr<GNGDataset> gngDataset;
-
-    static GNGConfiguration current_configuration;
-
-
 
     /** Run GNG Server - runs in separate thread and returns control
     * @note Runs one extra threads for communication.
     */
     void _run() {
+    	try{
+			DBG(10, "GNGServer::run::proceeding to algorithm");
+			gngAlgorithm->run();
+			gngAlgorithm->runAlgorithm();
+    	}
+    	catch(std::exception & e){
+    		cerr<<"GNGServer::failed _run with "<<e.what()<<endl;
+    		DBG(10, e.what());
+    	}
+    }
 
-        DBG(10, "GNGServer::run::proceeding to algorithm");
-        gngAlgorithm->run();
-        gngAlgorithm->runAlgorithm();
+    void _collect_statics(){
+    	try{
+			DBG(10, "GNGServer::run::proceeding to collect_statistics");
+			while(true){
+				stat_mutex.lock();
+				unsigned int insert_place = (error_statistics_end+1) % error_statistics_size;
+				error_statistics[insert_place] = this->getMeanError();
+				error_statistics_end = insert_place;
+				if(error_statistics_end == error_statistics_start)
+					error_statistics_start = (error_statistics_start+1) % error_statistics_size;
+
+				stat_mutex.unlock();
+				for(int i=1;i<10;++i)
+				boost::this_thread::sleep(boost::posix_time::millisec(error_statistics_delay_ms/10));
+			}
+    	}
+    	catch(...){
+    		//interrupted probably
+    		cerr<<"GNGServer::stop collecting statistics\n";
+    		DBG(10, "GNGServer::stop collecting statistics");
+    	}
 
     }
 

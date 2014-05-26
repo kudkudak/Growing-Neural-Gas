@@ -1,6 +1,7 @@
 To remember:
    * dataset is taking examples, not just copying (performacne/memory issues)
-   * graph is not thread safe - we have to lock it and unlock it (performance issues)
+   * graph is not thread safe - we have to lock it and unlock it (performance issues) - tricky! (already had a bug in
+   exportToGrahpML)
 
 For production code:
    * uncommend IFDEF for RcppInterface. Commented out for syntax parsing in Eclipse (STUPID ECLIPSE)

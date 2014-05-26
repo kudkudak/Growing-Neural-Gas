@@ -94,6 +94,7 @@ public:
 			orig.push_back(v(i));
 		}
 	}
+
 	NumericVector getUniformGridOrigin(){
 		return NumericVector(orig.begin(), orig.end());
 	}
@@ -208,10 +209,11 @@ public:
     
     /**Validate server configuration. *Not working now**/
     bool check_correctness(){
-    	DBG(10, "Dim="+to_string(dim)+" axis.size() = "+to_string(axis.size())+" dim="+to_string(orig.size()));
-
-    	cerr<<"Test\n";
-
+    	if(datasetType > 3 or datasetType <= 0){
+    		cerr<<"ERROR: wrong database specified\n";
+    		DBG(20, "ERROR: wrong database specified\n");
+    		return false;
+    	}
     	if(! (dim < 20 || ! uniformgrid_optimization)){
     		DBG(20, "ERROR: Too big dimensionality for uniformgrid_optimization");
     		cerr<<"ERROR: Too big dimensionality for uniformgrid_optimization\n";

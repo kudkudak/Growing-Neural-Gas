@@ -6,7 +6,7 @@
 
 using namespace std;
 std::string writeToGraphML(GNGGraph &g, string filename){
-
+  g.lock();
 
   typedef adjacency_list<vecS, vecS, undirectedS, 
     boost_vertex_desc , boost_edge_desc> Graph;
@@ -75,6 +75,7 @@ std::string writeToGraphML(GNGGraph &g, string filename){
   p.property("dist", boost::get(&boost_edge_desc::dist, boost_g));
   
   
+  g.unlock();
   
   if(filename==""){
   
