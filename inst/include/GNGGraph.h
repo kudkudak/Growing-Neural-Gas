@@ -45,6 +45,8 @@ public:
                 //Do nothing by default
         }
 
+
+
         /** This is specific for GNG Graph - e
          * each node is assigned index. It fetches maximum node index
          */

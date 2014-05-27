@@ -252,7 +252,7 @@ public:
     	DBG(20, "GNGServer::collect_statistics finished");
     	getAlgorithm().terminate();
     	DBG(20, "GNGServer::getAlgorithm terminated");
-//    	algorithm_thread.join();
+    	algorithm_thread.join();
 //    	DBG(20, "GNGServer::getAlgorithm joined");
     	//TODO: fix problems with joining interrupted thread ..
     	boost::this_thread::sleep(boost::posix_time::millisec(100));

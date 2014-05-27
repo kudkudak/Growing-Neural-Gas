@@ -10,10 +10,12 @@ For production code:
    * uncommend IFDEF for RcppInterface. Commented out for syntax parsing in Eclipse (STUPID ECLIPSE)
 
 
+
 * Add bigmemory dataset, or/and reading csv
 
 * Minor:
    Check all constants alpha and beta in particular
+   Fix unlocks, which are quite dangerous
 
 * Uniform grid for massive dimensionality data (sparse vector from boost?)
     having done that we can make splitting more efficient
