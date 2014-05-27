@@ -66,13 +66,13 @@ GNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
 
 GNGGraph* GNGGraphAccessHack::pool=0;
 
-GNGAlgorithm::GNGAlgorithm(boost::mutex& alg_memory_lock, GNGGraph * g, GNGDataset* db,
+GNGAlgorithm::GNGAlgorithm(GNGGraph * g, GNGDataset* db,
          double * boundingbox_origin,
         double * boundingbox_axis, double l, int max_nodes,
         int max_age, double alpha, double betha, double lambda,
         double eps_v, double eps_n, int dim, bool uniformgrid_optimization, 
         bool lazyheap_optimization
-        ) : m_dataset_lock(alg_memory_lock),
+        ) :
 m_g(*g), g_db(db), c(0), s(0),
 m_max_nodes(max_nodes), m_max_age(max_age),
 m_alpha(alpha), m_betha(betha), m_lambda(lambda),
@@ -620,7 +620,6 @@ GNGNode ** GNGAlgorithm::TwoNearestNodes(const double * position) { //to the exa
 }
 
 void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that computes)
-  
     this->running = true;
     int size = g_db->getSize();
     
@@ -649,7 +648,12 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
             this->status_change_condition.wait(this->status_change_mutex);
         }
     }
+    g_db->lock();
+    m_g.lock();
     RandomInit();
+    m_g.unlock();
+    g_db->unlock();
+
     c = 0; // cycle variable
 
     DBG(3, "GNGAlgorithm::init successful, starting the loop");
@@ -668,24 +672,33 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
         DBG(1, "GNGAlgorithm::starting iteration");
         
         for (s = 0; s < m_lambda; ++s) { //global counter!!
+            g_db->lock();
+            m_g.lock();
+
             ++iteration;
    
             DBG(0, "GNGAlgorithm::draw example");
 
             unsigned int ex = g_db->drawExample();
 
-            m_dataset_lock.lock();
-            Adapt(g_db->getPosition(ex));
-            m_dataset_lock.unlock();
 
-            #ifdef DEBUG
-            for (int i = 0; i <= m_g.getMaximumIndex(); ++i) { //another idea for storing list of actual nodes?
-                if (m_g.existsNode(i) && m_g[i].edgesCount == 0 && m_utility_option == None) {
-                    DBG(40,"Error at " + to_string<int>(i));
-                }
-            }
-            #endif
+            Adapt(g_db->getPosition(ex));
+
+
+
+
+            m_g.unlock();
+            g_db->unlock();
         }
+		#ifdef DEBUG
+		for (int i = 0; i <= m_g.getMaximumIndex(); ++i) { //another idea for storing list of actual nodes?
+			if (m_g.existsNode(i) && m_g[i].edgesCount == 0 && m_utility_option == None) {
+				DBG(40,"Error at " + to_string<int>(i));
+			}
+		}
+		#endif
+        g_db->lock();
+        m_g.lock();
 
         DBG(1, "GNGAlgorithm::add new node");
 
@@ -699,9 +712,16 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
         ++c; //epoch
         if (!m_toggle_lazyheap ) DecreaseAllErrors();
         if (this->m_utility_option == BasicUtility) decrease_all_utility();
-
+        m_g.unlock();
+        g_db->unlock();
     }
-    
+    m_g.lock();
+    g_db->lock();
+    m_g.unlock();
+    g_db->unlock();
+
+
+
     DBG(30, "GNGAlgorithm::Terminated server");
     this->running = false;
 

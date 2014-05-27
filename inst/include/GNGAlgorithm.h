@@ -52,7 +52,7 @@ public:
     * @param eps_n See original paper (TODO: add description)
     * @param dim Dimensionality
     */
-    GNGAlgorithm(boost::mutex & dataset_lock,
+    GNGAlgorithm(
 
     		GNGGraph * g, GNGDataset * db,
         double * boundingbox_origin, double * boundingbox_axis, double l,int max_nodes=1000,
@@ -152,8 +152,6 @@ private:
             if (m_g.existsNode(i)) ug->insert(m_g[i].position, m_g[i].nr);
         }
    } 
-    
-   boost::mutex & m_dataset_lock;
     
 
 

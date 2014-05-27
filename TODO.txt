@@ -1,7 +1,10 @@
 To remember:
-   * dataset is taking examples, not just copying (performacne/memory issues)
+   * dataset is taking examples in set data, not just copying (performacne/memory issues)
    * graph is not thread safe - we have to lock it and unlock it (performance issues) - tricky! (already had a bug in
    exportToGrahpML)
+	* both locking mechanism for dataset and graph are STRANGE and NONINTUITIVE - for performance issues
+	so locking has to be performed by hand using lock/unlock
+   * If matrix is passed from R as ssetData, it has to be deleted from R. In other cases it is copied
 
 For production code:
    * uncommend IFDEF for RcppInterface. Commented out for syntax parsing in Eclipse (STUPID ECLIPSE)

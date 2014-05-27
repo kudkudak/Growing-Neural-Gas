@@ -29,8 +29,6 @@ error_statistics(error_statistics_size, 0.0)
     DBG(1, "GNGServer() dim = "+to_string(GNGNode::dim));
 
 
-    grow_mutex.unlock();
-    alg_memory_lock.unlock();
 
     if(current_configuration.graph_storage == GNGConfiguration::RAMMemory){
         //Nothing to do here
@@ -50,7 +48,7 @@ error_statistics(error_statistics_size, 0.0)
     	DBG(11, "GNGServer::Constructing Normal Sampling Prob Dataset");
             this->gngDataset = std::auto_ptr<GNGDataset>(
                     new GNGDatasetSimple<GNGDatasetStorageRAM>
-                    (&alg_memory_lock, current_configuration.dim, current_configuration.
+                    (&database_mutex, current_configuration.dim, current_configuration.
                     dataset_vertex_dim, 0));
     }
     else if(current_configuration.datasetType == GNGConfiguration::DatasetSamplingProb){
@@ -58,14 +56,14 @@ error_statistics(error_statistics_size, 0.0)
     		DBG(11, "GNGServer::Constructing Sampling Prob Dataset");
             this->gngDataset = std::auto_ptr<GNGDataset>(
                     new GNGDatasetSimple<GNGDatasetStorageRAM>
-                    (&alg_memory_lock, current_configuration.dim, current_configuration.
+                    (&database_mutex, current_configuration.dim, current_configuration.
                     dataset_vertex_dim, 1, 0));
     }
     else if(current_configuration.datasetType == GNGConfiguration::DatasetSeq){
     	DBG(11, "GNGServer::Constructing Normal Seq Dataset");
             this->gngDataset = std::auto_ptr<GNGDataset>(
                     new GNGDatasetSimple<GNGDatasetStorageRAM>
-                    (&alg_memory_lock, current_configuration.dim, current_configuration.
+                    (&database_mutex, current_configuration.dim, current_configuration.
                     dataset_vertex_dim, 0, -1, false));
     }
     else{
@@ -105,7 +103,7 @@ error_statistics(error_statistics_size, 0.0)
 
     /** Initiliaze main computing object **/
     this->gngAlgorithm = std::auto_ptr<GNGAlgorithm>(new GNGAlgorithm
-    ( alg_memory_lock,
+    (
     		this->gngGraph.get(), //I do not want algorithm to depend on boost
             this->gngDataset.get(),
             &current_configuration.orig[0],

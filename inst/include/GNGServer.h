@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <map>
 #include <exception>
+#include <boost/thread/recursive_mutex.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -46,12 +47,14 @@ using namespace arma;
 class GNGServer{
     bool m_current_dataset_memory_was_set;
     bool m_running_thread_created;
-    boost::thread* collect_statistics_thread;
 
-    /** Mutex used for synchronization of algorithm with other modules*/
-    boost::mutex alg_memory_lock;
+    boost::thread collect_statistics_thread;
+    boost::thread algorithm_thread;
+
     /** Mutex used for synchronization of graph access*/
-    boost::mutex grow_mutex;
+    boost::recursive_mutex grow_mutex;
+    /** Mutex used for synchronization of graph access*/
+    boost::recursive_mutex database_mutex;
     /** Mutex used for synchronization of graph access*/
     boost::mutex stat_mutex;
 
@@ -72,8 +75,8 @@ public:
 
     void run() {
     	if(!m_running_thread_created){
-    		boost::thread workerThread1(boost::bind(&GNGServer::_run, this));
-//    		collect_statistics_thread = new boost::thread(boost::bind(&GNGServer::_collect_statics, this));
+    		algorithm_thread = boost::thread(boost::bind(&GNGServer::_run, this));
+    		collect_statistics_thread = boost::thread(boost::bind(&GNGServer::_collect_statics, this));
 
     		m_running_thread_created = true;
     	}else{
@@ -234,9 +237,11 @@ public:
 
     ///Terminate algorithm
     void terminate(){
-//    	collect_statistics_thread->interrupt();
+    	collect_statistics_thread.interrupt();
     	getAlgorithm().terminate();
-//    	collect_statistics_thread->join();
+    	collect_statistics_thread.join();
+    	algorithm_thread.join();
+
     }
 
     GNGConfiguration getConfiguration(){
@@ -368,7 +373,10 @@ private:
 
     void _collect_statics(){
     	try{
-			DBG(10, "GNGServer::run::proceeding to collect_statistics");
+    		while(!gngAlgorithm->running)
+    			boost::this_thread::sleep(boost::posix_time::millisec(10));
+
+    		DBG(10, "GNGServer::run::proceeding to collect_statistics");
 			while(true){
 				stat_mutex.lock();
 				unsigned int insert_place = (error_statistics_end+1) % error_statistics_size;
@@ -376,10 +384,9 @@ private:
 				error_statistics_end = insert_place;
 				if(error_statistics_end == error_statistics_start)
 					error_statistics_start = (error_statistics_start+1) % error_statistics_size;
-
 				stat_mutex.unlock();
-				for(int i=1;i<10;++i)
-				boost::this_thread::sleep(boost::posix_time::millisec(error_statistics_delay_ms/10));
+
+				boost::this_thread::sleep(boost::posix_time::millisec(error_statistics_delay_ms));
 			}
     	}
     	catch(...){

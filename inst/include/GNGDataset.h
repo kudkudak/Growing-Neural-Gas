@@ -15,6 +15,7 @@
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/interprocess/offset_ptr.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 #include "SHMemoryManager.h"
 #include "Utils.h"
 #include "DebugCollector.h"
@@ -47,6 +48,9 @@ public:
      */
     virtual std::vector<int> getDataLayout() const=0;
     
+    virtual void lock() = 0;
+    virtual void unlock() = 0;
+
     virtual int getDataDim() const=0;
     
     virtual int getGNGDim() const =0;
@@ -72,7 +76,8 @@ public:
     virtual void removeExample(unsigned int)=0;
     
     virtual int getSize() const=0;
-    
+
+
     virtual const double * getMemoryPtr() const = 0;
 
     virtual ~GNGDataset(){}
@@ -113,7 +118,10 @@ public:
     int dim() const{
         return dim_;
     }    
-    
+
+
+    virtual unsigned int getStorageSize() const=0;
+
     virtual const double * getMemoryPtr() const =0 ;
     
     virtual const BaseType * getData(unsigned int) const=0;
@@ -167,13 +175,17 @@ public:
         ownership_memory_ = false;
     }
     virtual unsigned int getSize() const{
+        return num_examples_;
+    }
+
+    unsigned int getStorageSize() const{
         return storage_size_/dim_;
     }
-    
 
     virtual void setData(double * x, unsigned int count, unsigned int size){
          take(x, count);
     }
+
 
     virtual void insertData(double * x, unsigned int count, unsigned int size){
     	assert(size == count*dim_);
@@ -191,8 +203,6 @@ public:
         //delete[] x;
 
         num_examples_ += count;
-
-
     }
 
     ~GNGDatasetStorageRAM(){
@@ -229,7 +239,7 @@ protected:
     const unsigned int pos_dim_, meta_dim_, vertex_dim_;
     const unsigned int prob_location_;
     
-    boost::mutex * mutex_;
+    boost::recursive_mutex * mutex_;
     Storage storage_;
     std::vector<int> data_layout_;
     
@@ -243,7 +253,9 @@ public:
     * @param prob_location If prob location is -1 (by default) means there 
     * is no probability data in meta data. If there is then 
     */
-    GNGDatasetSimple(boost::mutex *mutex, unsigned int pos_dim,
+    GNGDatasetSimple(
+    		boost::recursive_mutex *mutex,
+    		unsigned int pos_dim,
             unsigned int vertex_dim, unsigned int meta_dim, unsigned int prob_location=-1,
             bool sampling=true):
     storage_(pos_dim+vertex_dim+meta_dim),
@@ -260,6 +272,13 @@ public:
         __init_rnd();
     }
 
+    void lock(){
+    	mutex_->lock();
+    }
+    void unlock(){
+    	mutex_->unlock();
+    }
+
     ~GNGDatasetSimple(){
     	DBG(10, "GNGDatasetSimple:: destroying");
     }
@@ -271,14 +290,12 @@ public:
     
      ///Retrieves pointer to position 
     const typename Storage::baseType * getPosition(unsigned int i) const{
-        boost::mutex::scoped_lock(*mutex_);
         
         return &storage_.getData(i)[0];
     }
     
     ///Retrieves pointer to metadata, with unsigned int
     const typename Storage::baseType * getMetaData(unsigned int i) const{
-        boost::mutex::scoped_lock(*mutex_);
         
         if(meta_dim_==0) return 0;
         
@@ -287,7 +304,6 @@ public:
 
     ///Retrieves pointer to vertex data, with unsigned int as descriptor of meta
     const typename Storage::baseType * getVertexData(unsigned int i) const{
-        boost::mutex::scoped_lock(*mutex_);
         
         if(vertex_dim_==0) return 0;
         
@@ -296,7 +312,6 @@ public:
     
     
     unsigned int drawExample() {
-        boost::mutex::scoped_lock(*mutex_);
 
         if(sampling_){
         	if(prob_location_==-1){
@@ -328,13 +343,11 @@ public:
     void insertExamples(void * memptr, unsigned int count, unsigned int size){
     	 typename Storage::storageType * examples =
     			reinterpret_cast< typename Storage::storageType *>(memptr);
-        boost::mutex::scoped_lock(*mutex_);
         storage_.insertData(examples, count, size);
     }
     void setExamples(void * memptr, unsigned int count, unsigned int size){
     	 typename Storage::storageType * examples =
     			reinterpret_cast< typename Storage::storageType *>(memptr);
-        boost::mutex::scoped_lock(*mutex_);
         storage_.setData(examples, count, size);
     }
     virtual std::vector<int> getDataLayout() const{
@@ -345,7 +358,6 @@ public:
         throw 1; //not implemented
     }
     int getSize() const{ 
-        boost::mutex::scoped_lock(*mutex_);
         return storage_.getSize();
     } 
     

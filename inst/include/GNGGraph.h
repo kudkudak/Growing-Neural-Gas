@@ -13,7 +13,7 @@
 
 #include "GNGNode.h"
 #include "GNGGlobals.h"
-
+#include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/bind.hpp>
@@ -106,7 +106,7 @@ public:
  * TODO: change GNGEdge* to GNGEdge (problems with rev)
  * TODO: edges ~ gng_dim - maybe use this for better efficiency?
  */
-template < class Node, class Edge, class Mutex = boost::mutex > class RAMGNGGraph:public GNGGraph
+template < class Node, class Edge, class Mutex = boost::recursive_mutex > class RAMGNGGraph:public GNGGraph
 {
         /** Mutex provided externally for synchronization*/
         Mutex *mutex;
@@ -200,7 +200,6 @@ public:
         ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         double
         getDist(int a, int b) {
-                //        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
                 double
                 distance = 0;
                 for (int i = 0; i < this->gng_dim; ++i) {
@@ -215,7 +214,6 @@ public:
         ///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
         double
         getDist(const double *pos_a, const double *pos_b) const {
-                //        boost::interprocess::scoped_lock<Mutex>(*m_mutex);
                 double
                 distance = 0;
                 for (int i = 0; i < this->gng_dim; ++i)
@@ -229,7 +227,6 @@ public:
         newNode(const double *position) {
                 if (firstFree == -1) {
                         DBG(10, "RAMGNGGraph::newNode() growing pool");
-                        boost::interprocess::scoped_lock < Mutex > (*mutex);
                         this->resizeGraph();
 
                 }

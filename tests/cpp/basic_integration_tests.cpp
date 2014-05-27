@@ -79,8 +79,8 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
        REPORT_PRODUCTION(iteration);
        boost::this_thread::sleep(workTime);
        REPORT_PRODUCTION(s->getGraph().getNumberNodes());
-//       vector<double> stats = s->getErrorStatistics();
-//       write_array(&stats[0], &stats[stats.size()-1]);
+       vector<double> stats = s->getErrorStatistics();
+       write_array(&stats[0], &stats[stats.size()-1]);
        REPORT_PRODUCTION(s->getAlgorithm().CalculateAccumulatedError()
                /(s->getGraph().getNumberNodes()+0.)); 
        if(iteration >= ms_loop/500) break;
@@ -150,7 +150,7 @@ TEST(BasicTests, FewDimsSkewedUGConvergence){
 
 
 TEST(BasicTests, FewDimsUGConvergence){
-    dbg.set_debug_level(6);
+    dbg.set_debug_level(10);
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.uniformgrid_optimization =  true;
     config.max_nodes = 2000;
@@ -165,7 +165,7 @@ TEST(BasicTests, FewDimsUGConvergence){
     ASSERT_LE(results.second, 5.0);
 }
 TEST(BasicTests, ManyDimsUGConvergence){
-    dbg.set_debug_level(6);
+    dbg.set_debug_level(10);
 
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.uniformgrid_optimization =  true;
@@ -182,20 +182,20 @@ TEST(BasicTests, ManyDimsUGConvergence){
 
 TEST(BasicTests, ManyDimsNoUG){
     cerr<<"BasicTests::ManyDimsNoUG"<<endl;
-    dbg.set_debug_level(12);
+    dbg.set_debug_level(10);
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.uniformgrid_optimization =  false;
     config.dim = 50;
     config.axis = vector<double>(config.dim, 1.0);
     config.orig = vector<double>(config.dim, 0.0);
-    pair<double, double> results = test_convergence(&config, 100, 5000);
+    pair<double, double> results = test_convergence(&config, 100, 50000);
 
     ASSERT_GE(fabs(results.first), 100.0);
     ASSERT_LE(fabs(results.second), 2000.0);
 }
 
 TEST(BasicTests, BasicConvergeLazyHeapUG){
-    dbg.set_debug_level(1);
+    dbg.set_debug_level(10);
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.lazyheap_optimization = true;
     config.max_nodes = 2000;
