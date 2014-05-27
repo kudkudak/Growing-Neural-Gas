@@ -49,7 +49,8 @@ RCPP_MODULE(gng_module){
 	.field("dataset_type", &GNGConfiguration::datasetType, "Dataset type. Currently supported:"
 			"2: DatasetBagging - examples are sampled from dataset with equal probability, "
 			"3: DatasetBaggingProbability - examples are sampled with probability equal to pos_dim+vertex_dim coordinate (last number in vector)")
-	.field("max_nodes", &GNGConfiguration::max_nodes);
+	.field("max_nodes", &GNGConfiguration::max_nodes)
+	.method("check_correctness", &GNGConfiguration::check_correctness);
 
 	class_<GNGServer>("GNGServer").
       constructor<GNGConfiguration*>()

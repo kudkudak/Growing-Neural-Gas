@@ -22,4 +22,7 @@ For production code:
     because currently it has to look in 3^d cubes, and 
     for d>10 it is equivalent to looking at all points 
     I would use external library
+    
+    
+ * Drop dimensionality parameter
 
