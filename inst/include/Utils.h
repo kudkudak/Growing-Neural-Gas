@@ -9,7 +9,7 @@
 #define	UTILS_H
 
 
-#ifdef DEBUG
+#ifdef DEBUG_GMUM
 #define DBG(level, text) dbg.push_back(level, text);
 #define REPORT_PRODUCTION(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
 #define REPORT(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;

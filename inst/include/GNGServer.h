@@ -75,7 +75,9 @@ public:
 
     void run() {
     	if(!m_running_thread_created){
+    		DBG(10, "GNGServer::runing algorithm thread");
     		algorithm_thread = boost::thread(boost::bind(&GNGServer::_run, this));
+    		DBG(10, "GNGServer::runing collect_statistics thread");
     		collect_statistics_thread = boost::thread(boost::bind(&GNGServer::_collect_statics, this));
 
     		m_running_thread_created = true;
@@ -109,9 +111,7 @@ public:
     }
     
     unsigned int getNumberNodes() const{
-    	gngGraph->lock();
     	int nr = this->gngGraph->getNumberNodes();
-    	gngGraph->unlock();
     	return nr;
     }
 
@@ -141,6 +141,8 @@ public:
         			idx = (idx + 1)%error_statistics_size;
         		}
         	}
+
+
         stat_mutex.unlock();
 
         	return x;
@@ -187,6 +189,8 @@ public:
     	return NumericVector(x.begin(), x.end());
     }
 	void RinsertExamples(Rcpp::NumericMatrix &  ex){
+
+
 		if(m_current_dataset_memory_was_set){
 			throw "You cannot set example memory pool more than once!";
 		}
@@ -214,10 +218,12 @@ public:
 	}
 
 	void dumpMemory(){
+		gngDataset->lock();
 		for(int i=0; i<gngDataset->getSize()*gngDataset->getDataDim();++i){
 			cout<<gngDataset->getMemoryPtr()[i]<<" ";
 		}
 		cout<<endl;
+		gngDataset->unlock();
 	}
 
 
@@ -237,11 +243,19 @@ public:
 
     ///Terminate algorithm
     void terminate(){
+    	DBG(20, "GNGServer::collect_statistics interrupting");
     	collect_statistics_thread.interrupt();
-    	getAlgorithm().terminate();
-    	collect_statistics_thread.join();
-    	algorithm_thread.join();
+//    	DBG(20, "GNGServer::collect_statistics joining");
+//    	collect_statistics_thread.join();
 
+
+    	DBG(20, "GNGServer::collect_statistics finished");
+    	getAlgorithm().terminate();
+    	DBG(20, "GNGServer::getAlgorithm terminated");
+//    	algorithm_thread.join();
+//    	DBG(20, "GNGServer::getAlgorithm joined");
+    	//TODO: fix problems with joining interrupted thread ..
+    	boost::this_thread::sleep(boost::posix_time::millisec(100));
     }
 
     GNGConfiguration getConfiguration(){
@@ -378,7 +392,10 @@ private:
 
     		DBG(10, "GNGServer::run::proceeding to collect_statistics");
 			while(true){
-				stat_mutex.lock();
+				while(!stat_mutex.try_lock()){ //just to ensure no livelocks
+					boost::this_thread::sleep(boost::posix_time::millisec(10));
+				}
+
 				unsigned int insert_place = (error_statistics_end+1) % error_statistics_size;
 				error_statistics[insert_place] = this->getMeanError();
 				error_statistics_end = insert_place;
@@ -405,6 +422,8 @@ private:
     }
 
     void _handle_addExamples(double * examples,unsigned int count, unsigned int size, bool set=false){
+    	gngDataset->lock();
+
     	DBG(5, "GNGServer::Adding examples with "+to_string(gngDataset->getDataDim())+" dimensionality");
 
     	if(count*gngDataset->getDataDim() != size){
@@ -426,6 +445,8 @@ private:
 
         int tmp = gngDataset->getSize();
         DBG(7, "GNGServer::Database size "+to_string(tmp));
+
+        gngDataset->unlock();
     }
 
 };

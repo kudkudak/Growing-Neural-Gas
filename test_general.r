@@ -13,9 +13,9 @@ spherePoint<-function(){
   c(cos(theta)*cos(phi), cos(theta)*sin(phi), sin(theta))
 }  
 
-mat<-matrix(0,400000,4)
+mat<-matrix(0,40000,4)
 
-for(i in 1:400000){
+for(i in 1:40000){
   mat[i,1:3] = spherePoint()
   mat[i,4]=mat[i,1]
 }
@@ -45,7 +45,7 @@ gngConfig$lazyheap_optimization = TRUE
 gngConfig$eps_n
 gngConfig$dataset_type = 1 # DatasetBaggingProb
 gngServer = new(s, gngConfig)
-gngServer$set_debug_level(15)
+gngServer$set_debug_level(9)
 gngServer$set_memory_move_examples(mat)
 
 
@@ -86,6 +86,8 @@ gngServer$get_node(2)
 gngServer$get_node(3)
 gngServer$get_node(234)
 gngServer$get_mean_error()
+
+gngServer$get_error_statistics()
 
 gngServer$terminate()
 source("R/gng-visualize.r")
