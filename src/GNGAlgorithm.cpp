@@ -228,13 +228,20 @@ void GNGAlgorithm::AddNewNode() {
         ;
     delete[] error_nodes_new;
 }
+ int GNGAlgorithm::predict(const std::vector<double> & ex){
+ 	if(m_g.getNumberNodes()==0){
+ 		return -1; //No node
+ 	}
 
-unsigned int GNGAlgorithm::GetClosest(const double * ex){
+ 	if(ex.size() != g_db->getGNGDim()){
+ 		throw BasicException("Wrong example dimensionality");
+ 	}
+
     if (m_toggle_uniformgrid) {
-        std::vector<int> nearest_index = ug->findNearest(ex, 2); //TwoNearestNodes(ex->position);
+        std::vector<int> nearest_index = ug->findNearest(&ex[0], 2); //TwoNearestNodes(ex->position);
         return nearest_index[0];
     } else {
-        GNGNode ** tmp = TwoNearestNodes(ex);
+        GNGNode ** tmp = TwoNearestNodes(&ex[0]);
         int ret_index = tmp[0]->nr;
         delete[] tmp;
         return ret_index;
@@ -637,6 +644,14 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
     while (g_db->getSize() < 2) {
         ++counter;
         boost::this_thread::sleep(workTime);
+
+        //TODO: change to interruption pattern
+        while(this->gng_status != GNG_RUNNING) {
+            DBG(1, "GNGAlgorithm::status in main loop = "+to_string(this->gng_status));
+            if(this->gng_status == GNG_TERMINATED) break;
+            this->status_change_condition.wait(this->status_change_mutex);
+        }
+
 
         if (counter % 10 != 0) continue;
         int size = g_db->getSize();

@@ -1,6 +1,7 @@
 library(igraph)
 
 
+
 if("rgl" %in% rownames(installed.packages()) == TRUE){
   .gng.plot3d<-function(gngServer){
     tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
@@ -53,15 +54,29 @@ if("rgl" %in% rownames(installed.packages()) == TRUE){
       }	
     
       if(is.null(radius)){
-          radius <- 5.0*(0.3333* (abs(max(x) - min(x))+abs(max(y) - min(y))+abs(max(z) - min(z)))/(nodes+0.0))
+          radius <- 8.0*(0.3333* (abs(max(x) - min(x))+abs(max(y) - min(y))+abs(max(z) - min(z)))/(nodes+0.0))
       }
-  
+    
+      cx <- V(g)$error
+      cx <- abs(cx)/max(abs(cx)) 
+      cy <- c(1:(nodes-1))
+      cz <- c(1:(nodes-1))
+    
+      cy <- 0.1
+      cz <- 0.1
+      print(cx)
+
+    
       ### Draw graph ###
       rgl.clear()
       rgl.light()
       rgl.bg(color="black")
       axes3d(edges="bbox")
-      rgl.spheres(x,y,z, radius = radius) #,radius=cx*error_scale, color=rgb(cx,cy,cz))
+
+    
+      rgl.spheres(x,y,z, 
+                  radius = rep(radius, length(cx)), 
+                  col=rgb(cx,cy, cz))
   
       rgl.lines(x_lines[1:k-1],y_lines[1:k-1],z_lines[1:k-1],color="bisque")
   }

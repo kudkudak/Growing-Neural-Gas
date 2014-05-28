@@ -16,6 +16,8 @@ For production code:
 * Minor:
    Check all constants alpha and beta in particular
    Fix unlocks, which are quite dangerous
+   
+* Automatic adjusting unfirom grid bounding box
 
 * Uniform grid for massive dimensionality data (sparse vector from boost?)
     having done that we can make splitting more efficient

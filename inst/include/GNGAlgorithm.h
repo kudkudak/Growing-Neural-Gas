@@ -64,11 +64,8 @@ public:
    
     
     ///Retrieve closest node's gng_index to the example
-    unsigned int GetClosest(const double * ex);
+    int predict(const std::vector<double> &);
 
-    const GNGGraph & get_graph(){ return m_g; }
-
-    
     /** Start algorithm loop */
     void run(){
          this->gng_status = GNG_RUNNING;
@@ -88,6 +85,8 @@ public:
     }
     
     
+
+
 
     void setMaxNodes(int value){m_max_nodes = value;}
     

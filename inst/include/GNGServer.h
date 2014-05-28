@@ -183,6 +183,10 @@ public:
     	return ret;
     }
 
+    int Rpredict(Rcpp::NumericMatrix &  ex){
+    	std::vector<double> x(ex.begin(), ex.end());
+    	return gngAlgorithm->predict(x);
+    }
 
     Rcpp::NumericVector RgetErrorStatistics(){
     	vector<double> x = getErrorStatistics();

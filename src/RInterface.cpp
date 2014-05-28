@@ -20,7 +20,6 @@ RCPP_EXPOSED_CLASS(GNGServer)
 
 void finalizer_of_gng_server(GNGServer * ptr){
 	DBG(10, "Called finalizer of GNGServer");
-//	delete ptr;
 }
 
 RCPP_MODULE(gng_module){
@@ -69,6 +68,7 @@ RCPP_MODULE(gng_module){
 			.method("get_node", &GNGServer::getNode)
 			.method("insert_examples", &GNGServer::RinsertExamples)
 			.method("get_error_statistics", &GNGServer::getErrorStatistics)
+			.method("predict", &GNGServer::Rpredict)
 			.finalizer(&finalizer_of_gng_server);
 }
 
