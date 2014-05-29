@@ -9,69 +9,69 @@ gng.plot.rgl3d <- 2
 
 loadModule('gng_module', TRUE)
 
+#' Constructor of GrowingNeuralGas object
+#' 
+#' @param beta coefficient. Decrease the error variables of all node nodes by this fraction. Forgetting rate. Default 0.99
+#' @param alpha Alpha coefficient. Decrease the error variables of the nodes neighboring to the newly inserted node by this fraction. Default 0.5
+#' @param uniformgrid.optimization TRUE/FALSE. You cannot use utility option with this, so please pass FALSE here then.
+#' @param lazyheap.optimization TRUE/FALSE. You cannot use utility option with this, so please pass FALSE here then.
+#' @param max.nodes Maximum number of nodes (after reaching this size it will continue running, but won't add new nodes)
+#' @param eps_n Default 0.05
+#' @param eps_v Default 0.0006
+#' @param dataset.type Dataset type. Possibilities gng.dataset.bagging, gng.dataset.bagging.prob, gng.dataset.sequential
+#' 
+#' @name GrowingNeuralGas_initialize
+GNG <- function(dataset_type=gng.dataset.sequential, beta=0.99, 
+                alpha=0.5, uniformgrid_optimization=TRUE, 
+                lazyheap_optimization=TRUE, max_nodes=1000, eps_n=0.05, 
+                eps_v = 0.0006, dim=-1, uniformgrid_boundingbox_sides=c(), uniformgrid_boundingbox_origin=c()){
+  
+  
+  if((length(uniformgrid_boundingbox_sides)==0 || length(uniformgrid_boundingbox_origin)==0) && uniformgrid_optimization==TRUE){
+    stop("Please define bounding box for your data if you are using uniform grid. uniformgrid.boundingbox.sides is a
+         dim sized vector defining lengths of the sides of the box, whereas uniformgrid.boundingbox.origin defines 
+         origin of the box. Note that uniform grid optimization will give significant speedup, but only for low-dim data.
+         ")  
+    
+  }
+  
+  config <- new(GNGConfiguration)
+  
+  # Fill in configuration
+  config$dataset_type=dataset_type
+  config$beta = beta
+  config$alpha = alpha
+  config$uniformgrid_optimization = uniformgrid_optimization
+  config$lazyheap_optimization = lazyheap_optimization
+  config$max_nodes = max_nodes
+  config$eps_n = eps_n
+  config$eps_v = eps_v
+  config$dim = dim
+  
+  if(config$uniformgrid_optimization){
+    config$set_uniform_grid_axis(uniformgrid_boundingbox_sides)
+    config$set_uniform_grid_origin(uniformgrid_boundingbox_origin)
+  }
+  
+  if(config$uniformgrid_optimization &&
+       (length(uniformgrid_boundingbox_sides)!=length(uniformgrid_boundingbox_origin)
+        || length(uniformgrid_boundingbox_origin) != dim)){
+    
+    stop("Make sure that dimensions of bounding box and vertex position match")
+  }
+  
+  if(!config$check_correctness()){
+    stop("Passed incorrect parameters.")
+  }
+  
+  # Construct server
+  server = new(GNGServer, config)
+  server$set_debug_level(10)
+  server
+}
+
 # Lazy loading to allow for discovery of all files
 evalqOnLoad({
-  
-  #' Constructor of GrowingNeuralGas object
-  #' 
-  #' @param beta coefficient. Decrease the error variables of all node nodes by this fraction. Forgetting rate. Default 0.99
-  #' @param alpha Alpha coefficient. Decrease the error variables of the nodes neighboring to the newly inserted node by this fraction. Default 0.5
-  #' @param uniformgrid.optimization TRUE/FALSE. You cannot use utility option with this, so please pass FALSE here then.
-  #' @param lazyheap.optimization TRUE/FALSE. You cannot use utility option with this, so please pass FALSE here then.
-  #' @param max.nodes Maximum number of nodes (after reaching this size it will continue running, but won't add new nodes)
-  #' @param eps_n Default 0.05
-  #' @param eps_v Default 0.0006
-  #' @param dataset.type Dataset type. Possibilities gng.dataset.bagging, gng.dataset.bagging.prob, gng.dataset.sequential
-  #' 
-  #' @name GrowingNeuralGas_initialize
-  GNG <- function(dataset_type=gng.dataset.sequential, beta=0.99, 
-                  alpha=0.5, uniformgrid_optimization=TRUE, 
-                  lazyheap_optimization=TRUE, max_nodes=1000, eps_n=0.05, 
-                  eps_v = 0.0006, dim=-1, uniformgrid_boundingbox_sides=c(), uniformgrid_boundingbox_origin=c()){
-    
-    
-    if((length(uniformgrid_boundingbox_sides)==0 || length(uniformgrid_boundingbox_origin)==0) && uniformgrid_optimization==TRUE){
-      stop("Please define bounding box for your data if you are using uniform grid. uniformgrid.boundingbox.sides is a
-           dim sized vector defining lengths of the sides of the box, whereas uniformgrid.boundingbox.origin defines 
-           origin of the box. Note that uniform grid optimization will give significant speedup, but only for low-dim data.
-           ")  
-      
-    }
-    
-    config <- new(GNGConfiguration)
-  
-    # Fill in configuration
-    config$dataset_type=dataset_type
-    config$beta = beta
-    config$alpha = alpha
-    config$uniformgrid_optimization = uniformgrid_optimization
-    config$lazyheap_optimization = lazyheap_optimization
-    config$max_nodes = max_nodes
-    config$eps_n = eps_n
-    config$eps_v = eps_v
-    config$dim = dim
-    
-    if(config$uniformgrid_optimization){
-      config$set_uniform_grid_axis(uniformgrid_boundingbox_sides)
-      config$set_uniform_grid_origin(uniformgrid_boundingbox_origin)
-    }
-  
-    if(config$uniformgrid_optimization &&
-         (length(uniformgrid_boundingbox_sides)!=length(uniformgrid_boundingbox_origin)
-          || length(uniformgrid_boundingbox_origin) != dim)){
-      
-      stop("Make sure that dimensions of bounding box and vertex position match")
-    }
-    
-    if(!config$check_correctness()){
-      stop("Passed incorrect parameters.")
-    }
-    
-    # Construct server
-    server = new(GNGServer, config)
-    server$set_debug_level(10)
-    server
-  }
 
 
   # Construct necessary generics

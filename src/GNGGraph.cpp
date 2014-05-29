@@ -28,7 +28,7 @@ std::string writeToGraphML(GNGGraph &g, string filename){
   
   DBG(4, "writeToGraphML::adding verticeS");
   //Add vertexes
-  for(int i=0;i<g.getMaximumIndex();++i)
+  for(int i=0;i<=g.getMaximumIndex();++i)
     if(g.existsNode(i))
     {
     	DBG(1, to_string(i));
@@ -53,7 +53,7 @@ std::string writeToGraphML(GNGGraph &g, string filename){
   boost::property_map< Graph, double boost_edge_desc::* >::type edge_dist( boost::get(&boost_edge_desc::dist, boost_g) );
   DBG(4, "writeToGraphML::adding edges");
   //Add edges
-  for (unsigned int i = 0; i < g.getMaximumIndex(); ++i) 
+  for (unsigned int i = 0; i <= g.getMaximumIndex(); ++i)
       if(g.existsNode(i))
       {
             typedef boost::graph_traits<Graph>::edge_descriptor desc;

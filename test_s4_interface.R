@@ -5,7 +5,7 @@ devtools::load_all(".")
 library("GrowingNeuralGas")
 
 
-server <- GNG(dim=3, dataset_type=gng.dataset.sequential, 
+server <- GNG(dim=3, dataset_type=gng.dataset.sequential, max_nodes=1000,
               uniformgrid_optimization=TRUE, 
               uniformgrid_boundingbox_sides=c(4,4,4), uniformgrid_boundingbox_origin=c(-2,-2,-2))
 
@@ -16,6 +16,7 @@ server <- GNG(dim=3, dataset_type=gng.dataset.sequential,
 insert_examples(server, preset=gng.preset.sphere, N=10000)
 insert_examples(server, preset=gng.preset.plane, N=10000)
 run(server)
+Sys.sleep(40)
 pause(server)
 
 
