@@ -12,7 +12,6 @@ server <- GNG(dim=3, dataset_type=gng.dataset.sequential, max_nodes=1000,
 
 
 
-
 insert_examples(server, preset=gng.preset.sphere, N=10000)
 insert_examples(server, preset=gng.preset.plane, N=10000)
 run(server)
@@ -22,7 +21,7 @@ pause(server)
 
 number_nodes(server)
 
-server$set_debug_level(0)
+server$set_debug_level(10)
 ig = convert_igraph(server)
 V(ig)
 
@@ -31,6 +30,8 @@ V(ig)
 summary(server)
 
 library(igraph)
+
+??plot.gng
 
 predict(server, c(0.3, 0.3, 0.3))
 

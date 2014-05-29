@@ -1,3 +1,5 @@
+#dev note: I have no idea how to document S4 methods using roxygen, I will have to assign someone to this task
+
 library(igraph)
 
 gng.dataset.bagging.prob <- 3
@@ -8,6 +10,37 @@ gng.plot.2d <- 1
 gng.plot.rgl3d <- 2
 
 loadModule('gng_module', TRUE)
+
+
+
+#' Plot GNG
+#'
+#' @param mode = gng.plot.rgl3d  (rgl plot, requires rgl library) or gng.plot.2d (igraph plot)
+#' @param layout_2d = if TRUE it will draw vertex at position x,y. if FALSE it will adapt vertex position using
+#' layout from igraph (waring: will take noticeably longer for bigger graphs)
+#' @param cluster = if TRUE it will color vertexes according to cluster found by fastgreedy.community algorithm
+#' from igraph package
+#' 
+#' @note if you want to "power-use" plotting and plot for instance a subgraph, you might be interested in
+#' exporting igraph with convert_igraph function and plotting it using/reusing function from this package:
+#' .visualizeIGraph2d
+plot.gng <- NULL
+
+
+#' Get node descriptor from graph
+#'
+#' @param gng_id gng id of the node NOTE: might differ from one in exported igraph
+node.gng <- NULL
+
+
+#' Run the algorithm (in parallel)
+run.gng <- NULL
+
+#' Pause the algorithm (in parallel)
+pause.gng <- NULL
+
+#' Terminate the algorithm (in parallel)
+terminate.gng <- NULL
 
 #' Constructor of GrowingNeuralGas object
 #' 
@@ -70,6 +103,12 @@ GNG <- function(dataset_type=gng.dataset.sequential, beta=0.99,
   server
 }
 
+
+print.gng <- NULL
+
+summary.gng <- NULL
+
+
 # Lazy loading to allow for discovery of all files
 evalqOnLoad({
 
@@ -104,18 +143,8 @@ evalqOnLoad({
     setGeneric("number_nodes", 
                function(object, ...) standardGeneric("number_nodes"))
   
-  #' Plot GNG
-  #'
-  #' @param mode = gng.plot.rgl3d  (rgl plot, requires rgl library) or gng.plot.2d (igraph plot)
-  #' @param layout_2d = if TRUE it will draw vertex at position x,y. if FALSE it will adapt vertex position using
-  #' layout from igraph (waring: will take noticeably longer for bigger graphs)
-  #' @param cluster = if TRUE it will color vertexes according to cluster found by fastgreedy.community algorithm
-  #' from igraph package
-  #' 
-  #' @note if you want to "power-use" plotting and plot for instance a subgraph, you might be interested in
-  #' exporting igraph with convert_igraph function and plotting it using/reusing function from this package:
-  #' .visualizeIGraph2d
-  plot.gng <- function(x, cluster=TRUE, layout_2d=TRUE, mode){
+
+  plot.gng <<- function(x, cluster=TRUE, layout_2d=TRUE, mode){
     
     if(x$get_number_nodes() > 4000){
       warning("Trying to plot very large graph (>4000 nodes). It might take a while.")
@@ -136,12 +165,12 @@ evalqOnLoad({
     }
   }
   
-  print.gng <- function(x){
+  print.gng <<- function(x){
     print(sprintf("Growing Neural Gas, nodes %d with mean error %f", 
                   x$get_number_nodes(), x$get_mean_error()))
   }
   
-  summary.gng <-function(object){
+  summary.gng <<- function(object){
     print(sprintf("Growing Neural Gas, nodes %d with mean error %f", 
                   object$get_number_nodes(), object$get_mean_error()))
     print("Mean errors[s]: ")
@@ -153,37 +182,26 @@ evalqOnLoad({
   setMethod("print",  signature(x="Rcpp_GNGServer"), print.gng)
   setMethod("summary", signature(object="Rcpp_GNGServer"), summary.gng)
   
+  node.gng <<- function(x, gng_id){
+    x$get_node(gng_id)
+  }
   
-  #' Get node descriptor from graph
-  #'
-  #' @param gng_id gng id of the node NOTE: might differ from one in exported igraph
-  setMethod("node" ,
-            signature(x="Rcpp_GNGServer", gng_id="numeric"),
-            function(x, gng_id){
-                  x$get_node(gng_id)
-            })
+  run.gng <<- function(object){
+    object$run()
+  }
+
+  pause.gng <<- function(object){
+    object$pause()
+  }
   
-  #' Run algorithm
-  setMethod("run" ,
-            signature(object="Rcpp_GNGServer"),
-            function(object){
-               object$run()
-            })
-  
-  
-  #' Pause algorithm
-  setMethod("pause" ,
-            signature(object="Rcpp_GNGServer"),
-            function(object){
-              object$pause()
-            })
-  
-  #' Terminate algorithm
-  setMethod("terminate" ,
-            signature(object="Rcpp_GNGServer"),
-            function(object){
-              object$terminate()
-            })
+  terminate.gng <<- function(object){
+    object$terminate()
+  }
+
+  setMethod("node", signature(x="Rcpp_GNGServer", gng_id="numeric"), node.gng)
+  setMethod("run", signature(object="Rcpp_GNGServer"), run.gng)
+  setMethod("pause", signature(object="Rcpp_GNGServer"), pause.gng)
+  setMethod("terminate", signature(object="Rcpp_GNGServer"), terminate.gng)
   
   
   #' Get number of nodes
