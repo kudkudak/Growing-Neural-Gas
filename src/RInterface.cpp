@@ -53,14 +53,14 @@ RCPP_MODULE(gng_module){
 
 	class_<GNGServer>("GNGServer").
       constructor<GNGConfiguration*>()
-			.method("get_configuration", &GNGServer::getConfiguration)
+			.method("s", &GNGServer::getConfiguration)
 			.method("dump_memory", &GNGServer::dumpMemory)
 			.method("set_memory_move_examples", &GNGServer::RsetExamples, "This function is tricky. It will use"
 					"your memory to store examples, so you shouldn't modify the matrix afterwards")
 			.method("run", &GNGServer::run)
 			.method("pause", &GNGServer::pause)
 			.method("set_debug_level", &GNGServer::setDebugLevel)
-
+			.method("get_configuration", &GNGServer::getConfiguration)
 			.method("terminate", &GNGServer::terminate)
 			.method("get_mean_error", &GNGServer::getMeanError)
 			.method("get_number_nodes", &GNGServer::getNumberNodes)

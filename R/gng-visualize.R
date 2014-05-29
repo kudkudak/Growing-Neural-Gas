@@ -59,8 +59,8 @@ if("rgl" %in% rownames(installed.packages()) == TRUE){
     
       cx <- V(g)$error
       cx <- abs(cx)/max(abs(cx)) 
-      cy <- c(1:(nodes-1))
-      cz <- c(1:(nodes-1))
+      cy <- c(1:(nodes))
+      cz <- c(1:(nodes))
     
       cy <- 0.1
       cz <- 0.1
@@ -82,22 +82,32 @@ if("rgl" %in% rownames(installed.packages()) == TRUE){
   }
 }
 
-.gng.plot2d<-function(gngServer){
-  print("plot2d")
+.gng.plot2d<-function(gngServer, cluster, layout_2d){
   tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
   gngServer$export_to_graphml(tmp_name)
-  print("Reading GraphML dumped")
-  .visualizeIGraph2d(.readFromGraphML(tmp_name))
+  .visualizeIGraph2d(.readFromGraphML(tmp_name ), cluster, layout_2d)
   file.remove(tmp_name)
 }
 #' Visualize igraph using igraph plot
 #' It will layout graph using v0 and v1 coordinates
-#' @note It is quite slow, works for graphs < 2000 nodes
-.visualizeIGraph2d<-function(g){
+#' @note It is quite slow, works for graphs < 2000 nodes, and for graphs <400 when using layout
+.visualizeIGraph2d<-function(g, cluster, layout_2d){
   #g<-as.undirected(g)
-  L<-cbind(V(g)$v0, V(g)$v1)
-  l = fastgreedy.community(g)#as.undirected(g))
-  col<-rainbow(length(l))
-  plot.igraph(g,vertex.size=3.0,vertex.label=NA,vertex.color=col[membership(l)],layout=L)
+  L<-NULL
+  
+  if(layout_2d){
+    L<-cbind(V(g)$v0, V(g)$v1)
+  }else{
+      L <- layout.auto(g)
+    #     L<-layout.fruchterman.reingold(g, niter=10000, area=4*vcount(g)^2)
+  }
+  
+  if(cluster){
+    l = fastgreedy.community(g)#as.undirected(g))
+    col<-rainbow(length(l))
+    plot.igraph(g,vertex.size=3.0,vertex.label=NA,vertex.color=col[membership(l)],layout=L)
+  }else{
+    plot.igraph(g,vertex.size=3.0,vertex.label=NA,layout=L)
+  }
 }
 

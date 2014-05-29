@@ -183,7 +183,7 @@ public:
     	return ret;
     }
 
-    int Rpredict(Rcpp::NumericMatrix &  ex){
+    int Rpredict(Rcpp::NumericVector &  ex){
     	std::vector<double> x(ex.begin(), ex.end());
     	return gngAlgorithm->predict(x);
     }

@@ -6,13 +6,20 @@
 
 using namespace std;
 std::string writeToGraphML(GNGGraph &g, string filename){
+  DBG(4, "writeToGraphML::locking");
   g.lock();
+
+  DBG(4, "writeToGraphML::locked");
 
   typedef adjacency_list<vecS, vecS, undirectedS, 
     boost_vertex_desc , boost_edge_desc> Graph;
 
 
+  DBG(4, "writeToGraphML::boost_g defining");
+
   Graph boost_g(0);
+
+  DBG(4, "writeToGraphML::defined boost_g");
 
   boost::graph_traits<Graph>::vertex_descriptor u, v;
   typedef boost::property<boost::vertex_index_t, int> VID_prop;
