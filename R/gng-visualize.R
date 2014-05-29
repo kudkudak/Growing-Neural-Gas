@@ -81,6 +81,12 @@ if("rgl" %in% rownames(installed.packages()) == TRUE){
       rgl.lines(x_lines[1:k-1],y_lines[1:k-1],z_lines[1:k-1],color="bisque")
   }
 }
+.gng.plot2d.errors<-function(gngServer, cluster, layout_2d){
+  tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
+  gngServer$export_to_graphml(tmp_name)
+  .visualizeIGraph2dWithErrors(.readFromGraphML(tmp_name ), cluster, layout_2d)
+  file.remove(tmp_name)
+}
 
 .gng.plot2d<-function(gngServer, cluster, layout_2d){
   tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
@@ -111,3 +117,13 @@ if("rgl" %in% rownames(installed.packages()) == TRUE){
   }
 }
 
+.visualizeIGraph2dWithErrors<-function(ig, cluster, layout_2d){
+    plot.new()
+    par(mfrow=c(1,2))
+    .visualizeIGraph2d(ig, cluster, layout_2d)
+    title("Graph visualization")
+    errors_raw = gng$get_error_statistics()
+    errors = log((errors_raw+1)/min(errors_raw+1))[2:length(errors_raw)]
+    plot(errors, type="l", lty=2, lwd=2, xlab="Time  [s]", ylab="Mean error (log)", frame.plot=F)
+    title("Mean error (log)")
+}

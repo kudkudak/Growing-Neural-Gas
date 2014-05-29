@@ -1,5 +1,8 @@
-# This file tests basic integration with RcppModule
-# Do not use it as reference for interaction with GrowingNeuralGas
+##########################################################################
+# !!!! This file tests basic integration with RcppModule                 #
+# !!!! Do not use it as reference for interaction with GrowingNeuralGas  #
+##########################################################################
+
 
 library('testthat')
 

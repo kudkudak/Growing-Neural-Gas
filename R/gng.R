@@ -8,6 +8,7 @@ gng.dataset.sequential <-1
 
 gng.plot.2d <- 1
 gng.plot.rgl3d <- 2
+gng.plot.2d.errors <- 3
 
 loadModule('gng_module', TRUE)
 
@@ -15,7 +16,8 @@ loadModule('gng_module', TRUE)
 
 #' Plot GNG
 #'
-#' @param mode = gng.plot.rgl3d  (rgl plot, requires rgl library) or gng.plot.2d (igraph plot)
+#' @param mode = gng.plot.rgl3d  (rgl plot, requires rgl library) or gng.plot.2d (igraph plot) or
+#' gng.plot.2d.errors (igraph plot with mean error log plot)
 #' @param layout_2d = if TRUE it will draw vertex at position x,y. if FALSE it will adapt vertex position using
 #' layout from igraph (waring: will take noticeably longer for bigger graphs)
 #' @param cluster = if TRUE it will color vertexes according to cluster found by fastgreedy.community algorithm
@@ -42,6 +44,12 @@ pause.gng <- NULL
 #' Terminate the algorithm (in parallel)
 terminate.gng <- NULL
 
+#' Mean node error
+mean_error.gng <- NULL
+
+#' Error statistics
+error_statistics.gng <- NULL
+
 #' Constructor of GrowingNeuralGas object
 #' 
 #' @param beta coefficient. Decrease the error variables of all node nodes by this fraction. Forgetting rate. Default 0.99
@@ -59,6 +67,10 @@ GNG <- function(dataset_type=gng.dataset.sequential, beta=0.99,
                 lazyheap_optimization=TRUE, max_nodes=1000, eps_n=0.05, 
                 eps_v = 0.0006, dim=-1, uniformgrid_boundingbox_sides=c(), uniformgrid_boundingbox_origin=c()){
   
+  
+  if(dim == -1){
+     stop("Please pass vertex dimensionality (dim argument)")
+  }
   
   if((length(uniformgrid_boundingbox_sides)==0 || length(uniformgrid_boundingbox_origin)==0) && uniformgrid_optimization==TRUE){
     stop("Please define bounding box for your data if you are using uniform grid. uniformgrid.boundingbox.sides is a
@@ -138,6 +150,15 @@ evalqOnLoad({
   if (!isGeneric("insert_examples"))
     setGeneric("insert_examples", 
                function(object, ...) standardGeneric("insert_examples"))
+
+  if (!isGeneric("mean_error"))
+    setGeneric("mean_error", 
+               function(object, ...) standardGeneric("mean_error"))
+
+  if (!isGeneric("error_statistics"))
+    setGeneric("error_statistics", 
+               function(object, ...) standardGeneric("error_statistics"))
+  
   
   if (!isGeneric("number_nodes"))
     setGeneric("number_nodes", 
@@ -162,6 +183,9 @@ evalqOnLoad({
     }
     else if(mode == gng.plot.2d){
       .gng.plot2d(x, cluster, layout_2d)
+    }
+    else if(mode == gng.plot.2d.errors){
+      .gng.plot2d.errors(x, cluster, layout_2d)
     }
   }
   
@@ -198,11 +222,20 @@ evalqOnLoad({
     object$terminate()
   }
 
+  mean_error.gng <<- function(object){
+    object$get_mean_error()
+  }  
+
+  error_statistics.gng <<- function(object){
+    object$get_error_statistics()
+  }  
+  
   setMethod("node", signature(x="Rcpp_GNGServer", gng_id="numeric"), node.gng)
   setMethod("run", signature(object="Rcpp_GNGServer"), run.gng)
   setMethod("pause", signature(object="Rcpp_GNGServer"), pause.gng)
   setMethod("terminate", signature(object="Rcpp_GNGServer"), terminate.gng)
-  
+  setMethod("mean_error", signature(object="Rcpp_GNGServer"), mean_error.gng) 
+  setMethod("error_statistics", signature(object="Rcpp_GNGServer"), error_statistics.gng) 
   
   #' Get number of nodes
   setMethod("number_nodes" ,

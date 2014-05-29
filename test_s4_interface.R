@@ -1,7 +1,6 @@
 devtools::clean_dll(".")
 devtools::install(".")
-devtools::load_all(".")
-
+devtools::test(".")
 library("GrowingNeuralGas")
 
 
@@ -47,3 +46,28 @@ plot(server, mode=gng.plot.2d, cluster=TRUE, layout_2d=FALSE)
 x = .sphere.point(r=0.5, center=c(0.5,0.5,0.5))
 x
 node(server, predict(server, x))
+
+# Performance test
+# end_goal <- 40000
+# goal<-2
+# delta<-1000
+# i<-1
+# results=matrix(0,10000,2)
+# start = proc.time()
+# while(gngServer$get_number_nodes()<end_goal){
+#   if(gngServer$get_number_nodes()>goal){
+#     time<-(proc.time()-start)["elapsed"]
+#     results[i,1]=goal
+#     results[i,2]=time
+#     i=i+1
+#     print(paste("Achieved ",goal, "in ",time))
+#     goal=goal+delta
+#     #delta=max(10,10^(log(gngServer$get_number_nodes(),10)-1))
+#     
+#   }
+# }
+# 
+# 
+# 
+# plot(results[1:100,1],results[1:100,2], type="l", lty=2, lwd=2, xlab="Number of nodes", ylab="Time [s]",
+#      ylim=c(0,80),xlim=c(0,end_goal), frame.plot=F)
