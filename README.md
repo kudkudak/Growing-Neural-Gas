@@ -15,10 +15,10 @@ copy, with different dataset types (bagging, sequential or probability
 sampling). In the near future it will be possible to stream dataset from csv file.
 
 <small>Comparision of performance of original implementation and with
-improvements suggested by Fiser</small>
+improvements suggested by D. Fiser, J. Faigl, M. Kulich </small>
 <center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/plot_speed.png" width="50%"></img></center>
 
-Fiser optimization paper [FGNG: A fast multi-dimensional growing neural gas implementation](http://www.sciencedirect.com/science/article/pii/S0925231213009259)
+Daniel Fiser, Jan Faigl, Miroslav Kulich optimization paper [FGNG: A fast multi-dimensional growing neural gas implementation](http://www.sciencedirect.com/science/article/pii/S0925231213009259)
 
 ##Installation
 -----------
