@@ -1,8 +1,8 @@
-library(testthat)
 
 
 for(k in 1:2){
   
+  library(testthat)
   library("GrowingNeuralGas")
   library(igraph)
   
@@ -44,6 +44,9 @@ for(k in 1:2){
   })
   print("Test::Completness test")
   
+  # Find closest node
+  predict(gng, c(1,1,1))
+  
   # 
   # # Get igraph
   ig <- convert_igraph(gng)
@@ -66,9 +69,9 @@ for(k in 1:2){
   # Test memory
   terminate(gng)
   # Sys.sleep(2.0)
-  rm(gng)
-  gc()
   
   print(paste("Finished ",k))
 
 }
+
+

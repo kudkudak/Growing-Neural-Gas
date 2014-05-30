@@ -70,7 +70,7 @@ if("rgl" %in% rownames(installed.packages()) == TRUE){
       ### Draw graph ###
       rgl.clear()
       rgl.light()
-      rgl.bg(color="black")
+    rgl.bg(color="white")
       axes3d(edges="bbox")
 
     

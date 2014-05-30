@@ -1,6 +1,7 @@
 #dev note: I have no idea how to document S4 methods using roxygen, I will have to assign someone to this task
 
 library(igraph)
+library(methods)
 
 gng.dataset.bagging.prob <- 3
 gng.dataset.bagging <- 2
@@ -202,9 +203,9 @@ evalqOnLoad({
   }
   
   
-  setMethod("plot",  signature(x="Rcpp_GNGServer"), plot.gng)
-  setMethod("print",  signature(x="Rcpp_GNGServer"), print.gng)
-  setMethod("summary", signature(object="Rcpp_GNGServer"), summary.gng)
+  setMethod("plot",  "Rcpp_GNGServer", plot.gng)
+  setMethod("print",  "Rcpp_GNGServer", print.gng)
+  setMethod("summary", "Rcpp_GNGServer", summary.gng)
   
   node.gng <<- function(x, gng_id){
     x$get_node(gng_id)
@@ -230,16 +231,16 @@ evalqOnLoad({
     object$get_error_statistics()
   }  
   
-  setMethod("node", signature(x="Rcpp_GNGServer", gng_id="numeric"), node.gng)
-  setMethod("run", signature(object="Rcpp_GNGServer"), run.gng)
-  setMethod("pause", signature(object="Rcpp_GNGServer"), pause.gng)
-  setMethod("terminate", signature(object="Rcpp_GNGServer"), terminate.gng)
-  setMethod("mean_error", signature(object="Rcpp_GNGServer"), mean_error.gng) 
-  setMethod("error_statistics", signature(object="Rcpp_GNGServer"), error_statistics.gng) 
+  setMethod("node", signature("Rcpp_GNGServer","numeric"), node.gng)
+  setMethod("run", "Rcpp_GNGServer", run.gng)
+  setMethod("pause", "Rcpp_GNGServer", pause.gng)
+  setMethod("terminate", "Rcpp_GNGServer", terminate.gng)
+  setMethod("mean_error", "Rcpp_GNGServer", mean_error.gng) 
+  setMethod("error_statistics", "Rcpp_GNGServer", error_statistics.gng) 
   
   #' Get number of nodes
   setMethod("number_nodes" ,
-            signature(object="Rcpp_GNGServer"),
+            "Rcpp_GNGServer",
             function(object){
               object$get_number_nodes()
             })
@@ -252,7 +253,7 @@ evalqOnLoad({
   #' 
   #' @param gng_id gng id of the node NOTE: nmight differ from one in exported igraph
   setMethod("convert_igraph" ,
-            signature(object="Rcpp_GNGServer"),
+            "Rcpp_GNGServer",
             .gng.construct_igraph)
   
   
@@ -260,7 +261,7 @@ evalqOnLoad({
   #' @param x Vector of dimensionality of vertex
   #' @return gng_index of the closest example
   setMethod("predict" ,
-            signature(object="Rcpp_GNGServer"),
+            "Rcpp_GNGServer",
             function(object, x){
                  object$predict(x)
             })
@@ -271,8 +272,8 @@ evalqOnLoad({
   #' not to copy at all set_memory_move_examples (when using this function, remember not to modify the matrix
   #' and after removing the object delete it aswell)
   setMethod("insert_examples" ,
-            signature(object="Rcpp_GNGServer"),
-            function(object, examples, preset, N){
+      "Rcpp_GNGServer",
+            function(object, examples, preset, N, r=1.0, center=c(0.5,0.5,0.5), prob=-1){
               warning("This function is copying examples to RAM. If your data is big,
   you can use more efficient object$insert_examples function, or you can set pointer without
   copying data at all using object$set_memory_move_examples. See documentation for more information
@@ -281,7 +282,7 @@ evalqOnLoad({
                   if(object$get_configuration()$dim != 3){
                       stop("Presets work only for dimensionality 3")
                   }
-                  object$insert_examples(preset(N))
+                  object$insert_examples(preset(N, center=center, r=r, prob=prob))
               }
             })
 

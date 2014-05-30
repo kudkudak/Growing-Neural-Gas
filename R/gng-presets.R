@@ -1,3 +1,17 @@
+.gng.box_point<-function(r, center, prob=-1){ 
+    point <- c()
+    
+    if(prob == -1)
+      point<-center
+    else
+      point<-c(center, prob)
+    
+    point[1:3] = point[1:3] + runif(3, min=-r/2.0, max=r/2.0)   
+    
+    point
+}
+
+
 .gng.plane_point<-function(r,center){
   if(!hasArg(r)) r<-1.0
   if(!hasArg(center)) center<-c(0,0,0)
@@ -25,7 +39,27 @@
   return(point)
 }
 
-gng.preset.plane<-function(N, side=0.5, center=c(0.5,0.5,0.5)){
+gng.preset.box<-function(N, r=0.5, center=c(0.5,0.5,0.5), prob=-1){
+  mat<-NULL
+
+  
+  if(prob == -1)
+    mat<-matrix(0,N,3)
+  else
+    mat<-matrix(0,N,4)
+  
+  for(i in 1:N){
+    mat[i,] = .gng.box_point(r=r, center=center, prob=prob)
+  }
+  
+  mat
+}
+
+
+
+gng.preset.plane<-function(N, side=0.5, center=c(0.5,0.5,0.5), prob=-1){
+  
+  
   mat<-matrix(0,N,3)
   
   for(i in 1:N){
@@ -37,7 +71,7 @@ gng.preset.plane<-function(N, side=0.5, center=c(0.5,0.5,0.5)){
 }
 
 
-gng.preset.sphere<-function(N, r=0.5, center=c(0.5,0.5,0.5)){
+gng.preset.sphere<-function(N, r=0.5, center=c(0.5,0.5,0.5),prob=-1){
   mat<-matrix(0,N,3)
   
   for(i in 1:N){
@@ -52,7 +86,7 @@ gng.preset.sphere<-function(N, r=0.5, center=c(0.5,0.5,0.5)){
    1./(1.+exp(-x))
 }
 
-gng.preset_potential<-function(N){
+gng.preset_potential<-function(N, r=0.5, center=c(0.5,0.5,0.5), prob=-1){
   mat <- matrix(rnorm(20,mean=1), N,3)
   
   for(j in 1:N){
