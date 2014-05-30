@@ -40,9 +40,12 @@ am currently working on documentation.
 
 ```Matlab
 library("GrowingNeuralGas")
+
+# Create main GNG object
 gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3,
             uniformgrid_optimization=FALSE,  lazyheap_optimization=FALSE)
 
+# Add examples (note: you can avoid here copy using set_memory_move_examples)
 gng$insert_examples(preset=gng.preset.sphere, N=10000)
 
 # Run algorithm in parallel
@@ -59,8 +62,10 @@ while(number_nodes(gng) != gng$get_configuration()$max_nodes && n < 100) {
 # Find closest node
 predict(gng, c(1,1,1))
 
+# Plot 
 plot(gng, mode=gng.plot.2derrors)
 
+# Terminate GNG, to free memory you should call rm(gng)
 terminate(gng)
 ```
 
