@@ -111,10 +111,10 @@ insert_examples(gng, ...), but this will perform 2 copies in RAM due to R design
 <center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/ex1.png" width="60%" height="70%"></img></center>
 
 <small>Bone reconstruction from a MRI scan</small>:
-<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/doc/img/ex2.png" width="60%"></img></center>
+<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/ex2.png" width="60%"></img></center>
 
 <small>Reconstruction of the Buddha figure from Standford Repositories</small>
-<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/doc/img/ex3.png" width="60%"></img></center>
+<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/ex3.png" width="60%"></img></center>
 
 
 ##Testing

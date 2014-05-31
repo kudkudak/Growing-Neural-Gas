@@ -18,7 +18,6 @@ using namespace std;
 #include "gtest/gtest.h"
 
 DebugCollector dbg;
-int GNGNode::dim =0;
 
 pair<double, double> test_convergence2(GNGConfiguration * cnf=0, int num_database=1000,
         int ms_loop = 5000,  string save_filename="", double* extra_examples=0, int extra_samples_size=0) {

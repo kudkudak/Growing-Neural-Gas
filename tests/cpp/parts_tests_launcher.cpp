@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "GNG.h"
 
-
+using namespace gmum;
 #include "parts_tests.cpp"
 
 int main(int argc, char **argv) {

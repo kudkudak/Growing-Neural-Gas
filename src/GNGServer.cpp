@@ -15,6 +15,7 @@ error_statistics(error_statistics_size, 0.0)
     DBG(10, "GNGServer()::constructing GNGServer");
 
 
+
     if(!configuration.check_correctness())
         throw BasicException("Invalid configuration passed to GNGServer");
 
@@ -22,12 +23,6 @@ error_statistics(error_statistics_size, 0.0)
         throw BasicException("Current version doesn't allow for crossprocess communication");
 
     this->current_configuration = configuration; //assign configuration
-
-    /** Set up dimensionality **/
-    GNGNode::dim = current_configuration.dim;
-
-    DBG(1, "GNGServer() dim = "+to_string(GNGNode::dim));
-
 
 
     if(current_configuration.graph_storage == GNGConfiguration::RAMMemory){
@@ -98,6 +93,12 @@ error_statistics(error_statistics_size, 0.0)
     }
 
 
+    if(current_configuration.load_graph_filename != "")
+    {
+    	DBG(10, "GNGServer():::loading serialized graph");
+    	gngGraph->load(current_configuration.load_graph_filename);
+    }
+
 
     DBG(10, "GNGServer()::constructing algorithm object");
 
@@ -118,7 +119,9 @@ error_statistics(error_statistics_size, 0.0)
             current_configuration.eps_n,
             current_configuration.dim,
             current_configuration.uniformgrid_optimization,
-            current_configuration.lazyheap_optimization
+            current_configuration.lazyheap_optimization,
+            current_configuration.experimental_utility_option,
+            current_configuration.experimental_utility_k
     ));
 
 

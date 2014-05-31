@@ -8,6 +8,7 @@
 #include "SHMemoryManager.h"
 using namespace std;
 using namespace boost::interprocess;
+using namespace gmum;
 
 bool SHMemoryManager::deallocate(void * ptr, std::string segment_name) {
     //TODO: error handling

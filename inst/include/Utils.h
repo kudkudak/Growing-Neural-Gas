@@ -9,6 +9,7 @@
 #define	UTILS_H
 
 
+
 #ifdef DEBUG_GMUM
 #define DBG(level, text) dbg.push_back(level, text);
 #define REPORT_PRODUCTION(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
@@ -114,7 +115,27 @@ struct BasicException : public std::exception
 
 
 
+#include <string.h>
+#include <iostream>
+#include <fstream>
+#include <vector>
+using namespace std;
 
+
+
+const int __one__ = 1;
+const bool isCpuLittleEndian = 1 == *(char*)(&__one__); // CPU endianness
+const bool isFileLittleEndian = false;  // output endianness - you choose :)
+
+
+
+void _write_bin(ostream & out, double v );
+
+void _write_bin_vect(ostream & out, vector<double> & v );
+
+double _load_bin(istream & in);
+
+vector<double> _load_bin_vector(istream & in);
 
 
 
@@ -124,7 +145,6 @@ struct BasicException : public std::exception
 
 //TODO: add DBG() MACRO!
 //TOTO: add ASSERT() MACRO!
-
 
 
 

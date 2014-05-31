@@ -10,8 +10,9 @@ For production code:
    * uncommend IFDEF for RcppInterface. Commented out for syntax parsing in Eclipse (STUPID ECLIPSE)
 
 
+* Add bigmemory dataset, or/and reading csv (in chunks, and streaming)
 
-* Add bigmemory dataset, or/and reading csv
+* Add dumping to file and reading from file.
 
 * Minor:
    Check all constants alpha and beta in particular

@@ -6,7 +6,7 @@
  */
 
 #ifndef GNGGLOBALS_H
-#define	GNGGLOBALS_H
+#define GNGGLOBALS_H
 
 #define GNG_MAX_DIM 1000
 

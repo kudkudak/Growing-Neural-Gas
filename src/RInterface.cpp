@@ -13,7 +13,6 @@
 using namespace Rcpp;
 
 DebugCollector dbg;
-int GNGNode::dim =0;
 
 RCPP_EXPOSED_CLASS(GNGConfiguration)
 RCPP_EXPOSED_CLASS(GNGServer)
@@ -27,7 +26,6 @@ RCPP_MODULE(gng_module){
 	class_<GNGConfiguration>("GNGConfiguration" )
 	.constructor()
 
-	.field("message_bufor_size", &GNGConfiguration::message_bufor_size )
 	.field("uniformgrid_optimization", &GNGConfiguration::uniformgrid_optimization, "Uniform grid optimization" )
 	.field("lazyheap_optimization", &GNGConfiguration::lazyheap_optimization )
 	.method("get_uniform_grid_axis", &GNGConfiguration::getUniformGridAxis)
@@ -41,6 +39,11 @@ RCPP_MODULE(gng_module){
 			"Decrease the error variables of all node nodes by this fraction. Forgetting rate. Default 0.99")
 
 	.field("eps_n", &GNGConfiguration::eps_n, "Default 0.0006")
+	.field("load_graph_file", &GNGConfiguration::load_graph_file, "Default empty. Load serialized graph by serialize_graph method.")
+	.field("experimental_utility_option", &GNGConfiguration::experimental_utility_option, "Default 0 (off). You can turn it on to 1, but remember to turn off optimizations. Likely will change in the future.")
+	.field("experimental_utility_k",
+			&GNGConfiguration::experimental_utility_k, "Default 1.3 (note: option is off by default). ")
+
 	.field("eps_v", &GNGConfiguration::eps_v, "Default 0.05")
 	.field("max_edge_age", &GNGConfiguration::max_age, "Max edge age")
 	.field("dim", &GNGConfiguration::dim, "Vertex position dimensionality")
@@ -59,6 +62,7 @@ RCPP_MODULE(gng_module){
 					"your memory to store examples, so you shouldn't modify the matrix afterwards")
 			.method("run", &GNGServer::run)
 			.method("pause", &GNGServer::pause)
+			.method("serialize_graph", &GNGServer::serializeGraph)
 			.method("set_debug_level", &GNGServer::setDebugLevel)
 			.method("get_configuration", &GNGServer::getConfiguration)
 			.method("terminate", &GNGServer::terminate)

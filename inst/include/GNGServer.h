@@ -8,6 +8,8 @@
 #ifndef GNGSERVER_H
 #define GNGSERVER_H
 
+
+
 #include "GNGDefines.h"
 #include "GNGConfiguration.h"
 
@@ -38,7 +40,7 @@
 
 using namespace Rcpp;
 using namespace arma;
-
+using namespace gmum;
 //#endif
 
 
@@ -62,7 +64,7 @@ class GNGServer{
     /** Singleton mutex*/
     static boost::mutex static_lock;
 
-    std::auto_ptr<GNGAlgorithm> gngAlgorithm;
+    std::auto_ptr<gmum::GNGAlgorithm> gngAlgorithm;
     std::auto_ptr<GNGGraph > gngGraph;
     std::auto_ptr<GNGDataset> gngDataset;
 
@@ -72,6 +74,13 @@ public:
     GNGServer(GNGConfiguration * configuration_ptr);
 
 
+    /*Serialize state of the algorithm to file
+    * @note: This won't serialize configuration unfortunately. Please make sure
+    * that GNGServer is loaded using the same configuration
+    */
+    void serializeGraph(std::string filename){
+    	this->gngGraph->serialize(filename);
+    }
 
     void run() {
     	if(!m_running_thread_created){
@@ -200,6 +209,7 @@ public:
 		}
 
 		arma::mat * points = new arma::mat(ex.begin(), ex.nrow(), ex.ncol(), false);
+
 		arma::inplace_trans( *points, "lowmem");
 		this->_handle_addExamples(points->memptr(),(unsigned int)points->n_cols,
 				(unsigned int)points->n_rows*points->n_cols);

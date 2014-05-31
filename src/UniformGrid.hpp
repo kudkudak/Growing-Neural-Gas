@@ -4,7 +4,7 @@
  *
  * Created on September 3, 2012, 9:03 AM
  */
-
+using namespace gmum;
 
 template<class VectorContainer, class ListContainer, class T>
 void UniformGrid<VectorContainer, ListContainer, T>::print3d() {
@@ -237,7 +237,7 @@ std::vector<T> UniformGrid<VectorContainer, ListContainer, T>::findNearest(const
     s_search_query = n;
 
     
-    
+
     DBG(2,"UniformGird:: search for "+write_cnt_str(p,p+this->gng_dim));
     
 

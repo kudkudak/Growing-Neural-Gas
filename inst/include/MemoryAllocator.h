@@ -25,40 +25,41 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
                 
+namespace gmum{
+	/** Interface abstracting away implementation of allocation.
+	 */
+	class MemoryAllocator{
+	public:
+		virtual void * allocate(std::size_t)=0;
+		virtual bool deallocate(void * ptr)=0;
+		virtual ~MemoryAllocator(){}
+	};
 
-/** Interface abstracting away implementation of allocation. 
- */
-class MemoryAllocator{
-public:
-    virtual void * allocate(std::size_t)=0;
-    virtual bool deallocate(void * ptr)=0;   
-    virtual ~MemoryAllocator(){}
-};
 
+	class BoostSHMemoryAllocator : public MemoryAllocator{
+		BoostSHMemoryAllocator(){}
+	//    size_t allocated;
+		boost::interprocess::managed_shared_memory * msm_ptr;
+	public:
+		BoostSHMemoryAllocator(boost::interprocess::managed_shared_memory * msm_ptr): msm_ptr(msm_ptr){
 
-class BoostSHMemoryAllocator : public MemoryAllocator{
-    BoostSHMemoryAllocator(){}
-//    size_t allocated;
-    boost::interprocess::managed_shared_memory * msm_ptr;
-public:
-    BoostSHMemoryAllocator(boost::interprocess::managed_shared_memory * msm_ptr): msm_ptr(msm_ptr){
-   
-    }
-    void * allocate(std::size_t size) {
-        void * ptr =static_cast<void*>
-                (msm_ptr->allocate(size));
-        if (!ptr) 
-            throw BasicException("Memory allocation error");
-        return ptr;
-    }
+		}
+		void * allocate(std::size_t size) {
+			void * ptr =static_cast<void*>
+					(msm_ptr->allocate(size));
+			if (!ptr)
+				throw BasicException("Memory allocation error");
+			return ptr;
+		}
 
-    bool deallocate(void * ptr) {
-        msm_ptr->deallocate(ptr);
-        //TODO: any error handling ? why no documentation..
-        return true;
-    }
-  
-};
+		bool deallocate(void * ptr) {
+			msm_ptr->deallocate(ptr);
+			//TODO: any error handling ? why no documentation..
+			return true;
+		}
+
+	};
+}
 
 #endif	/* EXTMEMORYMANAGER_H */
 
