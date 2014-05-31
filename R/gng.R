@@ -79,7 +79,7 @@ GNG <- function(dataset_type=gng.dataset.sequential, beta=0.99,
                 lazyheap_optimization=FALSE, max_nodes=1000, eps_n=0.05, 
                 eps_v = 0.0006, dim=-1, uniformgrid_boundingbox_sides=c(), uniformgrid_boundingbox_origin=c(),
                 experimental_utility_option = gng.experimental.utility.option.off,
-                experimental_utility_k = 1.5,
+                experimental_utility_k = 1.5, max_edge_age = 200,
                 load_model_filename = ""
                 
 ){
@@ -105,6 +105,7 @@ GNG <- function(dataset_type=gng.dataset.sequential, beta=0.99,
   # Fill in configuration
   config$dataset_type=dataset_type
   config$beta = beta
+  config$max_edge_age = max_edge_age
   config$alpha = alpha
   config$uniformgrid_optimization = uniformgrid_optimization
   config$lazyheap_optimization = lazyheap_optimization

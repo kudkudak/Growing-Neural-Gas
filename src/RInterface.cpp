@@ -66,6 +66,7 @@ RCPP_MODULE(gng_module){
 			.method("set_debug_level", &GNGServer::setDebugLevel)
 			.method("get_configuration", &GNGServer::getConfiguration)
 			.method("terminate", &GNGServer::terminate)
+
 			.method("get_mean_error", &GNGServer::getMeanError)
 			.method("get_number_nodes", &GNGServer::getNumberNodes)
 			.method("export_to_graphml", &GNGServer::exportsToGraphML)

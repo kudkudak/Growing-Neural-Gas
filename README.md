@@ -1,13 +1,14 @@
 #Growing Neural Gas in R
 
-Part of gmum.R project.
+Part of gmum.R project. See gmum research group page [here](http://gmum.ii.uj.edu.pl) .
 
 ##General
 ------
 
 This package contains fast C++ implementation 
 of **on-line** clustering algorithm Growing Neural Gas wrapped as R package using Rcpp.
-It produces topological graph, that you can easily convert to igraph.
+It produces topological graph, that you can easily convert to igraph, or you can
+dump your model to optimized binary file and load it later on.
 
 This algorithms is widely used for dynamic clustering problem. Package is designed with
 focus on big datasets. It is already possible to cluster dataset without making its
@@ -41,9 +42,8 @@ am currently working on documentation.
 ```Matlab
 library("GrowingNeuralGas")
 
-# Create main GNG object
-gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3,
-            uniformgrid_optimization=FALSE,  lazyheap_optimization=FALSE)
+# Create main GNG object (without optimization!)
+gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3)
 
 # Add examples (note: you can avoid here copy using set_memory_move_examples)
 gng$insert_examples(preset=gng.preset.sphere, N=10000)
@@ -75,11 +75,49 @@ terminate(gng)
 I will add regular documentation after having finished adding last functionality
 (dumping to file and clustering helper functions)
 
-* GNG(...) - constructor for GNG object
+* GNG(...) - constructor for GNG object. Parameters:
+
+    *  beta - Decrease the error variables of all node nodes by this fraction. Forgetting rate. Default 0.99
+
+    *  alpha - Alpha coefficient. Decrease the error variables of the nodes neighboring to the newly inserted node by this fraction. Default 0.5
+
+    *  uniformgrid_optimization - TRUE/FALSE. If TRUE please pass bounding box
+       parameters also.
+ 
+    *  lazyheap_optimization - TRUE/FALSE. 
+
+    *  max.node - Maximum number of nodes (after reaching this size it will continue running, but won't add new nodes)
+
+    *  eps_n - Default 0.05
+
+    *  eps_v - Default 0.0006
+
+    *  dataset_type - Dataset type. Possibilities gng.dataset.bagging, gng.dataset.bagging.prob (sampling according to dim+1 coordinate probability), gng.dataset.sequential (loop through examples - default option)
+
+    *  experimental_utility_option - EXPERIMENTAL Utility option (try using it
+       for quickly changing distributions). Value: gng.experimental.utility.option.off / gng.experimental.utility.option.basic
+
+    *  experimental_utility_k - EXPERIMENTAL Utility option constant. Default
+       to 1.5.
+
+    *  load_model_filename - Set to path to file from which load serialized model
+
+    *  uniformgrid_boundingbox_sides - Required for uniformgrid_optimization.
+      You will need to define bounding box for your data, that will remain the
+      same throughout the execution. To change it you should dump model and
+      recreate from dumped file
+    
+    *  uniformgrid_boundingbox_origin - Origin of the bounding box    
+
+    *  max_edge_age - Maximum age of edge, after which it is deleted. Decrease
+       if your graph is not following changes of the dataset (you can also try
+       experimental utility option)
 
 * run(gng), pause(gng), terminate(gng) - execution control
 
 * node(gng, gng_index) - returns node given index
+
+* dump_model(gng, filename) - dump model to file
 
 * mean_error(gng) - mean error in the graph
 
@@ -87,8 +125,9 @@ I will add regular documentation after having finished adding last functionality
 
 * error_statistics(gng) - vector of errors every second
 
-* plot(gng, mode) - plots gng using one of the presets (gng.plot.rgl3d,
-  gng.plot.2d, gng.plot.2derrors) 
+* plot(gng, mode, start_s) - plots gng using one of the presets (gng.plot.rgl3d,
+  gng.plot.2d, gng.plot.2derrors). If plotting erros you can specify second from
+  it will plot the errors. 
 
 * convert_igraph(gng) - converts GNG to igraph
 
