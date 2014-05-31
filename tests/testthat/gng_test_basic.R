@@ -6,11 +6,14 @@ for(k in 1:2){
   library("GrowingNeuralGas")
   library(igraph)
   
+  
+  
   max_nodes <- 600
   
   # Construct gng object
   gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3,
-                uniformgrid_optimization=FALSE,  lazyheap_optimization=FALSE)
+             uniformgrid_optimization=FALSE,  lazyheap_optimization=FALSE
+             )
   
   
   # Construct examples, here we will use a sphere
@@ -33,8 +36,8 @@ for(k in 1:2){
   n <- 0
   print("Waiting to converge")
   while(number_nodes(gng) != gng$get_configuration()$max_nodes && n < 100) {
-      Sys.sleep(1.0)
-      n <- n + 1
+    Sys.sleep(1.0)
+    n <- n + 1
   }
   # print("Pausing GNG")
   # pause(gng)
@@ -70,8 +73,11 @@ for(k in 1:2){
   terminate(gng)
   # Sys.sleep(2.0)
   
+  dump_model(gng, "graph.bin.tmp")
+  
   print(paste("Finished ",k))
+  
+  
 
 }
-
 

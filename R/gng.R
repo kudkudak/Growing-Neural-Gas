@@ -7,6 +7,9 @@ gng.dataset.bagging.prob <- 3
 gng.dataset.bagging <- 2
 gng.dataset.sequential <-1
 
+gng.experimental.utility.option.off <- 0
+gng.experimental.utility.option.basic <- 1
+
 gng.plot.2d <- 1
 gng.plot.rgl3d <- 2
 gng.plot.2d.errors <- 3
@@ -28,6 +31,11 @@ loadModule('gng_module', TRUE)
 #' exporting igraph with convert_igraph function and plotting it using/reusing function from this package:
 #' .visualizeIGraph2d
 plot.gng <- NULL
+
+#' Dump model to optimized binary file
+#'
+#' @param filename File to which dump model
+dump_model.gng <- NULL
 
 
 #' Get node descriptor from graph
@@ -61,16 +69,26 @@ error_statistics.gng <- NULL
 #' @param eps_n Default 0.05
 #' @param eps_v Default 0.0006
 #' @param dataset.type Dataset type. Possibilities gng.dataset.bagging, gng.dataset.bagging.prob, gng.dataset.sequential
+#' @param experimental_utility_option EXPERIMENTAL Utility option gng.experimental.utility.option.off / gng.experimental.utility.option.basic
+#' @param experimental_utility_k EXPERIMENTAL Utility option constant
+#' @param load_model_filename Set to path to file from which load serialized model
 #' 
 #' @name GrowingNeuralGas_initialize
 GNG <- function(dataset_type=gng.dataset.sequential, beta=0.99, 
-                alpha=0.5, uniformgrid_optimization=TRUE, 
-                lazyheap_optimization=TRUE, max_nodes=1000, eps_n=0.05, 
-                eps_v = 0.0006, dim=-1, uniformgrid_boundingbox_sides=c(), uniformgrid_boundingbox_origin=c()){
-  
+                alpha=0.5, uniformgrid_optimization=FALSE, 
+                lazyheap_optimization=FALSE, max_nodes=1000, eps_n=0.05, 
+                eps_v = 0.0006, dim=-1, uniformgrid_boundingbox_sides=c(), uniformgrid_boundingbox_origin=c(),
+                experimental_utility_option = gng.experimental.utility.option.off,
+                experimental_utility_k = 1.5,
+                load_model_filename = ""
+                
+){
+  if(!uniformgrid_optimization){
+    warning("Turned off optimization.")
+  }
   
   if(dim == -1){
-     stop("Please pass vertex dimensionality (dim argument)")
+    stop("Please pass vertex dimensionality (dim argument)")
   }
   
   if((length(uniformgrid_boundingbox_sides)==0 || length(uniformgrid_boundingbox_origin)==0) && uniformgrid_optimization==TRUE){
@@ -80,6 +98,7 @@ GNG <- function(dataset_type=gng.dataset.sequential, beta=0.99,
          ")  
     
   }
+
   
   config <- new(GNGConfiguration)
   
@@ -93,6 +112,18 @@ GNG <- function(dataset_type=gng.dataset.sequential, beta=0.99,
   config$eps_n = eps_n
   config$eps_v = eps_v
   config$dim = dim
+  
+  config$experimental_utility_k = experimental_utility_k
+  config$experimental_utility_option =experimental_utility_option
+  
+  config$load_graph_filename =load_model_filename
+
+  if( (config$uniformgrid_optimization || config$lazyheap_optimization) &&
+        experimental_utility_option != gng.experimental.utility.option.off
+  ){
+    
+    stop("You have turned on experimental utility option. Unfortunately optimizations are not supported yet for this option.")
+  }  
   
   if(config$uniformgrid_optimization){
     config$set_uniform_grid_axis(uniformgrid_boundingbox_sides)
@@ -124,12 +155,16 @@ summary.gng <- NULL
 
 # Lazy loading to allow for discovery of all files
 evalqOnLoad({
-
-
+  
+  
   # Construct necessary generics
   if (!isGeneric("node"))
     setGeneric("node", 
                function(x, gng_id, ...) standardGeneric("node"))
+
+  if (!isGeneric("dump_model"))
+    setGeneric("dump_model", 
+               function(object, filename, ...) standardGeneric("dump_model"))  
   
   if (!isGeneric("convert_igraph"))
     setGeneric("convert_igraph", 
@@ -151,11 +186,11 @@ evalqOnLoad({
   if (!isGeneric("insert_examples"))
     setGeneric("insert_examples", 
                function(object, ...) standardGeneric("insert_examples"))
-
+  
   if (!isGeneric("mean_error"))
     setGeneric("mean_error", 
                function(object, ...) standardGeneric("mean_error"))
-
+  
   if (!isGeneric("error_statistics"))
     setGeneric("error_statistics", 
                function(object, ...) standardGeneric("error_statistics"))
@@ -165,8 +200,8 @@ evalqOnLoad({
     setGeneric("number_nodes", 
                function(object, ...) standardGeneric("number_nodes"))
   
-
-  plot.gng <<- function(x, cluster=TRUE, layout_2d=TRUE, mode){
+  
+  plot.gng <<- function(x, cluster=TRUE, layout_2d=TRUE, start_s=2, mode){
     
     if(x$get_number_nodes() > 4000){
       warning("Trying to plot very large graph (>4000 nodes). It might take a while.")
@@ -186,7 +221,7 @@ evalqOnLoad({
       .gng.plot2d(x, cluster, layout_2d)
     }
     else if(mode == gng.plot.2d.errors){
-      .gng.plot2d.errors(x, cluster, layout_2d)
+      .gng.plot2d.errors(x, cluster, layout_2d, start_s)
     }
   }
   
@@ -214,7 +249,7 @@ evalqOnLoad({
   run.gng <<- function(object){
     object$run()
   }
-
+  
   pause.gng <<- function(object){
     object$pause()
   }
@@ -222,14 +257,22 @@ evalqOnLoad({
   terminate.gng <<- function(object){
     object$terminate()
   }
-
+  
   mean_error.gng <<- function(object){
     object$get_mean_error()
   }  
-
+  
   error_statistics.gng <<- function(object){
     object$get_error_statistics()
   }  
+  
+  dump_model.gng <<- function(object, filename){
+      object$dump_graph(filename)
+  }
+  
+  setMethod("dump_model", signature("Rcpp_GNGServer","character"), dump_model.gng)
+  
+  
   
   setMethod("node", signature("Rcpp_GNGServer","numeric"), node.gng)
   setMethod("run", "Rcpp_GNGServer", run.gng)
@@ -263,7 +306,7 @@ evalqOnLoad({
   setMethod("predict" ,
             "Rcpp_GNGServer",
             function(object, x){
-                 object$predict(x)
+              object$predict(x)
             })
   
   #' Insert examples
@@ -272,20 +315,19 @@ evalqOnLoad({
   #' not to copy at all set_memory_move_examples (when using this function, remember not to modify the matrix
   #' and after removing the object delete it aswell)
   setMethod("insert_examples" ,
-      "Rcpp_GNGServer",
+            "Rcpp_GNGServer",
             function(object, examples, preset, N, r=1.0, center=c(0.5,0.5,0.5), prob=-1){
               warning("This function is copying examples to RAM. If your data is big,
   you can use more efficient object$insert_examples function, or you can set pointer without
   copying data at all using object$set_memory_move_examples. See documentation for more information
                       ")
               if(hasArg(preset)){
-                  if(object$get_configuration()$dim != 3){
-                      stop("Presets work only for dimensionality 3")
-                  }
-                  object$insert_examples(preset(N, center=center, r=r, prob=prob))
+                if(object$get_configuration()$dim != 3){
+                  stop("Presets work only for dimensionality 3")
+                }
+                object$insert_examples(preset(N, center=center, r=r, prob=prob))
               }
             })
-
+  
 })
-
 

@@ -1,5 +1,3 @@
-#note: not enabled utility yet
-
 library("GrowingNeuralGas")
 library(igraph)
 library(testthat)
@@ -8,8 +6,7 @@ max_nodes <- 600
 
 # Construct gng object
 gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3,
-           uniformgrid_optimization=TRUE,  lazyheap_optimization=TRUE,
-           uniformgrid_boundingbox_sides=c(6,6,6), uniformgrid_boundingbox_origin=c(0,0,0)
+           experimental_utility_option = gng.experimental.utility.option.basic
            )
 
 
@@ -35,10 +32,10 @@ run(gng)
 mean_error(gng)
 
 # Wait for it to converge
-Sys.sleep(10.0)
+Sys.sleep(20.0)
 print("Adding jumped distribution")
 pause(gng)
-plot(gng, mode=gng.plot.2d.errors)
+plot(gng, start_s=4,  mode=gng.plot.2d.errors) #0.003 without utility
 
 
 
@@ -47,9 +44,11 @@ run(gng)
 print("Test::Jumped distribution added")
 Sys.sleep(35.0)
 pause(gng)
-plot(gng, mode=gng.plot.2d.errors)
+plot(gng, start_s=10, mode=gng.plot.2d.errors)
 plot(gng, mode=gng.plot.rgl3d)
-.visualizeIGraphRGL(convert_igraph(gng))
+
+
+
 print("Test::Graph after jumped distribution")
 
 ig <- GrowingNeuralGas::convert_igraph(gng)
