@@ -21,6 +21,20 @@ improvements suggested by D. Fiser, J. Faigl, M. Kulich </small>
 
 Daniel Fiser, Jan Faigl, Miroslav Kulich optimization paper [FGNG: A fast multi-dimensional growing neural gas implementation](http://www.sciencedirect.com/science/article/pii/S0925231213009259)
 
+##Examples
+-----
+
+<small>Plane triangulation</small>:
+<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/ex1.png" width="60%" height="70%"></img></center>
+
+<small>Bone reconstruction from a MRI scan</small>:
+<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/ex2.png" width="60%"></img></center>
+
+<small>Reconstruction of the Buddha figure from Standford Repositories</small>
+<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/ex3.png" width="60%"></img></center>
+
+
+
 ##Installation
 -----------
 
@@ -37,12 +51,12 @@ devtools::install_github("kudkudak/Growing-Neural-Gas")
 For more detailed usage see code in demo folder, or in tests/testthat folder. I
 am currently working on documentation.
 
-### Adding sphere data and clustering it.
+### Adding sphere data and clustering
 
 ```Matlab
 library("GrowingNeuralGas")
 
-# Create main GNG object (without optimization!)
+# Create main GNG object (without optimization)
 gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3)
 
 # Add examples (note: you can avoid here copy using set_memory_move_examples)
@@ -72,8 +86,7 @@ terminate(gng)
 
 ##List of functions
 
-I will add regular documentation after having finished adding last functionality
-(dumping to file and clustering helper functions)
+I will add regular documentation after having finished adding last functionalities.
 
 * GNG(...) - constructor for GNG object. Parameters:
 
@@ -142,18 +155,6 @@ I will add regular documentation after having finished adding last functionality
 pointer later on, only add new examples). You can also use function
 insert_examples(gng, ...), but this will perform 2 copies in RAM due to R design.
 
-
-##Examples
------
-
-<small>Plane triangulation</small>:
-<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/ex1.png" width="60%" height="70%"></img></center>
-
-<small>Bone reconstruction from a MRI scan</small>:
-<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/ex2.png" width="60%"></img></center>
-
-<small>Reconstruction of the Buddha figure from Standford Repositories</small>
-<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/ex3.png" width="60%"></img></center>
 
 
 ##Testing
