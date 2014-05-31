@@ -1,83 +1,175 @@
 #Growing Neural Gas in R
 
-Package to be included in GMuM.R project. Currently under heavy rewritting - see **dev** branch. You can expect major release around end of April 2014, please contact author at grimghil at gmail com if you are interested in using the package.
+Part of gmum.R project. See gmum research group page [here](http://gmum.ii.uj.edu.pl) .
 
-###General
+##General
 ------
 
-Fast implementation of the GNG algorithm in C++/Rcpp/R using also Fiser optimization [FGNG: A fast multi-dimensional growing neural gas implementation] (http://www.sciencedirect.com/science/article/pii/S0925231213009259). This algorithms is widely used for dynamic clustering problems.
+This package contains fast C++ implementation 
+of **on-line** clustering algorithm Growing Neural Gas wrapped as R package using Rcpp.
+It produces topological graph, that you can easily convert to igraph, or you can
+dump your model to optimized binary file and load it later on.
 
-**Note**: It is being prepared as a common R package on the dev branch. Come back soon to check if the R package is released yet.
+This algorithms is widely used for dynamic clustering problem. Package is designed with
+focus on big datasets. It is already possible to cluster dataset without making its
+copy, with different dataset types (bagging, sequential or probability
+sampling). In the near future it will be possible to stream dataset from csv file.
 
+<small>Comparision of performance of original implementation and with
+improvements suggested by D. Fiser, J. Faigl, M. Kulich </small>
+<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/plot_speed.png" width="50%"></img></center>
 
-<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/master/screens/plot_speed.png" width="50%"></img></center>
-
-
-###Installation
------------
-Because it is a very early version, building isnt straightforward. You need to have installed libboost libraries and necessary packages in R (i.e. rgl, parallel). Now go to the reposity directory and enter:
-```bash
-    make rcpp
-```
-
-<br>
+Daniel Fiser, Jan Faigl, Miroslav Kulich optimization paper [FGNG: A fast multi-dimensional growing neural gas implementation](http://www.sciencedirect.com/science/article/pii/S0925231213009259)
 
 ##Examples
 -----
 
-Growing Neural Gas is a clustering algorithm. For theoretical details please see (in polish) this file [growing-neural-gas.pdf](https://www.dropbox.com/s/glol7j54qg2vnuh/praca_roczna_draft.pdf). Algorithm in action:
-
 <small>Plane triangulation</small>:
-<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/master/screens/fig11.png" width="70%" height="70%"></img></center>
+<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/ex1.png" width="60%" height="70%"></img></center>
 
-Bone reconstruction from a MRI scan:
-<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/master/screens/1.png" width="60%"></img></center>
+<small>Bone reconstruction from a MRI scan</small>:
+<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/ex2.png" width="60%"></img></center>
 
-Reconstruction of the Buddha figure from Standford Repositories
-<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/master/screens/fig9_both.png" width="70%"></img></center>
-
-
+<small>Reconstruction of the Buddha figure from Standford Repositories</small>
+<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/ex3.png" width="60%"></img></center>
 
 
 
-##Scripts
-------
+##Installation
+-----------
 
-* Load sample data
+You can install it as an R package, it is easiest to do it using devtools (of
+course make sure you download devtools package in the first place).
+
 ```Matlab
-    source("gng.r") #load package
-    GNGCreateServer() 
-    #wait at least 2 seconds (booting)
-    sv<-new("GNGClient")
-    sv$addExamples(preset="sphere",preset_size=100000) #load sphere point distribution
-    sv$runServer()
-    #wait at least 2 seconds
-    GNGVisualise() #plot points
+devtools::install_github("kudkudak/Growing-Neural-Gas")
 ```
 
-And you should get something like this:
-<center><img src="http://img405.imageshack.us/img405/2727/v15a.png" width="70%" height="70%"></img></center>
 
-* Load obj file
-```R
-source("gng.r")
-GNGSetParams(max_nodes=25000)
-GNGCreateServer() #notice that servers runs in a parallel manner
-Sys.sleep(2.0)
-sv<-new("GNGClient")
-sv$loadObj("data/models/buddha2.obj") #provided you have got model here
-sv$run()
-iteration<-0
-GNGVisualise()
-sv$getAccumulatedError() #retrieve error value
-sv$getNumberNodes() #get nodes
+##Usage
+
+For more detailed usage see code in demo folder, or in tests/testthat folder. I
+am currently working on documentation.
+
+### Adding sphere data and clustering
+
+```Matlab
+library("GrowingNeuralGas")
+
+# Create main GNG object (without optimization)
+gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3)
+
+# Add examples (note: you can avoid here copy using set_memory_move_examples)
+gng$insert_examples(preset=gng.preset.sphere, N=10000)
+
+# Run algorithm in parallel
+run(gng)
+
+# Wait for the graph to converge
+n <- 0
+print("Waiting to converge")
+while(number_nodes(gng) != gng$get_configuration()$max_nodes && n < 100) {
+    Sys.sleep(1.0)
+    n <- n + 1
+}
+
+# Find closest node
+predict(gng, c(1,1,1))
+
+# Plot 
+plot(gng, mode=gng.plot.2derrors)
+
+# Terminate GNG, to free memory you should call rm(gng)
+terminate(gng)
 ```
 
-For more scripts, please check the 'scripts' directory. 
 
-#Futher work
----
-Documentation and compiling as an R package
+##List of functions
+
+I will add regular documentation after having finished adding last functionalities.
+
+* GNG(...) - constructor for GNG object. Parameters:
+
+    *  beta - Decrease the error variables of all node nodes by this fraction. Forgetting rate. Default 0.99
+
+    *  alpha - Alpha coefficient. Decrease the error variables of the nodes neighboring to the newly inserted node by this fraction. Default 0.5
+
+    *  uniformgrid_optimization - TRUE/FALSE. If TRUE please pass bounding box
+       parameters also.
+ 
+    *  lazyheap_optimization - TRUE/FALSE. 
+
+    *  max.node - Maximum number of nodes (after reaching this size it will continue running, but won't add new nodes)
+
+    *  eps_n - Default 0.05
+
+    *  eps_v - Default 0.0006
+
+    *  dataset_type - Dataset type. Possibilities gng.dataset.bagging, gng.dataset.bagging.prob (sampling according to dim+1 coordinate probability), gng.dataset.sequential (loop through examples - default option)
+
+    *  experimental_utility_option - EXPERIMENTAL Utility option (try using it
+       for quickly changing distributions). Value: gng.experimental.utility.option.off / gng.experimental.utility.option.basic
+
+    *  experimental_utility_k - EXPERIMENTAL Utility option constant. Default
+       to 1.5.
+
+    *  load_model_filename - Set to path to file from which load serialized model
+
+    *  uniformgrid_boundingbox_sides - Required for uniformgrid_optimization.
+      You will need to define bounding box for your data, that will remain the
+      same throughout the execution. To change it you should dump model and
+      recreate from dumped file
+    
+    *  uniformgrid_boundingbox_origin - Origin of the bounding box    
+
+    *  max_edge_age - Maximum age of edge, after which it is deleted. Decrease
+       if your graph is not following changes of the dataset (you can also try
+       experimental utility option)
+
+* run(gng), pause(gng), terminate(gng) - execution control
+
+* node(gng, gng_index) - returns node given index
+
+* dump_model(gng, filename) - dump model to file
+
+* mean_error(gng) - mean error in the graph
+
+* number_nodes(gng) - returns number of nodes
+
+* error_statistics(gng) - vector of errors every second
+
+* plot(gng, mode, start_s) - plots gng using one of the presets (gng.plot.rgl3d,
+  gng.plot.2d, gng.plot.2derrors). If plotting erros you can specify second from
+  it will plot the errors. 
+
+* convert_igraph(gng) - converts GNG to igraph
+
+* predict(gng, x) - return gng_index of the closest node in the graph to given
+  example
+
+* insert_examples(gng, M) - inefficient adding examples to the graph
+
+* gng$insert_examples() - add examples to gng object. **Note**: this will
+  perform a copy to gng object dataset. To set memory pointer to your matrix use
+  set_memory_move_examples function (you cannot change it to other memory
+pointer later on, only add new examples). You can also use function
+insert_examples(gng, ...), but this will perform 2 copies in RAM due to R design.
+
+
+
+##Testing
+-----
+To run tests you will need Google C++ Test Framework
+installed to your search paths.
+
+To run R tests type `devtools::test(".")` in the package folder.
+
+##Contributors
+---------
+Feel free to contribute to the code. Contributions should be posted as pull requests. For now
+there is not automatic testing, so make sure that tests located in tests/ folder are passing. 
+
+Please use Google C++ naming convention: http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
 
 
 

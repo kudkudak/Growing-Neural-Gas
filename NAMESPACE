@@ -1,0 +1,3 @@
+import(igraph, methods)
+useDynLib(GrowingNeuralGas)
+exportPattern("^[[:alpha:]]+")
