@@ -24,19 +24,11 @@ Daniel Fiser, Jan Faigl, Miroslav Kulich optimization paper [FGNG: A fast multi-
 ##Examples
 -----
 
-<small>Plane triangulation</small>:
-<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/ex1.png" width="60%" height="70%"></img></center>
-
-<small>Bone reconstruction from a MRI scan</small>:
-<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/ex2.png" width="60%"></img></center>
-
-<small>Reconstruction of the Buddha figure from Standford Repositories</small>
-<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/ex3.png" width="60%"></img></center>
-
-
 <small>MNIST dataset clustering (raw images)</small>
 <center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/mnist1.png" width="60%"></img></center>
 
+<small>Reconstruction of the Buddha figure from Standford Repositories</small>
+<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/ex3.png" width="60%"></img></center>
 
 
 ##Installation
