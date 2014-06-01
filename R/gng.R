@@ -79,7 +79,7 @@ GNG <- function(dataset_type=gng.dataset.sequential, beta=0.99,
                 lazyheap_optimization=FALSE, max_nodes=1000, eps_n=0.05, 
                 eps_v = 0.0006, dim=-1, uniformgrid_boundingbox_sides=c(), uniformgrid_boundingbox_origin=c(),
                 experimental_utility_option = gng.experimental.utility.option.off,
-                experimental_utility_k = 1.5, max_edge_age = 200,
+                experimental_utility_k = 1.5, max_edge_age = 200, experimental_vertex_extra_data=FALSE,
                 load_model_filename = ""
                 
 ){
@@ -113,6 +113,10 @@ GNG <- function(dataset_type=gng.dataset.sequential, beta=0.99,
   config$eps_n = eps_n
   config$eps_v = eps_v
   config$dim = dim
+  
+  if(experimental_vertex_extra_data == TRUE){
+    config$vertex_extra_data_dim = 1
+  }
   
   config$experimental_utility_k = experimental_utility_k
   config$experimental_utility_option =experimental_utility_option

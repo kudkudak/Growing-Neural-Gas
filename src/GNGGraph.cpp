@@ -44,14 +44,14 @@ namespace gmum{
 
             boost_g[map_desc[g[i].nr]].utility = g[i].utility;
 
-			std::string dump = "";
-			//TODO: string builder
-			for(int j=0;j<g.getDim()-1;++j){
-				dump+=to_string(g[i].position[j])+ " ";
-
-			}
-			dump+=to_string(g[i].position[g.getDim()-1]);
-			boost_g[map_desc[g[i].nr]].position_dump = dump;
+//			std::string dump = "";
+//			//TODO: string builder
+//			for(int j=0;j<g.getDim()-1;++j){
+//				dump+=to_string(g[i].position[j])+ " ";
+//
+//			}
+//			dump+=to_string(g[i].position[g.getDim()-1]);
+//			boost_g[map_desc[g[i].nr]].position_dump = dump;
 			if(g.getDim() >= 3){
 				boost_g[map_desc[g[i].nr]].v0 = g[i].position[0];
 				boost_g[map_desc[g[i].nr]].v1 = g[i].position[1];
@@ -87,7 +87,6 @@ namespace gmum{
 	  p.property("v1", boost::get(&boost_vertex_desc::v1, boost_g));
 	  p.property("v2", boost::get(&boost_vertex_desc::v2, boost_g));
 	  p.property("error", boost::get(&boost_vertex_desc::error, boost_g));
-	  p.property("position_dump", boost::get(&boost_vertex_desc::position_dump, boost_g));
 	  p.property("dist", boost::get(&boost_edge_desc::dist, boost_g));
 	  p.property("utility", boost::get(&boost_vertex_desc::utility, boost_g));
 

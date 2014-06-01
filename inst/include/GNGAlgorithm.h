@@ -190,7 +190,7 @@ namespace gmum{
 
 		void AddNewNode();
 
-		void Adapt(const double * ex);
+		void Adapt(const double * ex, const double * extra);
 
 		void ResizeUniformGrid();
 

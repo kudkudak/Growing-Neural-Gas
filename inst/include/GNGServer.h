@@ -176,6 +176,8 @@ public:
     	List ret;
     	ret["pos"] = pos;
     	ret["error"] = n.error;
+    	ret["extra_data"] = n.extra_data;
+
 
     	vector<unsigned int> neigh(n.size());
     	GNGNode::EdgeIterator edg = n.begin();

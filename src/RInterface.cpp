@@ -52,10 +52,12 @@ RCPP_MODULE(gng_module){
 			"2: DatasetBagging - examples are sampled from dataset with equal probability, "
 			"3: DatasetBaggingProbability - examples are sampled with probability equal to pos_dim+vertex_dim coordinate (last number in vector)")
 	.field("max_nodes", &gmum::GNGConfiguration::max_nodes)
+	.field("vertex_extra_data_dim", &gmum::GNGConfiguration::dataset_vertex_extra_dim)
 	.method("check_correctness", &gmum::GNGConfiguration::check_correctness);
 
 	class_<GNGServer>("GNGServer").
       constructor<gmum::GNGConfiguration*>()
+
 			.method("s", &GNGServer::getConfiguration)
 			.method("dump_memory", &GNGServer::dumpMemory)
 			.method("set_memory_move_examples", &GNGServer::RsetExamples, "This function is tricky. It will use"

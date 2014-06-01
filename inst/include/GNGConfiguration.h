@@ -98,14 +98,14 @@ namespace gmum{
 
 
 		///Dimensionality of vertex extra data (will be possible to vote on this data among vertices). Not suported yet.
-		unsigned int dataset_vertex_dim;
+		unsigned int dataset_vertex_extra_dim;
 
 	public:
 
 
 		GNGConfiguration(){
 			//Not reusing code because of peculiar problem with Rcpp
-			dataset_vertex_dim = 0;
+			dataset_vertex_extra_dim = 0;
 
 			starting_nodes = 100;
 
