@@ -63,7 +63,7 @@ max_nodes <- 1500
 # in training, but will be assigned to close vertex in the graph (technically speaking it WILL be used in training,
 # but will bear no effect on convergence)
 gng <- GNG(dataset_type=gng.dataset.bagging, max_nodes=max_nodes, dim=784, lazyheap_optimization=TRUE,
-           experimental_vertex_extra_data=TRUE, load_model_filename="mnist.trained.1500.bin"
+           experimental_vertex_extra_data=TRUE, load_model_filename="data/mnist.trained.1500.bin"
            )
 
 data <- load_mnist()
@@ -81,7 +81,10 @@ pause(gng)
 GrowingNeuralGas::dump_model(gng, "mnist.trained.1500.bin")
 
 ### Plot using igraph layout and coloring from extra vertex ###
-plot(gng, mode=gng.plot.2d.errors, vertex.color=gng.plot.color.extra, layout=layout.fruchterman.reingold)
+plot(gng, mode=gng.plot.2d.errors, 
+     vertex.color=gng.plot.color.cluster, layout=gng.plot.layout.igraph.fruchterman.fast)
+
+# layout.fruchterman.reingold)
 
 
 ### Test prediction of 0 ###

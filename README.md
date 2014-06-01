@@ -5,13 +5,13 @@ Part of gmum.R project. See gmum research group page [here](http://gmum.ii.uj.ed
 ##General
 ------
 
-This package contains fast C++ implementation 
-of **on-line** clustering algorithm Growing Neural Gas wrapped as R package using Rcpp.
+This package contains **fast** C++ implementation 
+of **online** clustering algorithm Growing Neural Gas wrapped as R package using Rcpp.
 It produces topological graph, that you can easily convert to igraph, or you can
 dump your model to optimized binary file and load it later on.
 
 This algorithms is widely used for dynamic clustering problem. Package is designed with
-focus on big datasets. It is already possible to cluster dataset without making its
+focus on **big datasets**. It is already possible to cluster dataset without making its
 copy, with different dataset types (bagging, sequential or probability
 sampling). In the near future it will be possible to stream dataset from csv file.
 
@@ -32,6 +32,10 @@ Daniel Fiser, Jan Faigl, Miroslav Kulich optimization paper [FGNG: A fast multi-
 
 <small>Reconstruction of the Buddha figure from Standford Repositories</small>
 <center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/ex3.png" width="60%"></img></center>
+
+
+<small>MNIST dataset clustering (raw images)</small>
+<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/mnist1.png" width="60%"></img></center>
 
 
 
@@ -77,7 +81,7 @@ while(number_nodes(gng) != max_nodes)
 predict(gng, c(1,1,1))
 
 # Plot with first 2 coordinates
-plot(gng, mode=gng.plot.2d.errors, vertex.color=gng.plot.color.extra, layout=gng.plot.layout.igraph.v2d)
+plot(gng, mode=gng.plot.2d.errors, vertex.color=gng.plot.color.cluster, layout=gng.plot.layout.igraph.v2d)
 
 # Terminate GNG, to free memory you should call rm(gng)
 terminate(gng)
@@ -172,12 +176,7 @@ To run R tests type `devtools::test(".")` in the package folder.
 ##Contributors
 ---------
 Feel free to contribute to the code. Contributions should be posted as pull requests. For now
-there is not automatic testing, so make sure that tests located in tests/ folder are passing. 
+there is not automatic testing, so make sure that tests located in tests/ folder are passing using 
+devtools::test() function
 
 Please use Google C++ naming convention: http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
-
-
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/kudkudak/growing-neural-gas/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
