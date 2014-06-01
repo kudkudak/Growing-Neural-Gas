@@ -59,7 +59,8 @@ public:
     int nr; //4
     bool _position_owner; //5
     unsigned int dim; //6   
-    double * position; //7...7+dim-1
+    double extra_data; //7 - extra data that is voted among vertices when adapting
+    double * position; //8... 8+dim-1
 
     
 
@@ -112,7 +113,7 @@ public:
     
     ///Dumps to vector of numbers
     vector<double> dumpVertexData(){
-        vector<double> dump(7 + dim, 0.0);
+        vector<double> dump(8 + dim, 0.0);
         dump[0] = utility;
         dump[1] = error_cycle;
         dump[2] = error;
@@ -120,6 +121,7 @@ public:
         dump[4] = nr;
         dump[5] = (int)_position_owner;
         dump[6] = dim;
+        dump[7] = extra_data;
         for(int i=0;i<dim;++i){
             dump[i+7] = position[i]; 
         }
@@ -135,16 +137,17 @@ public:
         nr = (int)x[4];
         _position_owner = x[5];
         dim = x[6];
+        extra_data = x[7];
         position = position_ptr;
         for(int i=0;i<dim;++i){
-            position[i] = x[i+7];
+            position[i] = x[i+8];
         }       
     }
     void loadVertexData(vector<double>::iterator & itr, int gng_dim,  double * position_ptr){
-    	vector<double> dump; dump.reserve(7 + dim);
+    	vector<double> dump; dump.reserve(8 + dim);
 
-    	std::copy(itr+1, itr+8+gng_dim, std::back_inserter(dump));
-    	std::advance(itr, (7 + gng_dim));
+    	std::copy(itr+1, itr+9+gng_dim, std::back_inserter(dump));
+    	std::advance(itr, (8 + gng_dim));
 
     	this->loadVertexData(dump, position_ptr);
     }

@@ -41,25 +41,23 @@ error_statistics(error_statistics_size, 0.0)
     /** Construct database **/
     if(current_configuration.datasetType == GNGConfiguration::DatasetSampling){
     	DBG(11, "GNGServer::Constructing Normal Sampling Prob Dataset");
-            this->gngDataset = std::auto_ptr<GNGDataset>(
-                    new GNGDatasetSimple<GNGDatasetStorageRAM>
-                    (&database_mutex, current_configuration.dim, current_configuration.
-                    dataset_vertex_dim, 0));
+        this->gngDataset = std::auto_ptr<GNGDataset>(
+                new GNGDatasetSimple<GNGDatasetStorageRAM>
+                (&database_mutex, current_configuration.dim, current_configuration.
+                		dataset_vertex_extra_dim, 0));
     }
     else if(current_configuration.datasetType == GNGConfiguration::DatasetSamplingProb){
     	    //Add probability to layout
     		DBG(11, "GNGServer::Constructing Sampling Prob Dataset");
             this->gngDataset = std::auto_ptr<GNGDataset>(
                     new GNGDatasetSimple<GNGDatasetStorageRAM>
-                    (&database_mutex, current_configuration.dim, current_configuration.
-                    dataset_vertex_dim, 1, 0));
+                    (&database_mutex, current_configuration.dim, current_configuration.dataset_vertex_extra_dim, 1, 0));
     }
     else if(current_configuration.datasetType == GNGConfiguration::DatasetSeq){
     	DBG(11, "GNGServer::Constructing Normal Seq Dataset");
             this->gngDataset = std::auto_ptr<GNGDataset>(
                     new GNGDatasetSimple<GNGDatasetStorageRAM>
-                    (&database_mutex, current_configuration.dim, current_configuration.
-                    dataset_vertex_dim, 0, -1, false));
+                    (&database_mutex, current_configuration.dim, current_configuration.dataset_vertex_extra_dim, 0, -1, false));
     }
     else{
     	cerr<<"Passed dataset type "<<current_configuration.datasetType<<endl;

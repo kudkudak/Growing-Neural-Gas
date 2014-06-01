@@ -56,28 +56,28 @@ am currently working on documentation.
 ```Matlab
 library("GrowingNeuralGas")
 
-# Create main GNG object (without optimization)
+max_nodes <- 600
+
+# Create main GNG object (without optimization) with dataset sampling according
+#to probability passed as last coordinate
 gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3)
 
 # Add examples (note: you can avoid here copy using set_memory_move_examples)
-gng$insert_examples(preset=gng.preset.sphere, N=10000)
+gng$insert_examples(preset=gng.preset.sphere, N=10000, prob=0.8)
 
 # Run algorithm in parallel
 run(gng)
 
 # Wait for the graph to converge
-n <- 0
 print("Waiting to converge")
-while(number_nodes(gng) != gng$get_configuration()$max_nodes && n < 100) {
+while(number_nodes(gng) != max_nodes) 
     Sys.sleep(1.0)
-    n <- n + 1
-}
 
-# Find closest node
+# Find closest node to vector [1,1,1]
 predict(gng, c(1,1,1))
 
-# Plot 
-plot(gng, mode=gng.plot.2derrors)
+# Plot with first 2 coordinates
+plot(gng, mode=gng.plot.2d.errors, vertex.color=gng.plot.color.extra, layout=gng.plot.layout.igraph.v2d)
 
 # Terminate GNG, to free memory you should call rm(gng)
 terminate(gng)
@@ -113,6 +113,8 @@ I will add regular documentation after having finished adding last functionaliti
     *  experimental_utility_k - EXPERIMENTAL Utility option constant. Default
        to 1.5.
 
+    *  experimental_vertex_extra_data
+
     *  load_model_filename - Set to path to file from which load serialized model
 
     *  uniformgrid_boundingbox_sides - Required for uniformgrid_optimization.
@@ -138,9 +140,12 @@ I will add regular documentation after having finished adding last functionaliti
 
 * error_statistics(gng) - vector of errors every second
 
-* plot(gng, mode, start_s) - plots gng using one of the presets (gng.plot.rgl3d,
+* plot(gng, mode, layout, vertex.color start_s) - plots gng using one of the presets (gng.plot.rgl3d,
   gng.plot.2d, gng.plot.2derrors). If plotting erros you can specify second from
   it will plot the errors. 
+
+* centroids(gng) - using igraph algorithm GNG will write centroids of found
+  clusters (community centers)
 
 * convert_igraph(gng) - converts GNG to igraph
 

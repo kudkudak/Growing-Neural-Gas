@@ -139,10 +139,17 @@ namespace gmum{
 
 
 		const double * ex1_ptr = g_db->getPosition(ex1);
+		const double * ex1_extra_ptr = g_db->getVertexData(ex1);
 		const double * ex2_ptr = g_db->getPosition(ex2);
+		const double * ex2_extra_ptr = g_db->getVertexData(ex2);
 
 		m_g.newNode(ex1_ptr);
 		m_g.newNode(ex2_ptr);
+
+
+		if(ex1_extra_ptr) m_g[0].extra_data = ex1_extra_ptr[0];
+		if(ex2_extra_ptr) m_g[1].extra_data = ex2_extra_ptr[0];
+
 
 		DBG(3, "RandomInit::created nodes graph size="+to_string(m_g.getNumberNodes()));
 
@@ -205,6 +212,10 @@ namespace gmum{
 		error_nodes_new[0] = &m_g[er_nr1];
 		error_nodes_new[1] = &m_g[er_nr2];
 
+		//Vote for extra data
+		m_g[new_node_index].extra_data =
+				(error_nodes_new[0]->extra_data + error_nodes_new[1]->extra_data) / 2.0;
+
 		if (m_toggle_uniformgrid) ug->insert(m_g[new_node_index].position, new_node_index);
 
 
@@ -264,8 +275,8 @@ namespace gmum{
 		}
 	}
 
-	void GNGAlgorithm::Adapt(const double * ex) {
-		;
+
+	void GNGAlgorithm::Adapt(const double * ex, const double * extra) {
 		Time t1(boost::posix_time::microsec_clock::local_time());
 
 
@@ -357,6 +368,12 @@ namespace gmum{
 		for (int i = 0; i < this->dim; ++i) {
 			nearest[0]->position[i] += m_eps_v * (ex[i] - nearest[0]->position[i]);
 		}
+
+		//Adapt to extra dimensionality if present (TODO: refactor)
+		if(extra){
+			nearest[0]->extra_data = (nearest[0]->extra_data + extra[0])/2.0;
+		}
+
 		if (m_toggle_uniformgrid) ug->insert(nearest[0]->position, nearest[0]->nr);
 
 		if (nearest[0]->edgesCount){
@@ -366,6 +383,11 @@ namespace gmum{
 
 				for (int i = 0; i < this->dim; ++i) { //param accounting
 					m_g[(*edg)->nr].position[i] += m_eps_n * (ex[i] - m_g[(*edg)->nr].position[i]);
+				}
+
+				//Adapt to extra dimensionality if present (TODO: refactor)
+				if(extra){
+					m_g[(*edg)->nr].extra_data = (0.9*m_g[(*edg)->nr].extra_data + extra[0]*0.1);
 				}
 
 				if (m_toggle_uniformgrid)
@@ -729,7 +751,7 @@ namespace gmum{
 				unsigned int ex = g_db->drawExample();
 
 
-				Adapt(g_db->getPosition(ex));
+				Adapt(g_db->getPosition(ex), g_db->getVertexData(ex));
 
 
 

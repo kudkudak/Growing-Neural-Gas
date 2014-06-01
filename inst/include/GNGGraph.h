@@ -271,6 +271,7 @@ namespace gmum{
                     g[createdNode].utility = 0.0;
                     g[createdNode]._position_owner = false;
                     g[createdNode].dim = gng_dim;
+                    g[createdNode].extra_data = 0.0;
 
 
 					firstFree = next_free[createdNode];
@@ -594,11 +595,14 @@ namespace gmum{
 	{
 		int index;
 		double error;
+
+		double extra_data;
+
 		/* GraphML doesn't allow for array types*/
 		double v0, v1, v2;
 
 		double utility;
-		std::string position_dump;
+//		std::string position_dump;
 	};
 
 	struct boost_edge_desc{
