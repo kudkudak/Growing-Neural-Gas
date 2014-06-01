@@ -41,7 +41,7 @@ namespace gmum{
 			map_desc[g[i].nr] = add_vertex(boost_g);
 			boost_g[map_desc[g[i].nr]].index = g[i].nr;
 			boost_g[map_desc[g[i].nr]].error = g[i].error;
-
+			boost_g[map_desc[g[i].nr]].extra_data = g[i].extra_data;
             boost_g[map_desc[g[i].nr]].utility = g[i].utility;
 
 //			std::string dump = "";
@@ -87,6 +87,7 @@ namespace gmum{
 	  p.property("v1", boost::get(&boost_vertex_desc::v1, boost_g));
 	  p.property("v2", boost::get(&boost_vertex_desc::v2, boost_g));
 	  p.property("error", boost::get(&boost_vertex_desc::error, boost_g));
+	  p.property("extra_data", boost::get(&boost_vertex_desc::extra_data, boost_g));
 	  p.property("dist", boost::get(&boost_edge_desc::dist, boost_g));
 	  p.property("utility", boost::get(&boost_vertex_desc::utility, boost_g));
 

@@ -595,6 +595,9 @@ namespace gmum{
 	{
 		int index;
 		double error;
+
+		double extra_data;
+
 		/* GraphML doesn't allow for array types*/
 		double v0, v1, v2;
 

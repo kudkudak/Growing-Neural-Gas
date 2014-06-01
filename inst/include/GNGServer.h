@@ -206,15 +206,12 @@ public:
 	void RinsertExamples(Rcpp::NumericMatrix &  ex){
 
 
-		if(m_current_dataset_memory_was_set){
-			throw "You cannot set example memory pool more than once!";
-		}
-
 		arma::mat * points = new arma::mat(ex.begin(), ex.nrow(), ex.ncol(), false);
 
 		arma::inplace_trans( *points, "lowmem");
 		this->_handle_addExamples(points->memptr(),(unsigned int)points->n_cols,
 				(unsigned int)points->n_rows*points->n_cols);
+		arma::inplace_trans( *points, "lowmem");
 	}
 	void RsetExamples(Rcpp::NumericMatrix & ex){
 		//Release previous if was present
@@ -231,6 +228,7 @@ public:
 		arma::inplace_trans( *points, "lowmem");
 		this->_handle_addExamples(points->memptr(),(unsigned int)points->n_cols,
 				(unsigned int)points->n_rows*points->n_cols, true);
+        //Doesn't set the back
 	}
 
 	void dumpMemory(){

@@ -10,6 +10,20 @@ gng.dataset.sequential <-1
 gng.experimental.utility.option.off <- 0
 gng.experimental.utility.option.basic <- 1
 
+gng.plot.color.extra <- 'extra'
+gng.plot.color.fast_cluster <- 'fast_cluster'
+gng.plot.color.cluster <- 'cluster'
+gng.plot.color.none <- 'none'
+
+gng.plot.layout.v2d <- function(g){
+  cbind(V(g)$v0, V(g)$v1)
+}
+gng.plot.layout.igraph.fruchterman <- function(g){
+  layout.fruchterman.reingold(g, niter=10000, area=4*vcount(g)^2)
+}
+gng.plot.layout.igraph.fruchterman.fast <- layout.fruchterman.reingold
+gng.plot.layout.igraph.auto <- layout.auto
+
 gng.plot.2d <- 1
 gng.plot.rgl3d <- 2
 gng.plot.2d.errors <- 3
@@ -22,11 +36,10 @@ loadModule('gng_module', TRUE)
 #'
 #' @param mode = gng.plot.rgl3d  (rgl plot, requires rgl library) or gng.plot.2d (igraph plot) or
 #' gng.plot.2d.errors (igraph plot with mean error log plot)
-#' @param layout_2d = if TRUE it will draw vertex at position x,y. if FALSE it will adapt vertex position using
-#' layout from igraph (waring: will take noticeably longer for bigger graphs)
-#' @param cluster = if TRUE it will color vertexes according to cluster found by fastgreedy.community algorithm
-#' from igraph package
-#' 
+#' @param layout = any function taking igraph graph and returning layout. Examplary: gng.plot.layour.igraph.v2d - first two dimensions
+#' from gng graph. gng.plot.layout.igraph.auto - just pass layout.auto from igraph, etc.
+#' @param vertex.color = how to color vertexes. gng.plot.color.extra - rounds to integer extra dim if present, gng.plot.color.none - every node is white,
+#' gng.plot.color.cluster - fastgreedy.community clustering will be the color
 #' @note if you want to "power-use" plotting and plot for instance a subgraph, you might be interested in
 #' exporting igraph with convert_igraph function and plotting it using/reusing function from this package:
 #' .visualizeIGraph2d
@@ -37,6 +50,9 @@ plot.gng <- NULL
 #' @param filename File to which dump model
 dump_model.gng <- NULL
 
+
+#' Using infomap.communities finds communities and for each community pick node with biggest betweenness score
+centroids.gng <- NULL
 
 #' Get node descriptor from graph
 #'
@@ -195,6 +211,10 @@ evalqOnLoad({
   if (!isGeneric("mean_error"))
     setGeneric("mean_error", 
                function(object, ...) standardGeneric("mean_error"))
+
+  if (!isGeneric("centroids"))
+    setGeneric("centroids", 
+               function(object, ...) standardGeneric("centroids"))  
   
   if (!isGeneric("error_statistics"))
     setGeneric("error_statistics", 
@@ -206,7 +226,7 @@ evalqOnLoad({
                function(object, ...) standardGeneric("number_nodes"))
   
   
-  plot.gng <<- function(x, cluster=TRUE, layout_2d=TRUE, start_s=2, mode){
+  plot.gng <<- function(x, vertex.color=gng.plot.color.cluster, layout=gng.plot.layout.v2d, start_s=2, mode){
     
     if(x$get_number_nodes() > 4000){
       warning("Trying to plot very large graph (>4000 nodes). It might take a while.")
@@ -223,10 +243,10 @@ evalqOnLoad({
       .gng.plot3d(x)
     }
     else if(mode == gng.plot.2d){
-      .gng.plot2d(x, cluster, layout_2d)
+      .gng.plot2d(x, vertex.color, layout)
     }
     else if(mode == gng.plot.2d.errors){
-      .gng.plot2d.errors(x, cluster, layout_2d, start_s)
+      .gng.plot2d.errors(x, vertex.color, layout, start_s)
     }
   }
   
@@ -278,6 +298,17 @@ evalqOnLoad({
   setMethod("dump_model", signature("Rcpp_GNGServer","character"), dump_model.gng)
   
   
+  centroids2.gng <<- function(object){
+    ig <- convert_igraph(object)
+    communities <- spinglass.community(ig)
+    centroids <- c()
+    for(i in 1:length(communities)){
+      ig_test <- induced.subgraph(ig, which(membership(communities)==i))
+      centroids<- c(centroids, (order(betweenness(ig_test))[1]))
+    }
+    centroids
+  }
+  setMethod("centroids", signature("Rcpp_GNGServer"), centroids.gng)
   
   setMethod("node", signature("Rcpp_GNGServer","numeric"), node.gng)
   setMethod("run", "Rcpp_GNGServer", run.gng)
@@ -292,6 +323,9 @@ evalqOnLoad({
             function(object){
               object$get_number_nodes()
             })
+  
+  
+  
   
   
   #' Get node descriptor from graph

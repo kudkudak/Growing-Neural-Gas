@@ -81,46 +81,74 @@ if("rgl" %in% rownames(installed.packages()) == TRUE){
     rgl.lines(x_lines[1:k-1],y_lines[1:k-1],z_lines[1:k-1],color="bisque")
   }
 }
-.gng.plot2d.errors<-function(gngServer, cluster, layout_2d, start_s=2){
+.gng.plot2d.errors<-function(gngServer, vertex.color, layout, start_s=2){
   tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
   gngServer$export_to_graphml(tmp_name)
-  .visualizeIGraph2dWithErrors(.readFromGraphML(tmp_name ), cluster, layout_2d, start_s)
+  ig = .readFromGraphML(tmp_name )
+  
+  if(vertex.color == 'extra'){
+    vertex.color = c(1:length(V(ig)))
+    max_col = 0
+    for(extra_data in V(ig)$extra_data)
+        max_col = max(max_col, round(extra_data))
+    cols = rainbow(max_col+1)
+    vertex.color = cols[as.double(lapply(V(ig)$extra_data, round))]
+  }
+  
+  .visualizeIGraph2dWithErrors(ig, vertex.color, layout, start_s)
+  
   file.remove(tmp_name)
 }
 
-.gng.plot2d<-function(gngServer, cluster, layout_2d){
+.gng.plot2d<-function(gngServer, vertex.color, layout){
   tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
   gngServer$export_to_graphml(tmp_name)
-  .visualizeIGraph2d(.readFromGraphML(tmp_name ), cluster, layout_2d)
+  ig = .readFromGraphML(tmp_name )
+  
+  if(vertex.color == 'extra'){
+    vertex.color = c(1:length(V(ig)))
+    max_col = 0
+    for(extra_data in V(ig)$extra_data)
+      max_col = max(max_col, round(extra_data))
+    cols = rainbow(max_col+1)
+    vertex.color = cols[as.double(lapply(V(ig)$extra_data, round))]
+  }
+  
+  .visualizeIGraph2d(ig, vertex.color, layout)
   file.remove(tmp_name)
 }
+
 #' Visualize igraph using igraph plot
 #' It will layout graph using v0 and v1 coordinates
 #' @note It is quite slow, works for graphs < 2000 nodes, and for graphs <400 when using layout
-.visualizeIGraph2d<-function(g, cluster, layout_2d){
-  #g<-as.undirected(g)
-  L<-NULL
+.visualizeIGraph2d<-function(g, vertex.color, layout){
+  L<-layout(g)
   
-  if(layout_2d){
-    L<-cbind(V(g)$v0, V(g)$v1)
-  }else{
-    L <- layout.auto(g)
-    #     L<-layout.fruchterman.reingold(g, niter=10000, area=4*vcount(g)^2)
+  if(vertex.color == 'cluster'){   
+    communities <- infomap.community(g)
+    communities
+    col <- rainbow(length(communities))
+    vertex.color <- col[membership(communities)]
   }
-  
-  if(cluster){
+  if(vertex.color == 'fast_cluster'){
     l = fastgreedy.community(g)#as.undirected(g))
-    col<-rainbow(length(l))
-    plot.igraph(g,vertex.size=3.0,vertex.label=NA,vertex.color=col[membership(l)],layout=L)
-  }else{
-    plot.igraph(g,vertex.size=3.0,vertex.label=NA,layout=L)
+    col <- rainbow(length(l))
+    print(membership(l))
+    vertex.color <- col[membership(l)]
   }
+  else if(vertex.color == 'none'){
+    vertex.color = NA
+  }else{
+    # Passed something else as vector
+  }
+    
+  plot.igraph(g,vertex.size=3.0,vertex.label=NA,vertex.color=vertex.color,layout=L)
 }
 
-.visualizeIGraph2dWithErrors<-function(ig, cluster, layout_2d, start_s=2){
+.visualizeIGraph2dWithErrors<-function(ig, vertex.color, layout_2d, start_s=2){
   plot.new()
   par(mfrow=c(1,2))
-  .visualizeIGraph2d(ig, cluster, layout_2d)
+  .visualizeIGraph2d(ig, vertex.color, layout_2d)
   title("Graph visualization")
   errors_raw = gng$get_error_statistics()
   errors = log((errors_raw+1)/min(errors_raw+1))[start_s:length(errors_raw)]
