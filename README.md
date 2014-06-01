@@ -167,8 +167,4 @@ To run R tests type `devtools::test(".")` in the package folder.
 
 ##Contributors
 ---------
-Feel free to contribute to the code. Contributions should be posted as pull requests. For now
-there is not automatic testing, so make sure that tests located in tests/ folder are passing using 
-devtools::test() function
-
-Please use Google C++ naming convention: http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
+Feel free to contribute to the code. Contributions should be posted as pull requests. 
