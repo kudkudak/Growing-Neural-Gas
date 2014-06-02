@@ -48,6 +48,12 @@ load_mnist <- function() {
   
   data
 }
+
+data <- load_mnist()
+
+#write.csv(data$train, 'mnist-train.csv')
+#write.csv(data$test, 'mnist-test.csv')
+
 show_digit <- function(arr784, col=gray(12:1/12), ...) {
   print(matrix(arr784, nrow=28, ncol=28)[1,])
   image(matrix(arr784, nrow=28, ncol=28)[,28:1], col=col, ...)
@@ -63,7 +69,7 @@ max_nodes <- 1500
 # in training, but will be assigned to close vertex in the graph (technically speaking it WILL be used in training,
 # but will bear no effect on convergence)
 gng <- GNG(dataset_type=gng.dataset.bagging, max_nodes=max_nodes, dim=784, lazyheap_optimization=TRUE,
-           experimental_vertex_extra_data=TRUE, load_model_filename="data/mnist.trained.1500.bin"
+           experimental_vertex_extra_data=TRUE
            )
 
 data <- load_mnist()
@@ -73,6 +79,7 @@ gng$insert_examples(data0)
 
 ### Run algorithm ###
 run(gng)
+
 number_nodes(gng)
 mean_error(gng)
 
@@ -105,9 +112,9 @@ centr <- centroids2.gng(gng)
 ### Plot centroids ###
 centroids_pos = lapply(centr, function(x){ node(gng, x)$pos})
 par(mfrow=c(2,2))
-show_digit(node(gng, centr[9])$pos)
-show_digit(node(gng, centr[3])$pos)
+show_digit(node(gng, centr[1])$pos)
 show_digit(node(gng, centr[2])$pos)
+show_digit(node(gng, centr[3])$pos)
 show_digit(node(gng, centr[4])$pos)
 
 

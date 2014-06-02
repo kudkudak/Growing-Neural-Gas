@@ -298,7 +298,7 @@ evalqOnLoad({
   setMethod("dump_model", signature("Rcpp_GNGServer","character"), dump_model.gng)
   
   
-  centroids2.gng <<- function(object){
+  centroids.gng <<- function(object){
     ig <- convert_igraph(object)
     communities <- spinglass.community(ig)
     centroids <- c()
