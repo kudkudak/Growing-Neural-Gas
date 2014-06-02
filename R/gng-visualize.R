@@ -1,7 +1,5 @@
 library(igraph)
 
-
-
 if("rgl" %in% rownames(installed.packages()) == TRUE){
   .gng.plot3d<-function(gngServer){
     tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")

@@ -8,7 +8,8 @@ max_nodes <- 600
 # Construct gng object
 gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3,
            uniformgrid_optimization=TRUE,  lazyheap_optimization=FALSE,
-           uniformgrid_boundingbox_sides=c(3,3,3), uniformgrid_boundingbox_origin=c(-0.5,-0.5,-0.5))
+           uniformgrid_boundingbox_sides=c(3,3,3), uniformgrid_boundingbox_origin=c(-0.5,-0.5,-0.5), 
+           load_model_filename="sphere_simple.bin")
 
 
 # Construct examples, here we will use a sphere
@@ -35,9 +36,11 @@ while(number_nodes(gng) != gng$get_configuration()$max_nodes && n < 100) {
   n <- n + 1
 }
 
+dump_model(gng, "sphere_simple.bin")
+
 pause(gng)
 
-plot(gng, mode=gng.plot.2d.errors, layout_2d=TRUE, cluster=TRUE)
+plot(gng, mode=gng.plot.2d.errors, layout=gng.plot.layout.v2d, vertex.color=gng.plot.color.cluster)
 
 # Test memory
 terminate(gng)

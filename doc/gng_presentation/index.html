@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GMUM.r - first demo</title>
+  <meta charset="utf-8">
+  <meta name="description" content="GMUM.r - first demo">
+  <meta name="author" content="">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/codefont.css"></link>
+<link rel=stylesheet href="./assets/css/codemargin.css"></link>
+<link rel=stylesheet href="./assets/css/fix_2012.css"></link>
+<link rel=stylesheet href="./assets/css/outfont.css"></link>
+<link rel=stylesheet href="./assets/css/outfont_medium.css"></link>
+<link rel=stylesheet href="./assets/css/outfont_small.css"></link>
+<link rel=stylesheet href="./assets/css/outmargin.css"></link>
+<link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>GMUM.r - first demo</h1>
+    <h2></h2>
+    <p><br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>Projekt</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><p>Początek w styczniu 2014</p></li>
+<li><p>12 studentów, 3 podprojekty</p></li>
+<li><p>~300 commitów - koniec maja</p></li>
+<li><p><a href="github.com/gmum/gmum.r">github.com/gmum/gmum.r</a></p></li>
+</ul>
+
+<div style='text-align: center;'>
+    <img height='200' src='logo.jpg' />
+</div>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>People</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Don Corleone: mgr. Wojciech Czarnecki</p>
+
+<ul>
+<li><p><strong>Growing Neural Gas</strong>: Stanisław Jastrzębski, opiekun dr hab. Igor Podolak</p></li>
+<li><p><strong>SVM</strong>: Piotr Kowenzowski (lider), opiekun mgr. Wojciech Czarnecki</p>
+
+<ul>
+<li>SVM - wrapper : Igor Sieradzki (lider),  Konrad Talik, Piotr Skoczylas</li>
+<li>2eSVM : Kamil Kuś (lider), Agnieszka Pocha, Mateusz Bruno-Kamiński</li>
+</ul></li>
+<li><p><strong>Cross Entropy Clustering</strong>: Michał Pletty (lider), Michał Zgliczyński, Marcin Data, opiekun mgr. Przemysław Spurek</p></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>Cele</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><p>Wydajnosc (C++/Rcpp)</p></li>
+<li><p>Big datasets</p></li>
+<li><p>Przejrzystość</p></li>
+<li><p>Implementacja algorytmów stworzonych w grupie GMUM</p></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>Growing Neural Gas - timeline</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><p>Początek w 2012</p></li>
+<li><p>Publikacja: Density Invariant Detection of Osteoporosis Using Growing Neural Gas :)</p></li>
+<li><p>Refaktoring/przepisywanie semestr letni 2014</p></li>
+</ul>
+
+<div style='text-align: center;'>
+    <img height='300' src='ex3.png' />
+</div>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="outfont_medium" id="id" style="background:;">
+  <hgroup>
+    <h2>Growing Neural Gas - worth noting</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><p>Online - (probably) the only package supporting online clustering w R</p></li>
+<li><p>Big datasets</p></li>
+<li><p>Efficient C++ implementation (improvements suggested in Fiser publication 2012)</p></li>
+<li><p>Deep integration with igraph package, dumping to file</p></li>
+</ul>
+
+<div style='text-align: center;'>
+    <img height='300' src='plot_speed.png' />
+</div>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="codefont outfont codemargin outmargin nobackground" id="slide-6" style="background:;">
+  <hgroup>
+    <h2>Growing Neural Gas - simplest demo</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Simplest demo - cluster sphere dataset without any optimization</p>
+
+<pre><code class="r">library(&#39;GrowingNeuralGas&#39;)
+# Construct gng object
+gng &lt;- GNG(dataset_type=gng.dataset.sequential, 
+           max_nodes=600, dim=3)
+
+# Construct examples, here we will use a sphere
+insert_examples(gng, preset=gng.preset.sphere, N=10000)
+
+# Run and wait
+run(gng)
+Sys.sleep(5)
+
+# Dump model
+dump_model(gng, &quot;temp.gng.bin&quot;)
+
+# Print number of nodes
+number_nodes(gng)
+</code></pre>
+
+<pre><code>## [1] 600
+</code></pre>
+
+<pre><code class="r"># Terminate
+terminate(gng)
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="codefont outfont codemargin outmargin nobackground" id="slide-7" style="background:;">
+  <hgroup>
+    <h2>Growing Neural Gas - simplest demo</h2>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r"># Plot loaded gng
+gng &lt;- GNG(dataset_type=gng.dataset.sequential, max_nodes=600, 
+           dim=3, load_model_filename=&#39;temp.gng.bin&#39;)
+
+plot(gng, vertex.color=gng.plot.color.cluster, mode=gng.plot.2d)
+</code></pre>
+
+<pre><code>## [1] TRUE
+</code></pre>
+
+<p><img src="assets/fig/unnamed-chunk-2.png" title="plot of chunk unnamed-chunk-2" alt="plot of chunk unnamed-chunk-2" style="display: block; margin: auto;" /></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="outfont_medium" id="slide-8" style="background:;">
+  <hgroup>
+    <h2>Growing Neural Gas - functions - constructor</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><p><strong>beta</strong> - Decrease the error variables of all node nodes by this fraction. Forgetting rate. Default 0.99</p></li>
+<li><p>alpha - Alpha coefficient. Decrease the error variables of the nodes neighboring to the newly inserted node by this fraction. Default 0.5</p></li>
+<li><p>uniformgrid_optimization - TRUE/FALSE. If TRUE please pass bounding box
+ parameters also.</p></li>
+<li><p>lazyheap_optimization - TRUE/FALSE. </p></li>
+<li><p>max.node - Maximum number of nodes (after reaching this size it will continue running, but won&#39;t add new nodes)</p></li>
+<li><p>eps_n - Default 0.05</p></li>
+<li><p>eps_v - Default 0.0006</p></li>
+<li><p>dataset_type - Dataset type. Possibilities gng.dataset.bagging, gng.dataset.bagging.prob (sampling according to dim+1 coordinate probability), gng.dataset.sequential (loop through examples - default option)</p></li>
+<li><p>experimental_utility_option - EXPERIMENTAL Utility option (try using it
+ for quickly changing distributions). Value: gng.experimental.utility.option.off / gng.experimental.utility.option.basic</p></li>
+<li><p>experimental_vertex_extra_data</p></li>
+<li><p>load_model_filename - Set to path to file from which load serialized model</p></li>
+<li><p>max_edge_age - Maximum age of edge, after which it is deleted. Decrease
+ if your graph is not following changes of the dataset (you can also try
+ experimental utility option)</p></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="outfont_medium" id="slide-9" style="background:;">
+  <hgroup>
+    <h2>Growing Neural Gas - functions</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><p><strong>run(gng)</strong>, pause(gng), terminate(gng) - execution control</p></li>
+<li><p>node(gng, gng_index) - returns node given index</p></li>
+<li><p>dump_model(gng, filename) - dump model to file</p></li>
+<li><p>mean_error(gng) - mean error in the graph</p></li>
+<li><p>number_nodes(gng) - returns number of nodes</p></li>
+<li><p>error_statistics(gng) - vector of errors every second</p></li>
+<li><p>plot(gng, mode, layout, vertex.color start_s) - plots gng using one of the presets (gng.plot.rgl3d,
+gng.plot.2d, gng.plot.2derrors). If plotting erros you can specify second from
+it will plot the errors. </p></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="outfont_medium" id="slide-10" style="background:;">
+  <hgroup>
+    <h2>Growing Neural Gas - functions</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><p>centroids(gng) - using igraph algorithm GNG will write centroids of found
+clusters (community centers)</p></li>
+<li><p>convert_igraph(gng) - converts GNG to igraph</p></li>
+<li><p>predict(gng, x) - return gng_index of the closest node in the graph to given
+example</p></li>
+<li><p>insert_examples(gng, M) - inefficient adding examples to the graph</p></li>
+<li><p>gng$insert_examples() - add examples to gng object. <strong>Note</strong>: this will
+perform a copy to gng object dataset. To set memory pointer to your matrix use
+set_memory_move_examples function (you cannot change it to other memory
+pointer later on, only add new examples). You can also use function
+insert_examples(gng, ...), but this will perform 2 copies in RAM due to R design.</p></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="codefont outfont codemargin outmargin nobackground" id="slide-11" style="background:;">
+  <hgroup>
+    <h2>Growing Neural Gas - MNIST demo</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Cluster MNIST digit dataset</p>
+
+<pre><code class="r">gng &lt;- GNG(dataset_type=gng.dataset.bagging, max_nodes=1500, dim=784, 
+lazyheap_optimization=TRUE, experimental_vertex_extra_data=TRUE, 
+
+load_model_filename=&quot;mnist.trained.1500.bin&quot;)
+
+data_train &lt;- read.csv(&#39;mnist-train.csv&#39;)
+data_test &lt;- read.csv(&#39;mnist-test.csv&#39;)
+
+gng$set_memory_move_examples(data_train)
+
+plot(gng, mode=gng.plot.2d.errors, 
+     vertex.color=gng.plot.color.extra, layout=gng.plot.layout.igraph.fruchterman.fast)
+
+
+### Test prediction of 0 ###
+for(i in 1:nrow(data$test)){
+  if(data$test[i, 785]==0){
+    predict(gng, data$test[i,-1])
+    node(gng, predict(gng, data$test[i,-1]))
+    print(node(gng, predict(gng, data$test[i,-1]))$extra_data)
+  }
+}
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-12" style="background:;">
+  <hgroup>
+    <h3>Growing Neural Gas - MNIST demo</h3>
+  </hgroup>
+  <article data-timings="">
+    <div style='text-align: center;'>
+    <img height='600' src='mnist.png' />
+</div>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="codefont outfont codemargin outmargin nobackground" id="slide-13" style="background:;">
+  <hgroup>
+    <h3>Growing Neural Gas - MNIST demo</h3>
+  </hgroup>
+  <article data-timings="">
+    <p>Plot centroids</p>
+
+<pre><code class="r">### Find centroids using infomap community detection from igraph package ###
+centr &lt;- centroids(gng)
+### Plot centroids ###
+centroids_pos = lapply(centr, function(x){ node(gng, x)$pos})
+par(mfrow=c(2,2))
+show_digit(node(gng, centr[9])$pos)
+show_digit(node(gng, centr[3])$pos)
+show_digit(node(gng, centr[2])$pos)
+show_digit(node(gng, centr[4])$pos)
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="outfont_medium" id="slide-14" style="background:;">
+  <hgroup>
+    <h3>Growing Neural Gas - MNIST demo</h3>
+  </hgroup>
+  <article data-timings="">
+    <div style='text-align: center;'>
+    <img height='400' src='mnist_2.png' />
+</div>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-15" style="background:;">
+  <hgroup>
+    <h3>Growing Neural Gas - future directions</h3>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><p>Big dataset streaming from file</p></li>
+<li><p>New extensions of GNG</p></li>
+<li><p>New proposed improvements in terms of efficiency</p></li>
+<li><p>Approximate neighbours</p></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Projekt'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='People'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Cele'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Growing Neural Gas - timeline'>
+         4
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=5 title='Growing Neural Gas - worth noting'>
+         5
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=6 title='Growing Neural Gas - simplest demo'>
+         6
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=7 title='Growing Neural Gas - simplest demo'>
+         7
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=8 title='Growing Neural Gas - functions - constructor'>
+         8
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=9 title='Growing Neural Gas - functions'>
+         9
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=10 title='Growing Neural Gas - functions'>
+         10
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=11 title='Growing Neural Gas - MNIST demo'>
+         11
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=12 title='Growing Neural Gas - MNIST demo'>
+         12
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=13 title='Growing Neural Gas - MNIST demo'>
+         13
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=14 title='Growing Neural Gas - MNIST demo'>
+         14
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=15 title='Growing Neural Gas - future directions'>
+         15
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>
