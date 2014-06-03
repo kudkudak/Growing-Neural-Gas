@@ -1,14 +1,20 @@
 Package: GrowingNeuralGas
 Version: 0.1
 Date: 2014-01-08
-Title: Online, very fast big-data clustering algorithm Growing Neural Gas implementation
-    for R written in C++. 
+Title: Online, very fast big-data clustering algorithm Growing Neural Gas
+    implementation for R written in C++.
 Author: Stanislaw Jastrzebski <staszek.jastrzebski@gmail.com>
 Maintainer: Stanislaw Jastrzebski <staszek.jastrzebski@gmail.com>
-Depends: Rcpp (>= 0.10.4), BH(>= 1.54.0), igraph(>= 0.7.0)
+Depends:
+    Rcpp (>= 0.10.4),
+    RcppArmadillo (>= 0.4.3),
+    BH(>= 1.54.0),
+    igraph(>= 0.7.0)
 LinkingTo: BH, Rcpp
-Suggests: RUnit
-Description: Cluster big amounts of data using online lightspeed implementation of Growing Neural Gas.
+Suggests:
+    RUnit
+Description: Cluster big amounts of data using online lightspeed implementation
+    of Growing Neural Gas.
 OS_type: unix
 License: LGPL-3
 Packaged: 2014-01-08 22:39:25 UTC; staszek
