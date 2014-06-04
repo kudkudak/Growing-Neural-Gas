@@ -32,199 +32,460 @@ loadModule('gng_module', TRUE)
 
 
 
+
 #' Plot GNG
 #'
-#' @param mode = gng.plot.rgl3d  (rgl plot, requires rgl library) or gng.plot.2d (igraph plot) or
+#' @title plot
+#' 
+#' @description Plot resulting graph using igraph plotting, or using rgl 3d engine.
+#' 
+#' @usage
+#' plot(gng)
+#' 
+#' @export
+#' 
+#' @rdname plot-methods
+#' 
+#' @docType methods
+#'
+#' @param mode gng.plot.rgl3d (3d plot), gng.plot.2d (igraph plot) or
 #' gng.plot.2d.errors (igraph plot with mean error log plot)
-#' @param layout = any function taking igraph graph and returning layout. Examplary: gng.plot.layour.igraph.v2d - first two dimensions
-#' from gng graph. gng.plot.layout.igraph.auto - just pass layout.auto from igraph, etc.
-#' @param vertex.color = how to color vertexes. gng.plot.color.extra - rounds to integer extra dim if present, gng.plot.color.none - every node is white,
-#' gng.plot.color.cluster - fastgreedy.community clustering will be the color
-#' @note if you want to "power-use" plotting and plot for instance a subgraph, you might be interested in
+#' 
+#' @param layout layout to be used when plotting. Possible values: gng.plot.layour.igraph.v2d (first two dimensions),
+#' gng.plot.layout.igraph.auto (auto layout from igraph) gng.plot.layout.igraph.fruchterman.fast (fast fruchterman reingold layout),or any function accepting igraph graph and returning layout
+#' 
+#' @param vertex.color how to color vertexes. Possible values: gng.plot.color.cluster(vertex color is set to fastgreedy.community clustering),
+#' gng.plot.color.extra(rounds to integer extra dim if present), gng.plot.color.none(every node is white),
+#' 
+#' @note If you want to "power-use" plotting and plot for instance a subgraph, you might be interested in
 #' exporting igraph with convert_igraph function and plotting it using/reusing function from this package:
 #' .visualizeIGraph2d
+#' 
+#' @examples
+#' 
+#' # Plots igraph using first 2 coordinates and colors according to clusters
+#' plot(gng, mode=gng.plot.2d.errors, layout=gng.plot.layout.v2d, vertex.color=gng.plot.color.cluster)
+#' 
+#' # Plot rgl (make sure you have installed rgl library)
+#' plot(gng, mode=gng.plot.rgl, layout=gng.plot.layout.v2d, vertex.color=gng.plot.color.cluster)
+#' 
+#' # For more possibilities see gng.plot.* constants
+#' 
 plot.gng <- NULL
 
-#' Dump model to optimized binary file
+#' Dump model to binary
 #'
-#' @param filename File to which dump model
+#' @title dump_model
+#' 
+#' @description Writes graph to a disk space efficient binary format. It can be used in GNG constructor
+#' to reconstruct graph from file.
+#' 
+#' @usage
+#' dump_model(gng)
+#' 
+#' @export
+#' 
+#' @param
+#' filename Dump destination
+#' 
+#' @rdname dump_model-methods
+#' 
+#' @docType methods
+#'
+#' @examples
+#' dump_model(gng, 'graph.bin')
+#' 
+#' @aliases dump_model
+#'
 dump_model.gng <- NULL
 
 
-#' Using infomap.communities finds communities and for each community pick node with biggest betweenness score
+#' Get centroids
+#'
+#' @title centroids
+#' 
+#' @description Using infomap.communities finds communities and for each community pick node with biggest betweenness score
+#' 
+#' @usage
+#' centroids(gng)
+#' 
+#' @export
+#' 
+#' @rdname centroids-methods
+#' 
+#' @docType methods
+#'
+#' @examples
+#' # Print position of the first centroid
+#' print(node(gng, centroids(gng)[1])$pos)
+#' 
+#' @aliases centroids
+#'  
 centroids.gng <- NULL
 
-#' Get node descriptor from graph
+#' Get GNG node
 #'
-#' @param gng_id gng id of the node NOTE: might differ from one in exported igraph
+#' @title node
+#' 
+#' @description Retrieves node from resulting graph
+#' 
+#' @usage
+#' node(gng, 10)
+#' 
+#' @export
+#' 
+#' @rdname node-methods
+#' 
+#' @docType methods
+#'
+#' @param gng_id Id of the node to retrieve. This is the id returned by functions like predict, or centroids
+#' 
+#' @examples
+#' print(node(gng, 10)$pos)
+#' 
+#' @aliases node
+#' 
 node.gng <- NULL
 
 
-#' Run the algorithm (in parallel)
+#' @title run
+#' 
+#' @description Run algorithm (in parallel)
+#' 
+#' @usage
+#' run(gng)
+#' 
+#' @export
+#' 
+#' 
+#' @rdname run-methods
+#' 
+#' @docType methods
+#'
+#' @examples
+#' run(gng)
+#' 
+#' @aliases run
+#'
 run.gng <- NULL
 
-#' Pause the algorithm (in parallel)
+#' @title pause
+#' 
+#' @description Pause algorithm
+#' 
+#' @usage
+#' pause(gng)
+#' 
+#' @export
+#' 
+#' 
+#' @rdname pause-methods
+#' 
+#' @docType methods
+#'
+#' @examples
+#' pause(gng)
+#' 
+#' @aliases pause
+#'
 pause.gng <- NULL
 
-#' Terminate the algorithm (in parallel)
+#' @title pause
+#' 
+#' @description Terminate algorithm
+#' 
+#' @usage
+#' terminate(gng)
+#' 
+#' @export
+#' 
+#' 
+#' @rdname terminate-methods
+#' 
+#' @docType methods
+#'
+#' @examples
+#' terminate(gng)
+#' 
+#' @aliases terminate
+#'
 terminate.gng <- NULL
 
-#' Mean node error
+#' @title mean_error
+#' 
+#' @description Gets mean error of the graph (note: blocks the execution, O(n))
+#' 
+#' @usage
+#' mean_error(gng)
+#' 
+#' @export
+#' 
+#' @rdname mean_error-methods
+#' 
+#' @docType methods
+#'
+#' @examples
+#' mean_error(gng)
+#' 
+#' @aliases mean_error
+#'
 mean_error.gng <- NULL
 
-#' Error statistics
+#' @title error_statistics
+#' 
+#' @description Gets vector with errors for every second of execution
+#' 
+#' @usage
+#' error_statistics(gng)
+#' 
+#' @export
+#' 
+#' @rdname error_statistics-methods
+#' 
+#' @docType methods
+#'
+#' @examples
+#' error_statistics(gng)
+#' 
+#' @aliases error_statistics
+#'
 error_statistics.gng <- NULL
 
-#' Constructor of GrowingNeuralGas object
+#' @title Constructor of GrowingNeuralGas object
+#' 
+#' @export 
+#' 
+#' @description Construct GNG object
 #' 
 #' @param beta coefficient. Decrease the error variables of all node nodes by this fraction. Forgetting rate. Default 0.99
-#' @param alpha Alpha coefficient. Decrease the error variables of the nodes neighboring to the newly inserted node by this fraction. Default 0.5
-#' @param uniformgrid.optimization TRUE/FALSE. You cannot use utility option with this, so please pass FALSE here then.
-#' @param lazyheap.optimization TRUE/FALSE. You cannot use utility option with this, so please pass FALSE here then.
-#' @param max.nodes Maximum number of nodes (after reaching this size it will continue running, but won't add new nodes)
-#' @param eps_n Default 0.05
-#' @param eps_v Default 0.0006
-#' @param dataset.type Dataset type. Possibilities gng.dataset.bagging, gng.dataset.bagging.prob, gng.dataset.sequential
-#' @param experimental_utility_option EXPERIMENTAL Utility option gng.experimental.utility.option.off / gng.experimental.utility.option.basic
-#' @param experimental_utility_k EXPERIMENTAL Utility option constant
-#' @param load_model_filename Set to path to file from which load serialized model
 #' 
-#' @name GrowingNeuralGas_initialize
-GNG <- function(dataset_type=gng.dataset.sequential, beta=0.99, 
-                alpha=0.5, uniformgrid_optimization=FALSE, 
-                lazyheap_optimization=FALSE, max_nodes=1000, eps_n=0.05, 
-                eps_v = 0.0006, dim=-1, uniformgrid_boundingbox_sides=c(), uniformgrid_boundingbox_origin=c(),
-                experimental_utility_option = gng.experimental.utility.option.off,
-                experimental_utility_k = 1.5, max_edge_age = 200, experimental_vertex_extra_data=FALSE,
-                load_model_filename = ""
-                
-){
-  if(!uniformgrid_optimization){
-    warning("Turned off optimization.")
-  }
-  
-  if(dim == -1){
-    stop("Please pass vertex dimensionality (dim argument)")
-  }
-  
-  if((length(uniformgrid_boundingbox_sides)==0 || length(uniformgrid_boundingbox_origin)==0) && uniformgrid_optimization==TRUE){
-    stop("Please define bounding box for your data if you are using uniform grid. uniformgrid.boundingbox.sides is a
-         dim sized vector defining lengths of the sides of the box, whereas uniformgrid.boundingbox.origin defines 
-         origin of the box. Note that uniform grid optimization will give significant speedup, but only for low-dim data.
-         ")  
-    
-  }
-
-  
-  config <- new(GNGConfiguration)
-  
-  # Fill in configuration
-  config$dataset_type=dataset_type
-  config$beta = beta
-  config$max_edge_age = max_edge_age
-  config$alpha = alpha
-  config$uniformgrid_optimization = uniformgrid_optimization
-  config$lazyheap_optimization = lazyheap_optimization
-  config$max_nodes = max_nodes
-  config$eps_n = eps_n
-  config$eps_v = eps_v
-  config$dim = dim
-  
-  if(experimental_vertex_extra_data == TRUE){
-    config$vertex_extra_data_dim = 1
-  }
-  
-  config$experimental_utility_k = experimental_utility_k
-  config$experimental_utility_option =experimental_utility_option
-  
-  config$load_graph_filename =load_model_filename
-
-  if( (config$uniformgrid_optimization || config$lazyheap_optimization) &&
-        experimental_utility_option != gng.experimental.utility.option.off
-  ){
-    
-    stop("You have turned on experimental utility option. Unfortunately optimizations are not supported yet for this option.")
-  }  
-  
-  if(config$uniformgrid_optimization){
-    config$set_uniform_grid_axis(uniformgrid_boundingbox_sides)
-    config$set_uniform_grid_origin(uniformgrid_boundingbox_origin)
-  }
-  
-  if(config$uniformgrid_optimization &&
-       (length(uniformgrid_boundingbox_sides)!=length(uniformgrid_boundingbox_origin)
-        || length(uniformgrid_boundingbox_origin) != dim)){
-    
-    stop("Make sure that dimensions of bounding box and vertex position match")
-  }
-  
-  if(!config$check_correctness()){
-    stop("Passed incorrect parameters.")
-  }
-  
-  # Construct server
-  server = new(GNGServer, config)
-  server$set_debug_level(10)
-  server
-}
-
+#' @param alpha Alpha coefficient. Decrease the error variables of the nodes neighboring to the newly inserted node by this fraction. Default 0.5
+#' 
+#' @param uniformgrid.optimization TRUE/FALSE. You cannot use utility option with this, so please pass FALSE here then.
+#' 
+#' @param lazyheap.optimization TRUE/FALSE. You cannot use utility option with this, so please pass FALSE here then.
+#' 
+#' @param max.nodes Maximum number of nodes (after reaching this size it will continue running, but won't add new nodes)
+#' 
+#' @param eps_n Default 0.05
+#' 
+#' @param eps_v Default 0.0006
+#' 
+#' @param dataset.type Dataset type. Possibilities gng.dataset.bagging, gng.dataset.bagging.prob, gng.dataset.sequential
+#' 
+#' @param experimental_utility_option EXPERIMENTAL Utility option gng.experimental.utility.option.off / gng.experimental.utility.option.basic
+#'
+#' @param experimental_utility_k EXPERIMENTAL Utility option constant
+#' 
+#' @param load_model_filename Set to path to file from which load serialized model
+#'
+#' @param experimental_vertex_extra_data if TRUE each example should have additional coordinate, that will be
+#' voted in graph. Each node (that you can get using node function) will have extra_data field that will be
+#' equal to mean of samples around given node. If used with probability dataset example layout is 
+#' <vertex position> <vertex_extra_data> <sampling_probability>, for example c(0.3, 0.6, 0.7, 100, 0.7)
+#' 
+#'
+#' @examples
+#' 
+#' # Default GNG instance, without optimitzations and vertex dimensionality 3
+#' 
+#' gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3)
+#' 
+#' # Construct GNG loaded from file with uniform grid
+#' 
+#' gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3,
+#' uniformgrid_optimization=TRUE,  lazyheap_optimization=FALSE,
+#' uniformgrid_boundingbox_sides=c(3,3,3), uniformgrid_boundingbox_origin=c(-0.5,-0.5,-0.5), 
+#' load_model_filename="sphere_simple.bin")
+GNG <- NULL
 
 print.gng <- NULL
 
 summary.gng <- NULL
 
+#' @title convert_igraph
+#' 
+#' @description Converts to igraph (O(n) method, writing intermediately to disk)
+#' 
+#' @usage
+#' convert_igraph(gng)
+#' 
+#' @export
+#' 
+#' @rdname convert_igraph-methods
+#' 
+#' @docType methods
+#'
+#' @examples
+#' convert_igraph(gng)
+#' 
+#' @aliases convert_igraph
+#'
+convert_igraph.gng <- NULL
+
+
+
+#' @title insert_examples
+#' 
+#' @description Insert (inefficiently) examples to algorithm dataset. For
+#' efficient insertion use gng$inser_examples, and for setting memory pointer
+#' use gng$set_memory_move_examples
+#' 
+#' @usage
+#' insert_examples(gng, M)
+#' 
+#' @export
+#' 
+#' @param examples Matrix with examples of dimensionality N rows x C columns, where
+#' C columns = dim (passed as parameter to GNG object) + 1 or 0 (1 if vertex_extra_data is TRUE)
+#' + 1 or 0 (1 if dataset_type=gng.dataset.bagging.prob). 
+#' 
+#' @param preset Use only if you are adding exemplary dataset. Possibilities: gng.preset.sphere,
+#' gng.preset.box. You can specify preset params: N=1000, center=c(0.5,0.5,0.5), prob=-1. 
+#' 
+#' @note Complicated memory layout of the matrix is due to need for memory efficiency.
+#' In the future versions you can expect wrapper simplifying addition and also
+#' streaming from disk file
+#' 
+#' @rdname insert_examples-methods
+#' 
+#' @docType methods
+#'
+#' @examples
+#' 
+#' #Add preset examples with probability of being sampled (this assumed GNG was created with gng.dataset.bagging.prob dataset)
+#' insert_examples(gng, preset=gng.preset.sphere)
+#' 
+#' #Insert efficiently examples
+#' M <- matrix(0, ncol=3, nrow=10)
+#' M[1,] = c(4,5,6)
+#' gng$insert_examples(M)
+#' 
+#' #Set memory of the algorithm to point in memory. Note: you cannot remove this matrix while
+#' in execution or you will experience memory error
+#' gng$set_memory_move_examples(M)
+#' 
+#' @aliases insert_examples
+#'
+insert_examples.gng <- NULL
+
 
 # Lazy loading to allow for discovery of all files
 evalqOnLoad({
-  
-  
-  # Construct necessary generics
-  if (!isGeneric("node"))
-    setGeneric("node", 
-               function(x, gng_id, ...) standardGeneric("node"))
+    GNG <<- function(dataset_type=gng.dataset.sequential, beta=0.99, 
+                        alpha=0.5, uniformgrid_optimization=FALSE, 
+                        lazyheap_optimization=FALSE, max_nodes=1000, eps_n=0.05, 
+                        eps_v = 0.0006, dim=-1, uniformgrid_boundingbox_sides=c(), uniformgrid_boundingbox_origin=c(),
+                        experimental_utility_option = gng.experimental.utility.option.off,
+                        experimental_utility_k = 1.5, max_edge_age = 200, experimental_vertex_extra_data=FALSE,
+                        load_model_filename = ""
+                        
+    ){
+      if(!uniformgrid_optimization){
+        warning("Turned off optimization.")
+      }
+      
+      if(dim == -1){
+        stop("Please pass vertex dimensionality (dim argument)")
+      }
+      
+      if((length(uniformgrid_boundingbox_sides)==0 || length(uniformgrid_boundingbox_origin)==0) && uniformgrid_optimization==TRUE){
+        stop("Please define bounding box for your data if you are using uniform grid. uniformgrid.boundingbox.sides is a
+             dim sized vector defining lengths of the sides of the box, whereas uniformgrid.boundingbox.origin defines 
+             origin of the box. Note that uniform grid optimization will give significant speedup, but only for low-dim data.
+             ")  
+        
+      }
+      
+      
+      config <- new(GNGConfiguration)
+      
+      # Fill in configuration
+      config$dataset_type=dataset_type
+      config$beta = beta
+      config$max_edge_age = max_edge_age
+      config$alpha = alpha
+      config$uniformgrid_optimization = uniformgrid_optimization
+      config$lazyheap_optimization = lazyheap_optimization
+      config$max_nodes = max_nodes
+      config$eps_n = eps_n
+      config$eps_v = eps_v
+      config$dim = dim
+      
+      if(experimental_vertex_extra_data == TRUE){
+        config$vertex_extra_data_dim = 1
+      }
+      
+      config$experimental_utility_k = experimental_utility_k
+      config$experimental_utility_option =experimental_utility_option
+      
+      config$load_graph_filename =load_model_filename
+      
+      if( (config$uniformgrid_optimization || config$lazyheap_optimization) &&
+            experimental_utility_option != gng.experimental.utility.option.off
+      ){
+        
+        stop("You have turned on experimental utility option. Unfortunately optimizations are not supported yet for this option.")
+      }  
+      
+      if(config$uniformgrid_optimization){
+        config$set_uniform_grid_axis(uniformgrid_boundingbox_sides)
+        config$set_uniform_grid_origin(uniformgrid_boundingbox_origin)
+      }
+      
+      if(config$uniformgrid_optimization &&
+           (length(uniformgrid_boundingbox_sides)!=length(uniformgrid_boundingbox_origin)
+            || length(uniformgrid_boundingbox_origin) != dim)){
+        
+        stop("Make sure that dimensions of bounding box and vertex position match")
+      }
+      
+      if(!config$check_correctness()){
+        stop("Passed incorrect parameters.")
+      }
+      
+      # Construct server
+      server = new(GNGServer, config)
+      server$set_debug_level(10)
+      server
+    }
+    
 
-  if (!isGeneric("dump_model"))
-    setGeneric("dump_model", 
-               function(object, filename, ...) standardGeneric("dump_model"))  
-  
-  if (!isGeneric("convert_igraph"))
-    setGeneric("convert_igraph", 
-               function(object, ...) standardGeneric("convert_igraph"))
-  
-  if (!isGeneric("run"))
-    setGeneric("run", 
-               function(object, ...) standardGeneric("run"))
-  
-  if (!isGeneric("pause"))
-    setGeneric("pause", 
-               function(object, ...) standardGeneric("pause"))
-  
-  if (!isGeneric("terminate"))
-    setGeneric("terminate", 
-               function(object, ...) standardGeneric("terminate"))
-  
-  
-  if (!isGeneric("insert_examples"))
-    setGeneric("insert_examples", 
-               function(object, ...) standardGeneric("insert_examples"))
-  
-  if (!isGeneric("mean_error"))
-    setGeneric("mean_error", 
-               function(object, ...) standardGeneric("mean_error"))
-
-  if (!isGeneric("centroids"))
-    setGeneric("centroids", 
-               function(object, ...) standardGeneric("centroids"))  
-  
-  if (!isGeneric("error_statistics"))
-    setGeneric("error_statistics", 
-               function(object, ...) standardGeneric("error_statistics"))
-  
-  
-  if (!isGeneric("number_nodes"))
-    setGeneric("number_nodes", 
-               function(object, ...) standardGeneric("number_nodes"))
-  
+     setGeneric("node", 
+                function(x, gng_id, ...) standardGeneric("node"))
+     
+     setGeneric("dump_model", 
+                function(object, filename, ...) standardGeneric("dump_model"))  
+     
+     setGeneric("convert_igraph", 
+                function(object, ...) standardGeneric("convert_igraph"))
+     
+     setGeneric("run", 
+                function(object, ...) standardGeneric("run"))
+     
+     setGeneric("pause", 
+                function(object, ...) standardGeneric("pause"))
+     
+     setGeneric("terminate", 
+                function(object, ...) standardGeneric("terminate"))
+     
+     
+     setGeneric("insert_examples", 
+                function(object, ...) standardGeneric("insert_examples"))
+     
+     setGeneric("mean_error", 
+                function(object, ...) standardGeneric("mean_error"))
+     
+     setGeneric("centroids", 
+                function(object, ...) standardGeneric("centroids"))  
+     
+     setGeneric("error_statistics", 
+                function(object, ...) standardGeneric("error_statistics"))
+     
+     
+     setGeneric("number_nodes", 
+                function(object, ...) standardGeneric("number_nodes"))
+     
   
   plot.gng <<- function(x, vertex.color=gng.plot.color.cluster, layout=gng.plot.layout.v2d, start_s=2, mode){
     
@@ -292,7 +553,7 @@ evalqOnLoad({
   }  
   
   dump_model.gng <<- function(object, filename){
-      object$dump_graph(filename)
+    object$dump_graph(filename)
   }
   
   setMethod("dump_model", signature("Rcpp_GNGServer","character"), dump_model.gng)
@@ -326,6 +587,9 @@ evalqOnLoad({
   
   
   
+  convert_igraph.gng <- function(object){
+    .gng.construct_igraph(object)
+  }
   
   
   #' Get node descriptor from graph
@@ -336,7 +600,7 @@ evalqOnLoad({
   #' @param gng_id gng id of the node NOTE: nmight differ from one in exported igraph
   setMethod("convert_igraph" ,
             "Rcpp_GNGServer",
-            .gng.construct_igraph)
+            convert_igraph.gng)
   
   
   #' Find closest example
@@ -348,6 +612,20 @@ evalqOnLoad({
               object$predict(x)
             })
   
+  
+  insert_examples.gng <<- function(object, examples, preset, N, r=1.0, center=c(0.5,0.5,0.5), prob=-1){
+    warning("This function is copying examples to RAM. If your data is big,
+  you can use more efficient object$insert_examples function, or you can set pointer without
+            copying data at all using object$set_memory_move_examples. See documentation for more information
+            ")
+    if(hasArg(preset)){
+      if(object$get_configuration()$dim != 3){
+        stop("Presets work only for dimensionality 3")
+      }
+      object$insert_examples(preset(N, center=center, r=r, prob=prob))
+    }
+  }
+  
   #' Insert examples
   #' 
   #' @note It copies your examples twice in RAM. You might want to use object$insert_examples, or
@@ -355,18 +633,6 @@ evalqOnLoad({
   #' and after removing the object delete it aswell)
   setMethod("insert_examples" ,
             "Rcpp_GNGServer",
-            function(object, examples, preset, N, r=1.0, center=c(0.5,0.5,0.5), prob=-1){
-              warning("This function is copying examples to RAM. If your data is big,
-  you can use more efficient object$insert_examples function, or you can set pointer without
-  copying data at all using object$set_memory_move_examples. See documentation for more information
-                      ")
-              if(hasArg(preset)){
-                if(object$get_configuration()$dim != 3){
-                  stop("Presets work only for dimensionality 3")
-                }
-                object$insert_examples(preset(N, center=center, r=r, prob=prob))
-              }
-            })
+            insert_examples.gng)
   
 })
-
