@@ -37,7 +37,7 @@ machine-learning
 \seealso{
 }
 \examples{
-gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3)
+gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=300, dim=3)
 
 insert_examples(gng, preset=gng.preset.sphere, N=10000, prob=0.8)
 
