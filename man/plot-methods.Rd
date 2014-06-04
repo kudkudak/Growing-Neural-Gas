@@ -1,0 +1,51 @@
+\docType{methods}
+\name{plot.gng}
+\alias{plot.gng}
+\title{plot}
+\format{\preformatted{ NULL
+}}
+\usage{
+plot(gng)
+}
+\arguments{
+  \item{mode}{gng.plot.rgl3d (3d plot), gng.plot.2d (igraph
+  plot) or gng.plot.2d.errors (igraph plot with mean error
+  log plot)}
+
+  \item{layout}{layout to be used when plotting. Possible
+  values: gng.plot.layour.igraph.v2d (first two
+  dimensions), gng.plot.layout.igraph.auto (auto layout
+  from igraph) gng.plot.layout.igraph.fruchterman.fast
+  (fast fruchterman reingold layout),or any function
+  accepting igraph graph and returning layout}
+
+  \item{vertex.color}{how to color vertexes. Possible
+  values: gng.plot.color.cluster(vertex color is set to
+  fastgreedy.community clustering),
+  gng.plot.color.extra(rounds to integer extra dim if
+  present), gng.plot.color.none(every node is white),}
+}
+\description{
+Plot resulting graph using igraph plotting, or using rgl 3d
+engine.
+}
+\details{
+Plot GNG
+}
+\note{
+If you want to "power-use" plotting and plot for instance a
+subgraph, you might be interested in exporting igraph with
+convert_igraph function and plotting it using/reusing
+function from this package: .visualizeIGraph2d
+}
+\examples{
+# Plots igraph using first 2 coordinates and colors according to clusters
+plot(gng, mode=gng.plot.2d.errors, layout=gng.plot.layout.v2d, vertex.color=gng.plot.color.cluster)
+
+# Plot rgl (make sure you have installed rgl library)
+plot(gng, mode=gng.plot.rgl, layout=gng.plot.layout.v2d, vertex.color=gng.plot.color.cluster)
+
+# For more possibilities see gng.plot.* constants
+}
+\keyword{datasets}
+

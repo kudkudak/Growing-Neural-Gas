@@ -7,8 +7,8 @@ Author: Stanislaw Jastrzebski <staszek.jastrzebski@gmail.com>
 Maintainer: Stanislaw Jastrzebski <staszek.jastrzebski@gmail.com>
 Depends:
     Rcpp (>= 0.10.4),
-    RcppArmadillo (>= 0.4.300.0),
     BH(>= 1.54.0),
+    RcppArmadillo(>= 0.4.300.0),
     igraph(>= 0.7.0)
 LinkingTo: BH, Rcpp
 Suggests:
@@ -16,6 +16,6 @@ Suggests:
 Description: Cluster big amounts of data using online lightspeed implementation
     of Growing Neural Gas.
 OS_type: unix
-License: LGPL-3
+License: MIT
 Packaged: 2014-01-08 22:39:25 UTC; staszek
 NeedsCompilation: yes
