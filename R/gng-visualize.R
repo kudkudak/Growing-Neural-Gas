@@ -93,7 +93,7 @@ if("rgl" %in% rownames(installed.packages()) == TRUE){
     vertex.color = cols[as.double(lapply(V(ig)$extra_data, round))]
   }
   
-  .visualizeIGraph2dWithErrors(ig, vertex.color, layout, start_s)
+  .visualizeIGraph2dWithErrors(ig, vertex.color, layout, start_s, gngServer)
   
   file.remove(tmp_name)
 }
@@ -143,7 +143,7 @@ if("rgl" %in% rownames(installed.packages()) == TRUE){
   plot.igraph(g,vertex.size=3.0,vertex.label=NA,vertex.color=vertex.color,layout=L)
 }
 
-.visualizeIGraph2dWithErrors<-function(ig, vertex.color, layout_2d, start_s=2){
+.visualizeIGraph2dWithErrors<-function(ig, vertex.color, layout_2d, start_s=2, gng){
   plot.new()
   par(mfrow=c(1,2))
   .visualizeIGraph2d(ig, vertex.color, layout_2d)

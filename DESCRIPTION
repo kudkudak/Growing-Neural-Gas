@@ -8,7 +8,8 @@ Maintainer: Stanislaw Jastrzebski <staszek.jastrzebski@gmail.com>
 Depends:
     Rcpp (>= 0.10.4),
     RcppArmadillo(>= 0.4.300.0),
-    igraph(>= 0.7.0)
+    igraph(>= 0.7.1),
+    testthat(>= 0.8.1)
 LinkingTo: Rcpp
 Suggests:
     RUnit

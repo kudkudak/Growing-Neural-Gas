@@ -8,8 +8,7 @@ max_nodes <- 600
 # Construct gng object
 gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3,
            uniformgrid_optimization=TRUE,  lazyheap_optimization=FALSE,
-           uniformgrid_boundingbox_sides=c(3,3,3), uniformgrid_boundingbox_origin=c(-0.5,-0.5,-0.5), 
-           load_model_filename="sphere_simple.bin")
+           uniformgrid_boundingbox_sides=c(3,3,3), uniformgrid_boundingbox_origin=c(-0.5,-0.5,-0.5))
 
 
 # Construct examples, here we will use a sphere

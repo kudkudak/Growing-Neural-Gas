@@ -41,10 +41,17 @@ Make sure you have boost if you are unix/mac user. It is packaged in most distri
 For instance in ubuntu you can download it using `sudo apt-get install
 libboost-all-dev`
 
+Make sure you run R in sudo mode when on unix (required for Rcpp linking).
+
 ```Matlab
 devtools::install_github("kudkudak/Growing-Neural-Gas")
 ```
 
+I recommend using RStudio, especially for plotting (RStudio is doing plots in
+double buffer, which results in much faster igraph plots).
+
+See **Known issues** if your installation fails. There are few problems with
+R/igraph that are platform dependent.
 
 ##Usage
 
@@ -174,3 +181,18 @@ To run R tests type `devtools::test(".")` in the package folder.
 ##Contributors
 ---------
 Feel free to contribute to the code. Contributions should be posted as pull requests. 
+
+##Known issues
+---------
+* Package is not released for Windows yet
+
+* Due to bug in RStudio you might experience session crashes when creating many
+  gng objects.
+
+* Due to bug in R (https://bugs.r-project.org/bugzilla/show_bug.cgi?id=15327)
+  on some OS you have to install liblzma-dev additionally. Sorry for that I do
+not know how to fix it.
+
+* Due to bug (or not their fault) in igraph you might have graphml support disabled
+  (http://lists.gnu.org/archive/html/igraph-help/2011-03/msg00101.html). Try
+installing libxml2-dev package and reinstalling igraph.
