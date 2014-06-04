@@ -82,7 +82,8 @@ terminate(gng)
 
 ##List of functions
 
-I will add regular documentation after having finished adding last functionalities.
+Please see also R documentation. For pdf version see
+[gng.pdf](https://github.com/kudkudak/Growing-Neural-Gas/blob/master/doc/gng.pdf).
 
 * GNG(...) - constructor for GNG object. Parameters:
 
