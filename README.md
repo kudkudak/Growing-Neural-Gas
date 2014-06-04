@@ -37,6 +37,10 @@ Daniel Fiser, Jan Faigl, Miroslav Kulich optimization paper [FGNG: A fast multi-
 You can install it as an R package, it is easiest to do it using devtools (of
 course make sure you download devtools package in the first place).
 
+Make sure you have boost if you are unix/mac user. It is packaged in most distributions.
+For instance in ubuntu you can download it using `sudo apt-get install
+libboost-all-dev`
+
 ```Matlab
 devtools::install_github("kudkudak/Growing-Neural-Gas")
 ```
