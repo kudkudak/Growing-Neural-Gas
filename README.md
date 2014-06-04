@@ -44,8 +44,9 @@ devtools::install_github("kudkudak/Growing-Neural-Gas")
 
 ##Usage
 
-For more detailed usage see code in demo folder, or in tests/testthat folder. I
-am currently working on documentation.
+For more detailed usage see code in demo folder, or in tests/testthat folder.
+You can also refer to R package documentation (pdf version 
+[gng.pdf](https://github.com/kudkudak/Growing-Neural-Gas/blob/master/doc/gng.pdf)).
 
 ### Adding sphere data and clustering
 
@@ -82,8 +83,8 @@ terminate(gng)
 
 ##List of functions
 
-Please see also R documentation. For pdf version see
-[gng.pdf](https://github.com/kudkudak/Growing-Neural-Gas/blob/master/doc/gng.pdf).
+This is not a full documentation. Please refer to R package documentation (pdf version 
+[gng.pdf](https://github.com/kudkudak/Growing-Neural-Gas/blob/master/doc/gng.pdf) ).
 
 * GNG(...) - constructor for GNG object. Parameters:
 
