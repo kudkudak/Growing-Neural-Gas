@@ -38,7 +38,7 @@ namespace gmum{
 
 		double m_error; //error of the network
 		int m_lambda; //lambda parameter
-		double m_eps_v, m_eps_n; //epsilon of the winner and of the neighbour
+		double m_eps_w, m_eps_n; //epsilon of the winner and of the neighbour
 		int m_max_age;
 		int m_max_nodes;
 
@@ -116,7 +116,7 @@ namespace gmum{
 				GNGGraph * g, GNGDataset * db,
 			double * boundingbox_origin, double * boundingbox_axis, double l,int max_nodes=1000,
 			int max_age=200, double alpha=0.95, double betha=0.9995, double lambda=200,
-			double eps_v=0.05, double eps_n=0.0006, int dim=3,
+			double eps_w=0.05, double eps_n=0.0006, int dim=3,
 			bool uniformgrid_optimization=true,
 			bool lazyheap_optimization=true,
 			unsigned int utility_option = GNGConfiguration::UtilityOff,

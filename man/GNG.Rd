@@ -28,9 +28,9 @@ GNG
   this size it will continue running, but won't add new
   nodes)}
 
-  \item{eps_n}{Default 0.05}
+  \item{eps_w}{Default 0.05}
 
-  \item{eps_v}{Default 0.0006}
+  \item{eps_n}{Default 0.0006}
 
   \item{dataset.type}{Dataset type. Possibilities
   gng.dataset.bagging, gng.dataset.bagging.prob,

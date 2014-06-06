@@ -72,13 +72,13 @@ namespace gmum{
 			 double * boundingbox_origin,
 			double * boundingbox_axis, double l, int max_nodes,
 			int max_age, double alpha, double betha, double lambda,
-			double eps_v, double eps_n, int dim, bool uniformgrid_optimization,
+			double eps_w, double eps_n, int dim, bool uniformgrid_optimization,
 			bool lazyheap_optimization, unsigned int utility_option, double utility_k
 			) :
 	m_g(*g), g_db(db), c(0), s(0),
 	m_max_nodes(max_nodes), m_max_age(max_age),
 	m_alpha(alpha), m_betha(betha), m_lambda(lambda),
-	m_eps_v(eps_v), m_eps_n(eps_n),
+	m_eps_w(eps_w), m_eps_n(eps_n),
 	m_density_threshold(0.1), m_grow_rate(1.5),
 	errorHeap(), dim(dim), m_toggle_uniformgrid(uniformgrid_optimization),
 			m_toggle_lazyheap(lazyheap_optimization), running(false),
@@ -366,7 +366,7 @@ namespace gmum{
 
 		if (m_toggle_uniformgrid) ug->remove(nearest[0]->position);
 		for (int i = 0; i < this->dim; ++i) {
-			nearest[0]->position[i] += m_eps_v * (ex[i] - nearest[0]->position[i]);
+			nearest[0]->position[i] += m_eps_w * (ex[i] - nearest[0]->position[i]);
 		}
 
 		//Adapt to extra dimensionality if present (TODO: refactor)

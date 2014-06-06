@@ -113,7 +113,7 @@ error_statistics(error_statistics_size, 0.0)
             current_configuration.alpha,
             current_configuration.beta,
             current_configuration.lambda,
-            current_configuration.eps_v,
+            current_configuration.eps_w,
             current_configuration.eps_n,
             current_configuration.dim,
             current_configuration.uniformgrid_optimization,

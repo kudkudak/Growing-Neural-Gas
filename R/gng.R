@@ -267,9 +267,9 @@ error_statistics.gng <- NULL
 #' 
 #' @param max.nodes Maximum number of nodes (after reaching this size it will continue running, but won't add new nodes)
 #' 
-#' @param eps_n Default 0.05
+#' @param eps_n Default 0.0006. How strongly adapt neighbour node
 #' 
-#' @param eps_v Default 0.0006
+#' @param eps_w Default 0.05. How strongly adapt winning node
 #' 
 #' @param dataset.type Dataset type. Possibilities gng.dataset.bagging, gng.dataset.bagging.prob, gng.dataset.sequential
 #' 
@@ -374,8 +374,8 @@ insert_examples.gng <- NULL
 evalqOnLoad({
     GNG <<- function(dataset_type=gng.dataset.sequential, beta=0.99, 
                         alpha=0.5, uniformgrid_optimization=FALSE, 
-                        lazyheap_optimization=FALSE, max_nodes=1000, eps_n=0.05, 
-                        eps_v = 0.0006, dim=-1, uniformgrid_boundingbox_sides=c(), uniformgrid_boundingbox_origin=c(),
+                        lazyheap_optimization=FALSE, max_nodes=1000, eps_n=0.0006, 
+                        eps_w= 0.05, dim=-1, uniformgrid_boundingbox_sides=c(), uniformgrid_boundingbox_origin=c(),
                         experimental_utility_option = gng.experimental.utility.option.off,
                         experimental_utility_k = 1.5, max_edge_age = 200, experimental_vertex_extra_data=FALSE,
                         load_model_filename = ""
@@ -409,7 +409,7 @@ evalqOnLoad({
       config$lazyheap_optimization = lazyheap_optimization
       config$max_nodes = max_nodes
       config$eps_n = eps_n
-      config$eps_v = eps_v
+      config$eps_w = eps_w
       config$dim = dim
       
       if(experimental_vertex_extra_data == TRUE){

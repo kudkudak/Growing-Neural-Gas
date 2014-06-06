@@ -6,13 +6,6 @@ To remember:
 	so locking has to be performed by hand using lock/unlock
    * If matrix is passed from R as ssetData, it has to be deleted from R. In other cases it is copied
 
-For production code:
-   * uncommend IFDEF for RcppInterface. Commented out for syntax parsing in Eclipse (STUPID ECLIPSE)
-
-
-* Add bigmemory dataset, or/and reading csv (in chunks, and streaming)
-
-* Add dumping to file and reading from file.
 
 * Minor:
    Check all constants alpha and beta in particular
@@ -29,3 +22,15 @@ For production code:
     
  * Drop dimensionality parameter
 
+
+ * Automatic testing for convergence
+
+ * Warning for big dimensionality
+
+ * LOCK in predict
+
+ * isRunning test
+
+* Add CSV/sparse dataset
+
+* Dynamic changing of parameters
