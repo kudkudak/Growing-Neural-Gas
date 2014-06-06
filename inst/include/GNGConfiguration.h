@@ -74,8 +74,8 @@ namespace gmum{
 		double beta;//=0.9995;
 		/**Lambda coefficient*/
 		double lambda;//=200;
-		/**Epsilion v*/
-		double eps_v;//=0.05;
+		/**Epsilion v. How strongly move winning node*/
+		double eps_w;//=0.05;
 		/**Memory bound*/
 		int graph_memory_bound;
 		/**Epsilion n*/
@@ -138,7 +138,7 @@ namespace gmum{
 			alpha=0.95;
 			beta=0.9995;
 			lambda=200;
-			eps_v=0.05;
+			eps_w=0.05;
 			eps_n=0.0006;
 
             interprocess_communication = false;

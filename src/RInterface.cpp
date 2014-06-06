@@ -38,13 +38,13 @@ RCPP_MODULE(gng_module){
 	.field("beta", &gmum::GNGConfiguration::beta, "Beta coefficient. "
 			"Decrease the error variables of all node nodes by this fraction. Forgetting rate. Default 0.99")
 
-	.field("eps_n", &gmum::GNGConfiguration::eps_n, "Default 0.0006")
+	.field("eps_n", &gmum::GNGConfiguration::eps_n, "How strongly move neighbour node. Default 0.0006")
 	.field("load_graph_filename", &gmum::GNGConfiguration::load_graph_filename, "Default empty. Load serialized graph by serialize_graph method.")
 	.field("experimental_utility_option", &gmum::GNGConfiguration::experimental_utility_option, "Default 0 (off). You can turn it on to 1, but remember to turn off optimizations. Likely will change in the future.")
 	.field("experimental_utility_k",
 			&gmum::GNGConfiguration::experimental_utility_k, "Default 1.3 (note: option is off by default). ")
 
-	.field("eps_v", &gmum::GNGConfiguration::eps_v, "Default 0.05")
+	.field("eps_w", &gmum::GNGConfiguration::eps_w, "How strongly move winner node. Default 0.05")
 	.field("max_edge_age", &gmum::GNGConfiguration::max_age, "Max edge age")
 	.field("dim", &gmum::GNGConfiguration::dim, "Vertex position dimensionality")
 	.field("lambda", &gmum::GNGConfiguration::lambda, "Every lambda iteration is added new vertex. Default 200")
