@@ -39,8 +39,8 @@ class GNGServer{
     bool m_current_dataset_memory_was_set;
     bool m_running_thread_created;
 
-//    gmum::gmum_thread collect_statistics_thread;
-//    gmum::gmum_thread algorithm_thread;
+    gmum::gmum_thread * collect_statistics_thread;
+    gmum::gmum_thread * algorithm_thread;
 
     /** Mutex used for synchronization of graph access*/
     gmum::gmum_recursive_mutex grow_mutex;
@@ -74,9 +74,9 @@ public:
     void run() {
     	if(!m_running_thread_created){
     		DBG(10, "GNGServer::runing algorithm thread");
-    		gmum::gmum_thread(&GNGServer::_run, (void*)this);
+    		algorithm_thread = new gmum::gmum_thread(&GNGServer::_run, (void*)this);
     		DBG(10, "GNGServer::runing collect_statistics thread");
-    		gmum::gmum_thread(&GNGServer::_collect_statics, (void*)this);
+    		collect_statistics_thread = new gmum::gmum_thread(&GNGServer::_collect_statics, (void*)this);
 
     		m_running_thread_created = true;
     	}else{
@@ -250,12 +250,13 @@ public:
     void terminate(){
     	DBG(20, "GNGServer::collect_statistics interrupting");
 
-
     	DBG(20, "GNGServer::collect_statistics finished");
     	getAlgorithm().terminate();
     	DBG(20, "GNGServer::getAlgorithm terminated");
 
-    	//TODO: reliable termination..
+    	collect_statistics_thread->join();
+    	algorithm_thread->join();
+
     	gmum::sleep(1000);
     }
 
