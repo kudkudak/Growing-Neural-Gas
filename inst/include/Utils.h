@@ -92,7 +92,7 @@ std::string write_cnt_str(T begin, T end){
 
 
 template<class T>
-std::string to_string(T x){
+std::string to_str(const T& x){
     stringstream ss;
     ss<<x;
     return ss.str();

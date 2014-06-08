@@ -473,9 +473,9 @@ namespace gmum{
 
 
 
-                DBG(5, "Read in "+to_string(bufor_size) +" sized graph with "+
-                " max_index="+to_string(maximum_index)+" gng_dim="+to_string(gng_dim)+" "+
-                "firstFree="+to_string(firstFree)+" nodes="+to_string(nodes)
+                DBG(5, "Read in "+to_str(bufor_size) +" sized graph with "+
+                " max_index="+to_str(maximum_index)+" gng_dim="+to_str(gng_dim)+" "+
+                "firstFree="+to_str(firstFree)+" nodes="+to_str(nodes)
                 );
 
 
@@ -575,8 +575,8 @@ namespace gmum{
 					firstFree = previous_size;
 
 					DBG(5, "GNGGraph::resizing done");
-					DBG(5, to_string(firstFree));
-					DBG(5, to_string(next_free[previous_size]));
+					DBG(5, to_str(firstFree));
+					DBG(5, to_str(next_free[previous_size]));
 					//DBG(5, "GNGGraph::resizing graph from "+to_string(g.size())+" done");
 			}
 	};

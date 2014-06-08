@@ -65,7 +65,7 @@ void UniformGrid<VectorContainer, ListContainer, T>::purge(double *origin, doubl
     REP(i, this->gng_dim){ 
         dim[i] = calculate_cell_side(axis_array[i], l, m_dim[i]);
         
-        DBG(6, "New dimension "+to_string(dim[i]));
+        DBG(6, "New dimension "+to_str(dim[i]));
     }
     
     purge(origin, dim, l);
@@ -92,7 +92,7 @@ void UniformGrid<VectorContainer, ListContainer, T>::purge(double *origin, int* 
         REPORT(m_dim[i]);
     }
 
-    DBG(3, "UniformGrid::purge new size "+to_string<int>(new_size));
+    DBG(3, "UniformGrid::purge new size "+to_str<int>(new_size));
  
     m_grid.resize(new_size);
 }
@@ -224,7 +224,7 @@ int UniformGrid<VectorContainer, ListContainer, T>::insert(double *p, T x) {
     if(!_inside(k)) return 0;
 
     
-    DBG(0,"UniformGrid:: "+to_string(k)+" inserting "+to_string(x));
+    DBG(0,"UniformGrid:: "+to_str(k)+" inserting "+to_str(x));
     
     m_grid[k].push_back(x);
     m_nodes++;
@@ -255,13 +255,13 @@ std::vector<T> UniformGrid<VectorContainer, ListContainer, T>::findNearest(const
     
     
     int size = SIZE(m_grid);
-    DBG(2,"UniformGird:: search for "+to_string(center_id)+ "whereas size of the grid = "+to_string(size)+ "nodes = "+to_string(m_nodes));
+    DBG(2,"UniformGird:: search for "+to_str(center_id)+ "whereas size of the grid = "+to_str(size)+ "nodes = "+to_str(m_nodes));
     
     //Check if inside uniform grid
     if(!_inside(center_id)) {
         DBG(6, "UniformGird:: search for " + write_cnt_str(p, p + this->gng_dim));  
-        DBG(6,"UniformGird:: search for "+to_string(center_id));
-        DBG(6, "UniformGrid:: size="+to_string(m_grid.size()));
+        DBG(6,"UniformGird:: search for "+to_str(center_id));
+        DBG(6, "UniformGrid:: size="+to_str(m_grid.size()));
         vector<int> returned_value;
         returned_value.push_back(-1);
         returned_value.push_back(-1);
@@ -280,8 +280,8 @@ std::vector<T> UniformGrid<VectorContainer, ListContainer, T>::findNearest(const
         DBG(10, "UniformGrid:: Found two same nodes in one cell!!");
     }
 
-    DBG(2, "UniformGrid:: Found 0: "+to_string(s_found_cells[0]));
-    DBG(2, "UniformGrid:: Found 1: "+to_string(s_found_cells[1]));
+    DBG(2, "UniformGrid:: Found 0: "+to_str(s_found_cells[0]));
+    DBG(2, "UniformGrid:: Found 1: "+to_str(s_found_cells[1]));
     
     for (int i = 0; i < this->gng_dim; ++i) {
         tmp = abs((p[i] - m_origin[i] - center[i] * m_l)) < abs((p[i] - m_origin[i] - (center[i] + 1) * m_l)) ?
@@ -319,7 +319,7 @@ std::vector<T> UniformGrid<VectorContainer, ListContainer, T>::findNearest(const
         (
             !searchSuccessful(border_squared)
             ) {
-        DBG(3, "UniformGird:: scanning radius "+to_string(s_radius));
+        DBG(3, "UniformGird:: scanning radius "+to_str(s_radius));
         ++s_radius;
         border += m_l;
         border_squared = border*border;

@@ -419,11 +419,11 @@ private:
     void _handle_addExamples(double * examples,unsigned int count, unsigned int size, bool set=false){
     	gngDataset->lock();
 
-    	DBG(5, "GNGServer::Adding examples with "+to_string(gngDataset->getDataDim())+" dimensionality");
+    	DBG(5, "GNGServer::Adding examples with "+gmum::to_string(gngDataset->getDataDim())+" dimensionality");
 
     	if(count*gngDataset->getDataDim() != size){
-    		DBG(10, "Wrong dimensionality is "+to_string(size)+" expected "+
-    				to_string(count*gngDataset->getDataDim()) + " data dim " + to_string(gngDataset->getDataDim()));
+    		DBG(10, "Wrong dimensionality is "+gmum::to_string(size)+" expected "+
+    				gmum::to_string(count*gngDataset->getDataDim()) + " data dim " + gmum::to_string(gngDataset->getDataDim()));
     		throw BasicException("Wrong dimensionality. "
     				"Check if you have added all field to "
     				"position (for instance probability)");
@@ -439,7 +439,7 @@ private:
         	gngDataset->setExamples(examples, count, size);
 
         int tmp = gngDataset->getSize();
-        DBG(7, "GNGServer::Database size "+to_string(tmp));
+        DBG(7, "GNGServer::Database size "+gmum::to_string(tmp));
 
         gngDataset->unlock();
     }
