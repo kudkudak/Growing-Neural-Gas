@@ -10,11 +10,6 @@
 
 
 
-#include <boost/interprocess/containers/list.hpp>
-#include <boost/interprocess/containers/vector.hpp>
-#include <boost/interprocess/allocators/allocator.hpp>
-#include <boost/interprocess/offset_ptr.hpp>
-#include "SHMemoryManager.h"
 #include "GNGDataset.h"
 #include "GNGGlobals.h"
 #include <cmath>

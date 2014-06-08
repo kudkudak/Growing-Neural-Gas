@@ -10,8 +10,7 @@
 
 //#ifdef RCPP_INTERFACE
 
-#include <Rcpp.h>
-#include <armadillo>
+#include <RcppArmadillo.h>
 
 
 using namespace Rcpp;

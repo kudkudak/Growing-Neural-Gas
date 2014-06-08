@@ -9,15 +9,10 @@
 #define	GNGDEFINES_H
 
 #include "GNGGraph.h"
-#include <boost/interprocess/managed_shared_memory.hpp>
-#include<string>
+#include <string>
 
 
 namespace gmum{
-
-	typedef boost::interprocess::interprocess_mutex MyMutex;
-	//typedef boost::interprocess::offset_ptr< SHGNGNode  > PoolPtr;
-	typedef boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> ScopedLock;
 
 
 	/** Carries message about message to look for in shared memory used for interprocess communication

@@ -18,14 +18,10 @@
 
 #include "GNGNode.h"
 #include "GNGGlobals.h"
-#include <boost/thread/recursive_mutex.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/bind.hpp>
-#include <boost/interprocess/offset_ptr.hpp>
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/graphml.hpp>
+#include "Threading.h"
+#include "boost/graph/adjacency_list.hpp"
+#include "boost/graph/adjacency_list.hpp"
+#include "boost/graph/graphml.hpp"
 
 using namespace std;
 
@@ -122,7 +118,7 @@ namespace gmum{
 	 * TODO: change GNGEdge* to GNGEdge (problems with rev)
 	 * TODO: edges ~ gng_dim - maybe use this for better efficiency?
 	 */
-	template < class Node, class Edge, class Mutex = boost::recursive_mutex > class RAMGNGGraph:public GNGGraph
+	template < class Node, class Edge, class Mutex = gmum::gmum_recursive_mutex > class RAMGNGGraph:public GNGGraph
 	{
 			/** Mutex provided externally for synchronization*/
 			Mutex * mutex;
@@ -589,7 +585,6 @@ namespace gmum{
 
 	using namespace boost;
 	using namespace std;
-	using boost::get;
 
 	struct boost_vertex_desc
 	{

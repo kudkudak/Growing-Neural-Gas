@@ -10,17 +10,14 @@
 
 #include <memory>
 
-
 #include "GNGGlobals.h"
 #include "GNGGraph.h"
 #include "GNGDataset.h"
+#include "Threading.h"
 #include "UniformGrid.h"
 #include "GNGLazyErrorHeap.h"
-
-#include <boost/thread/condition.hpp>
-#include <boost/thread.hpp>
-#include <boost/date_time.hpp>
-
+#include <string>
+using namespace std;
 
 namespace gmum{
 
@@ -43,6 +40,9 @@ namespace gmum{
 		int m_max_nodes;
 
 		bool m_toggle_uniformgrid, m_toggle_lazyheap;
+
+		double m_utility_k;
+		int m_utility_option;
 
 		double m_alpha,m_betha;
 		double * m_betha_powers;
@@ -73,7 +73,7 @@ namespace gmum{
 			GNG_TERMINATED
 		};
 
-		GngStatus gng_status;
+		GngStatus m_gng_status;
 		bool running;
 
 
@@ -83,12 +83,12 @@ namespace gmum{
 		};
 
 
-	   boost::mutex status_change_mutex;
-	   boost::condition status_change_condition;
+	   gmum::gmum_recursive_mutex status_change_mutex;
+	   gmum::gmum_condition status_change_condition;
 
-		//TODO: optimize - only for research purposes inserted like this
-		double m_utility_k;
-		int m_utility_option;
+	   GngStatus gng_status(){
+		   return m_gng_status;
+	   }
 
 
 	public:
@@ -129,19 +129,19 @@ namespace gmum{
 
 		/** Start algorithm loop */
 		void run(){
-			 this->gng_status = GNG_RUNNING;
+			 this->m_gng_status = GNG_RUNNING;
 			 this->status_change_condition.notify_all();
 		}
 
 		/** Pause algorithm loop */
 		void pause(){
-			 this->gng_status = GNG_PAUSED;
+			 this->m_gng_status = GNG_PAUSED;
 			 this->status_change_condition.notify_all();
 		}
 
 		/** Terminate the algorithm */
 		void terminate(){
-			this->gng_status = GNG_TERMINATED;
+			this->m_gng_status = GNG_TERMINATED;
 			this->status_change_condition.notify_all();
 		}
 
@@ -297,9 +297,7 @@ namespace gmum{
 
 			if (m_g.existsNode(min_utility_index) &&
 						max_error/get_utility(min_utility_index) > m_utility_k){
-					DBG(2, "GNGAlgorithm:: "
-							"removing node with utility "+to_string(get_utility(min_utility_index)) +
-							" max error "+to_string(max_error));
+					DBG(2, "GNGAlgorithm:: removing node with utility "+to_string(get_utility(min_utility_index)) + " max error "+to_string(max_error));
 
 					DBG(2,to_string<double>(max_error));
 
@@ -321,7 +319,7 @@ namespace gmum{
 			int maximumIndex = m_g.getMaximumIndex();
 			for(int i=0;i<=maximumIndex;++i){
 				if (m_g.existsNode(i)) {
-					set_utility(i, get_utility(i)*(m_betha)); //INACZEJ NIZ W BOORU.NET
+					set_utility(i, get_utility(i)*(m_betha));
 				}
 			}
 
@@ -340,8 +338,8 @@ namespace gmum{
 	};
 
 
-	typedef boost::posix_time::ptime Time;
-	typedef boost::posix_time::time_duration TimeDuration;
+//	typedef boost::posix_time::ptime Time;
+//	typedef boost::posix_time::time_duration TimeDuration;
 
 }
 

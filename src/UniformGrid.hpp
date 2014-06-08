@@ -303,10 +303,8 @@ std::vector<T> UniformGrid<VectorContainer, ListContainer, T>::findNearest(const
 
     s_radius = 0;
     
-            DBG(2, "UniformGird:: scanned straightforward cell proceeding to crawling");
-     Time t1(boost::posix_time::microsec_clock::local_time());
+     DBG(2, "UniformGird:: scanned straightforward cell proceeding to crawling");
 
-    
      //No more cells to search
     if(m_grid.size()==1){
             std::vector<T> ret(2);
@@ -331,14 +329,6 @@ std::vector<T> UniformGrid<VectorContainer, ListContainer, T>::findNearest(const
     }
     
             DBG(2, "UniformGird:: scanning done");
-    
-        Time t2(boost::posix_time::microsec_clock::local_time());
-        TimeDuration dt = t2 - t1;
-        
-        
-
-//        cout<<"Uniform grid search time "<< dt.total_microseconds()<<endl;
-
     std::vector<T> ret(2);
     
     //Reversed array - see scanCell

@@ -10,8 +10,8 @@ using namespace boost;
 
 namespace gmum{
 
-	  std::string writeToGraphML(GNGGraph &g, string filename){
-	  
+  std::string writeToGraphML(GNGGraph &g, string filename){
+
       DBG(4, "writeToGraphML::locking");
 	  g.lock();
 
@@ -37,7 +37,7 @@ namespace gmum{
 	  for(int i=0;i<=g.getMaximumIndex();++i)
 		if(g.existsNode(i))
 		{
-			DBG(1, to_string(i));
+			DBG(1, gmum::to_string(i));
 			map_desc[g[i].nr] = add_vertex(boost_g);
 			boost_g[map_desc[g[i].nr]].index = g[i].nr;
 			boost_g[map_desc[g[i].nr]].error = g[i].error;
