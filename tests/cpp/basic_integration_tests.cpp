@@ -22,7 +22,13 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     
     GNGServer *s = GNGServer::constructTestServer(config);
 
+    DBG(10, "test_convergence::current pool");
+
     cerr<<s->getGraph().reportPool()<<endl;
+
+    DBG(10, "running algorithm");
+
+
     s->run();   
 
     cerr<<"Allocating "<<(config.dim+1)*num_database<<endl<<flush;

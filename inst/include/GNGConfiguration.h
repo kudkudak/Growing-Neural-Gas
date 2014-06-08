@@ -21,7 +21,6 @@ using namespace arma;
 #include <vector>
 
 
-namespace gmum{
 
 	/**
 	 *
@@ -198,6 +197,5 @@ namespace gmum{
 			return true;
 		}
 	};
-}
 #endif	/* GNGCONFIGURATION_H */
 

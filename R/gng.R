@@ -28,7 +28,7 @@ gng.plot.2d <- 1
 gng.plot.rgl3d <- 2
 gng.plot.2d.errors <- 3
 
-loadModule('gng_module', TRUE)
+
 
 
 
@@ -369,9 +369,12 @@ convert_igraph.gng <- NULL
 #'
 insert_examples.gng <- NULL
 
+loadModule('gng_module', TRUE)
 
 # Lazy loading to allow for discovery of all files
 evalqOnLoad({
+    
+    
     GNG <<- function(dataset_type=gng.dataset.sequential, beta=0.99, 
                         alpha=0.5, uniformgrid_optimization=FALSE, 
                         lazyheap_optimization=FALSE, max_nodes=1000, eps_n=0.0006, 
