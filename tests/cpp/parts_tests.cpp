@@ -63,7 +63,8 @@ TEST(GraphTests, BasicGraphTest) {
 	ASSERT_EQ(g.getNumberNodes(), N_start - 1);
 
 	/** WARNING: highly intrusive test ! Can change implementation*/
-	DBG(10, "First free = "+to_string(g.firstFree)); DBG(10, "First free = "+to_string(g.next_free[g.firstFree]));
+	DBG(10, "First free = "+gmum::to_string(g.firstFree));
+	DBG(10, "First free = "+gmum::to_string(g.next_free[g.firstFree]));
 	ASSERT_EQ(g.firstFree, 20);
 	ASSERT_EQ(g.next_free[g.firstFree], 15); //might fail if not doubling
 	ASSERT_EQ(g.next_free[15], 10);
@@ -169,115 +170,115 @@ TEST(GraphTests, BasicGraphTest) {
 }
 using namespace std;
 
-///*
-// * Basic test
-// */
-//TEST(DatabaseTests, BasicGraphTest){
-//	dbg.set_debug_level(3);
-//
-//    unsigned int dim = 6;
-//    gmum::gmum_recursive_mutex phase_2_lock;
-//    unsigned int num_examples = 100, meta_data_dim = 10;
-//    //Probabilistic dataaset
-//    GNGDatasetSimple<GNGDatasetStorageRAM> dataset(
-//    		&phase_2_lock,dim, meta_data_dim, 0, -1);
-//
-//
-//
-//    double * x = new double[num_examples*(meta_data_dim+dim)];
-//
-//    dataset.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim));
-//
-//
-//    GNGDatasetSimple<GNGDatasetStorageRAM> dataset2(
-//    		&phase_2_lock, dim, meta_data_dim, 1, 0);
-//
-//
-//
-//    x = new double[num_examples*(meta_data_dim+dim+1)];
-//    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
-//    	x[i] = 0.2;
-//    }
-//
-//    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
-//
-//    x = new double[num_examples*(meta_data_dim+dim+1)];
-//    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
-//    	x[i] = 0.6;
-//    }
-//    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
-//
-//    num_examples*=2;
-//    x = new double[num_examples*(meta_data_dim+dim+1)];
-//    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
-//    	x[i] = 0.8;
-//    }
-//    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
-//
-//
-//    for(int i=0;i<100000;++i){
-//		unsigned int a = dataset2.drawExample();
-//		unsigned int b = dataset2.drawExample();
-//		unsigned int c = dataset2.drawExample();
-//
-//
-//		ASSERT_LE(dataset2.getPosition(a)[0], 0.9);
-//		ASSERT_LE(dataset2.getPosition(b)[0], 0.9);
-//		ASSERT_LE(dataset2.getPosition(c)[0], 0.9);
-//    }
-//}
-//
-//
-//
-//TEST(DatabaseTestsSeq, BasicGraphTest){
-//	dbg.set_debug_level(3);
-//	gmum::gmum_recursive_mutex phase_2_lock;
-//    unsigned int dim = 6;
-//    unsigned int num_examples = 100, meta_data_dim = 10;
-//    //Probabilistic dataaset
-//    GNGDatasetSimple<GNGDatasetStorageRAM> dataset(
-//    		&phase_2_lock, dim, meta_data_dim, 0, -1, false);
-//
-//    double * x = new double[num_examples*(meta_data_dim+dim)];
-//
-//    dataset.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim));
-//
-//
-//    GNGDatasetSimple<GNGDatasetStorageRAM> dataset2(
-//    		&phase_2_lock, dim, meta_data_dim, 1, 0);
-//
-//
-//    x = new double[num_examples*(meta_data_dim+dim+1)];
-//    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
-//    	x[i] = 0.2;
-//    }
-//
-//    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
-//
-//    x = new double[num_examples*(meta_data_dim+dim+1)];
-//    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
-//    	x[i] = 0.6;
-//    }
-//    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
-//
-//    num_examples*=2;
-//    x = new double[num_examples*(meta_data_dim+dim+1)];
-//    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
-//    	x[i] = 0.8;
-//    }
-//    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
-//
-//
-//    for(int i=0;i<100000;++i){
-//		unsigned int a = dataset2.drawExample();
-//		unsigned int b = dataset2.drawExample();
-//		unsigned int c = dataset2.drawExample();
-//
-//
-//		ASSERT_LE(dataset2.getPosition(a)[0], 0.9);
-//		ASSERT_LE(dataset2.getPosition(b)[0], 0.9);
-//		ASSERT_LE(dataset2.getPosition(c)[0], 0.9);
-//    }
-//}
+/*
+ * Basic test
+ */
+TEST(DatabaseTests, BasicGraphTest){
+	dbg.set_debug_level(3);
+
+    unsigned int dim = 6;
+    gmum::gmum_recursive_mutex phase_2_lock;
+    unsigned int num_examples = 100, meta_data_dim = 10;
+    //Probabilistic dataaset
+    GNGDatasetSimple<GNGDatasetStorageRAM> dataset(
+    		&phase_2_lock,dim, meta_data_dim, 0, -1);
+
+
+
+    double * x = new double[num_examples*(meta_data_dim+dim)];
+
+    dataset.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim));
+
+
+    GNGDatasetSimple<GNGDatasetStorageRAM> dataset2(
+    		&phase_2_lock, dim, meta_data_dim, 1, 0);
+
+
+
+    x = new double[num_examples*(meta_data_dim+dim+1)];
+    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
+    	x[i] = 0.2;
+    }
+
+    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
+
+    x = new double[num_examples*(meta_data_dim+dim+1)];
+    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
+    	x[i] = 0.6;
+    }
+    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
+
+    num_examples*=2;
+    x = new double[num_examples*(meta_data_dim+dim+1)];
+    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
+    	x[i] = 0.8;
+    }
+    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
+
+
+    for(int i=0;i<100000;++i){
+		unsigned int a = dataset2.drawExample();
+		unsigned int b = dataset2.drawExample();
+		unsigned int c = dataset2.drawExample();
+
+
+		ASSERT_LE(dataset2.getPosition(a)[0], 0.9);
+		ASSERT_LE(dataset2.getPosition(b)[0], 0.9);
+		ASSERT_LE(dataset2.getPosition(c)[0], 0.9);
+    }
+}
+
+
+
+TEST(DatabaseTestsSeq, BasicGraphTest){
+	dbg.set_debug_level(3);
+	gmum::gmum_recursive_mutex phase_2_lock;
+    unsigned int dim = 6;
+    unsigned int num_examples = 100, meta_data_dim = 10;
+    //Probabilistic dataaset
+    GNGDatasetSimple<GNGDatasetStorageRAM> dataset(
+    		&phase_2_lock, dim, meta_data_dim, 0, -1, false);
+
+    double * x = new double[num_examples*(meta_data_dim+dim)];
+
+    dataset.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim));
+
+
+    GNGDatasetSimple<GNGDatasetStorageRAM> dataset2(
+    		&phase_2_lock, dim, meta_data_dim, 1, 0);
+
+
+    x = new double[num_examples*(meta_data_dim+dim+1)];
+    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
+    	x[i] = 0.2;
+    }
+
+    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
+
+    x = new double[num_examples*(meta_data_dim+dim+1)];
+    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
+    	x[i] = 0.6;
+    }
+    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
+
+    num_examples*=2;
+    x = new double[num_examples*(meta_data_dim+dim+1)];
+    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
+    	x[i] = 0.8;
+    }
+    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
+
+
+    for(int i=0;i<100000;++i){
+		unsigned int a = dataset2.drawExample();
+		unsigned int b = dataset2.drawExample();
+		unsigned int c = dataset2.drawExample();
+
+
+		ASSERT_LE(dataset2.getPosition(a)[0], 0.9);
+		ASSERT_LE(dataset2.getPosition(b)[0], 0.9);
+		ASSERT_LE(dataset2.getPosition(c)[0], 0.9);
+    }
+}
 
 

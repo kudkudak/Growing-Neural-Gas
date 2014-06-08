@@ -196,8 +196,8 @@ namespace gmum{
 			double new_avg_density = m_nodes/(double)(this->calculate_new_size(m_origin, m_axis, m_l/m_grow_factor));
 
 
-			DBG(2, "avg_desnity = "+to_string(avg_density));
-			DBG(2, "new_avg_density = "+to_string(new_avg_density));
+			DBG(2, "avg_desnity = "+to_str(avg_density));
+			DBG(2, "new_avg_density = "+to_str(new_avg_density));
 
 			return avg_density > m_density_threshold && new_avg_density > m_density_threshold_min;
 		}

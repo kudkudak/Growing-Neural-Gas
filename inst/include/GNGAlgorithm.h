@@ -297,9 +297,9 @@ namespace gmum{
 
 			if (m_g.existsNode(min_utility_index) &&
 						max_error/get_utility(min_utility_index) > m_utility_k){
-					DBG(2, "GNGAlgorithm:: removing node with utility "+to_string(get_utility(min_utility_index)) + " max error "+to_string(max_error));
+					DBG(2, "GNGAlgorithm:: removing node with utility "+gmum::to_string(get_utility(min_utility_index)) + " max error "+gmum::to_string(max_error));
 
-					DBG(2,to_string<double>(max_error));
+					DBG(2,gmum::to_string<double>(max_error));
 
 
 					GNGNode::EdgeIterator edg = m_g[min_utility_index].begin();
