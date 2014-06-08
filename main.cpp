@@ -73,7 +73,6 @@ pair<double, double> test_convergence2(GNGConfiguration * cnf=0, int num_databas
 
 
 
-    boost::posix_time::millisec workTime(500);
 
     cerr<< "testNewInterface::Collecting results\n";
 
@@ -84,7 +83,7 @@ pair<double, double> test_convergence2(GNGConfiguration * cnf=0, int num_databas
     while(true){
        ++iteration;
        REPORT_PRODUCTION(iteration);
-       boost::this_thread::sleep(workTime);
+       gmum::sleep(100);
        REPORT_PRODUCTION(s->getGraph().getNumberNodes());
        vector<double> stats = s->getErrorStatistics();
        write_array(&stats[0], &stats[stats.size()-1]);
@@ -98,11 +97,10 @@ pair<double, double> test_convergence2(GNGConfiguration * cnf=0, int num_databas
 
     int test;
     while(s->getAlgorithm().running == true){
-        boost::this_thread::sleep(workTime);
+    	gmum::sleep(100);
     }
 
-    boost::this_thread::sleep(workTime);
-
+    gmum::sleep(100);
 
     pair<double , double> t = pair<double, double>(s->getGraph().getNumberNodes(),
             s->getAlgorithm().CalculateAccumulatedError()

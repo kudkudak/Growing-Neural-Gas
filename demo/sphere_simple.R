@@ -1,5 +1,6 @@
 # Simple sphere dataset
 
+
 library("GrowingNeuralGas")
 library(igraph)
 

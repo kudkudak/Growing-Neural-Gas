@@ -4,11 +4,8 @@
 *
 * Created on October 17, 2013, 8:12 PM
 */
-
 #ifndef GNGSERVER_H
 #define GNGSERVER_H
-
-
 
 #include "GNGDefines.h"
 #include "GNGConfiguration.h"
@@ -17,26 +14,18 @@
 #include <cstddef>
 #include <map>
 #include <exception>
-#include <boost/thread/recursive_mutex.hpp>
-#include <boost/interprocess/managed_shared_memory.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-
 #include <memory>
 
 #include "GNGGlobals.h"
 #include "GNGGraph.h"
 #include "GNGDataset.h"
 #include "GNGAlgorithm.h"
-
+#include "Threading.h"
 #include "Utils.h"
 
 
-//#ifdef RCPP_INTERFACE
-
-#include <Rcpp.h>
+#include <RcppArmadillo.h>
 #include <armadillo>
-
 
 using namespace Rcpp;
 using namespace arma;
@@ -50,19 +39,19 @@ class GNGServer{
     bool m_current_dataset_memory_was_set;
     bool m_running_thread_created;
 
-    boost::thread collect_statistics_thread;
-    boost::thread algorithm_thread;
+//    gmum::gmum_thread collect_statistics_thread;
+//    gmum::gmum_thread algorithm_thread;
 
     /** Mutex used for synchronization of graph access*/
-    boost::recursive_mutex grow_mutex;
+    gmum::gmum_recursive_mutex grow_mutex;
     /** Mutex used for synchronization of graph access*/
-    boost::recursive_mutex database_mutex;
+    gmum::gmum_recursive_mutex database_mutex;
     /** Mutex used for synchronization of graph access*/
-    boost::mutex stat_mutex;
+    gmum::gmum_recursive_mutex stat_mutex;
 
 
     /** Singleton mutex*/
-    static boost::mutex static_lock;
+    static gmum::gmum_recursive_mutex static_lock;
 
     std::auto_ptr<gmum::GNGAlgorithm> gngAlgorithm;
     std::auto_ptr<GNGGraph > gngGraph;
@@ -85,9 +74,9 @@ public:
     void run() {
     	if(!m_running_thread_created){
     		DBG(10, "GNGServer::runing algorithm thread");
-    		algorithm_thread = boost::thread(boost::bind(&GNGServer::_run, this));
+    		gmum::gmum_thread(&GNGServer::_run, (void*)this);
     		DBG(10, "GNGServer::runing collect_statistics thread");
-    		collect_statistics_thread = boost::thread(boost::bind(&GNGServer::_collect_statics, this));
+    		gmum::gmum_thread(&GNGServer::_collect_statics, (void*)this);
 
     		m_running_thread_created = true;
     	}else{
@@ -137,6 +126,7 @@ public:
     unsigned int error_statistics_end;
     unsigned int error_statistics_start;
     unsigned int error_statistics_delay_ms;
+
     vector<double> getErrorStatistics(){
     	stat_mutex.lock();
 
@@ -178,7 +168,6 @@ public:
     	ret["error"] = n.error;
     	ret["extra_data"] = n.extra_data;
 
-
     	vector<unsigned int> neigh(n.size());
     	GNGNode::EdgeIterator edg = n.begin();
     	unsigned i = 0;
@@ -207,6 +196,8 @@ public:
 
 
 		arma::mat * points = new arma::mat(ex.begin(), ex.nrow(), ex.ncol(), false);
+
+
 
 		arma::inplace_trans( *points, "lowmem");
 		this->_handle_addExamples(points->memptr(),(unsigned int)points->n_cols,
@@ -258,18 +249,14 @@ public:
     ///Terminate algorithm
     void terminate(){
     	DBG(20, "GNGServer::collect_statistics interrupting");
-    	collect_statistics_thread.interrupt();
-//    	DBG(20, "GNGServer::collect_statistics joining");
-//    	collect_statistics_thread.join();
 
 
     	DBG(20, "GNGServer::collect_statistics finished");
     	getAlgorithm().terminate();
     	DBG(20, "GNGServer::getAlgorithm terminated");
-    	algorithm_thread.join();
-//    	DBG(20, "GNGServer::getAlgorithm joined");
-    	//TODO: fix problems with joining interrupted thread ..
-    	boost::this_thread::sleep(boost::posix_time::millisec(100));
+
+    	//TODO: reliable termination..
+    	gmum::sleep(1000);
     }
 
     GNGConfiguration getConfiguration(){
@@ -285,17 +272,7 @@ public:
         return GNGServer::current_configuration;
     }
 
-    /** Get singleton of GNGServer (thread safe) */
-    static GNGServer& getInstance(){
-        boost::mutex::scoped_lock sc(static_lock);
-        static GNGServer gngServer(&current_configuration);
-        return gngServer;
-    }
 
-
-
-
-    //TODO: const reference not dandling pointer
     GNGAlgorithm & getAlgorithm(){
         return *this->gngAlgorithm.get();
     }
@@ -387,11 +364,12 @@ private:
     /** Run GNG Server - runs in separate thread and returns control
     * @note Runs one extra threads for communication.
     */
-    void _run() {
+    static void _run(void * server) {
+    	GNGServer * gng_server = (GNGServer*)server;
     	try{
 			DBG(10, "GNGServer::run::proceeding to algorithm");
-			gngAlgorithm->run();
-			gngAlgorithm->runAlgorithm();
+			gng_server->getAlgorithm().run();
+			gng_server->getAlgorithm().runAlgorithm();
     	}
     	catch(std::exception & e){
     		cerr<<"GNGServer::failed _run with "<<e.what()<<endl;
@@ -399,25 +377,28 @@ private:
     	}
     }
 
-    void _collect_statics(){
+    static void _collect_statics(void * server){
+    	GNGServer * gng_server = (GNGServer*)server;
     	try{
-    		while(!gngAlgorithm->running)
-    			boost::this_thread::sleep(boost::posix_time::millisec(10));
+    		while(!gng_server->getAlgorithm().running)
+    			gmum::sleep(10);
 
     		DBG(10, "GNGServer::run::proceeding to collect_statistics");
-			while(true){
-				while(!stat_mutex.try_lock()){ //just to ensure no livelocks
-					boost::this_thread::sleep(boost::posix_time::millisec(10));
+			while(gng_server->getAlgorithm().gng_status() != GNGAlgorithm::GNG_TERMINATED){
+				while(!gng_server->stat_mutex.try_lock()){ //just to ensure no livelocks
+					gmum::sleep(10);
 				}
 
-				unsigned int insert_place = (error_statistics_end+1) % error_statistics_size;
-				error_statistics[insert_place] = this->getMeanError();
-				error_statistics_end = insert_place;
-				if(error_statistics_end == error_statistics_start)
-					error_statistics_start = (error_statistics_start+1) % error_statistics_size;
-				stat_mutex.unlock();
+				unsigned int insert_place = (gng_server->error_statistics_end+1) %
+						gng_server->error_statistics_size;
+				gng_server->error_statistics[insert_place] = gng_server->getMeanError();
+				gng_server->error_statistics_end = insert_place;
+				if(gng_server->error_statistics_end == gng_server->error_statistics_start)
+					gng_server->error_statistics_start =
+							(gng_server->error_statistics_start+1) % gng_server->error_statistics_size;
+				gng_server->stat_mutex.unlock();
 
-				boost::this_thread::sleep(boost::posix_time::millisec(error_statistics_delay_ms));
+				gmum::sleep(gng_server->error_statistics_delay_ms);
 			}
     	}
     	catch(...){

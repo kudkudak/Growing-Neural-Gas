@@ -9,7 +9,6 @@ using namespace std;
 using namespace gmum;
 
 unsigned int sleep_ms = 200;
-boost::posix_time::millisec workTime(sleep_ms);
 /** Run GNGAlgorithm on cube (3-dimensional) with given parameters
  * @returns pair<double, double> : nodes, mean_error
  */

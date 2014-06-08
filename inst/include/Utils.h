@@ -92,7 +92,7 @@ std::string write_cnt_str(T begin, T end){
 
 
 template<class T>
-std::string to_string(T& x){
+std::string to_string(T x){
     stringstream ss;
     ss<<x;
     return ss.str();
@@ -137,14 +137,6 @@ double _load_bin(istream & in);
 
 vector<double> _load_bin_vector(istream & in);
 
-
-
-
-
-
-
-//TODO: add DBG() MACRO!
-//TOTO: add ASSERT() MACRO!
 
 
 

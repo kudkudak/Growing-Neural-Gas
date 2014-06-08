@@ -129,5 +129,5 @@ error_statistics(error_statistics_size, 0.0)
 }
 
 GNGConfiguration GNGServer::current_configuration = GNGConfiguration::getDefaultConfiguration();
-boost::mutex GNGServer::static_lock;
+gmum::gmum_recursive_mutex GNGServer::static_lock;
 

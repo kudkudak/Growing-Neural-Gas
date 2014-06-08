@@ -13,16 +13,11 @@
 
 #include "Utils.h"
 #include <vector>
-#include <boost/date_time.hpp>
 #include "GNGGlobals.h"
 #include <iostream>
 #include <cmath>
 #include <algorithm>
 using namespace std;
-using namespace boost;
-using namespace boost::posix_time;
-typedef boost::posix_time::ptime Time;
-typedef boost::posix_time::time_duration TimeDuration;
 extern DebugCollector dbg;
 
 namespace gmum{

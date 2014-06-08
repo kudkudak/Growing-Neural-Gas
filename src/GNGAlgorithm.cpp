@@ -277,7 +277,7 @@ namespace gmum{
 
 
 	void GNGAlgorithm::Adapt(const double * ex, const double * extra) {
-		Time t1(boost::posix_time::microsec_clock::local_time());
+//		Time t1(boost::posix_time::microsec_clock::local_time());
 
 
 		DBG(4, "GNGAlgorith::Adapt::commence search");
@@ -291,12 +291,12 @@ namespace gmum{
 
 			DBG(1, "GNGAlgorithm::Adapt::Found nearest");
 
-			Time t2(boost::posix_time::microsec_clock::local_time());
-			TimeDuration dt = t2 - t1;
+//			Time t2(boost::posix_time::microsec_clock::local_time());
+//			TimeDuration dt = t2 - t1;
 
 
 
-			times["uniform_grid_search"] += dt.total_microseconds();
+//			times["uniform_grid_search"] += dt.total_microseconds();
 
 
 			#ifdef DEBUG
@@ -334,13 +334,13 @@ namespace gmum{
 			nearest[1] = tmp[1];
 			delete[] tmp;
 		}
-		Time t2(boost::posix_time::microsec_clock::local_time());
+//		Time t2(boost::posix_time::microsec_clock::local_time());
 
-		TimeDuration dt = t2 - t1;
+//		TimeDuration dt = t2 - t1;
 
-		times["adapt1"] += dt.total_microseconds();
+//		times["adapt1"] += dt.total_microseconds();
 
-		t1 = boost::posix_time::microsec_clock::local_time();
+//		t1 = boost::posix_time::microsec_clock::local_time();
 
 
 
@@ -472,10 +472,10 @@ namespace gmum{
 		}
 
 
-		t2 = boost::posix_time::microsec_clock::local_time();
-		dt = t2 - t1;
+//		t2 = boost::posix_time::microsec_clock::local_time();
+//		dt = t2 - t1;
 
-		times["adapt2"] += dt.total_microseconds();
+//		times["adapt2"] += dt.total_microseconds();
 
 		DBG(3, "GNGAlgorith::Adapt::leaving");
 
@@ -683,20 +683,19 @@ namespace gmum{
 		int counter = 0;
 		s = 0;
 
-		Time t1, t2, t3, t4;
-		TimeDuration dt;
+//		Time t1, t2, t3, t4;
+//		TimeDuration dt;
 
 		DBG(3, "GNGAlgorithm::check size of the db " + to_string(size));
 
-		boost::posix_time::millisec workTime(100);
 		while (g_db->getSize() < 2) {
 			++counter;
-			boost::this_thread::sleep(workTime);
+			gmum::sleep(100);
 
 			//TODO: change to interruption pattern
-			while(this->gng_status != GNG_RUNNING) {
-				DBG(1, "GNGAlgorithm::status in main loop = "+to_string(this->gng_status));
-				if(this->gng_status == GNG_TERMINATED) break;
+			while(this->m_gng_status != GNG_RUNNING) {
+				DBG(1, "GNGAlgorithm::status in main loop = "+to_string(this->m_gng_status));
+				if(this->m_gng_status == GNG_TERMINATED) break;
 				this->status_change_condition.wait(this->status_change_mutex);
 			}
 
@@ -705,9 +704,9 @@ namespace gmum{
 			int size = g_db->getSize();
 			DBG(2, "GNGAlgorithm::check size of the db " + to_string(size));
 
-			while(this->gng_status != GNG_RUNNING) {
-				DBG(1, "GNGAlgorithm::status in database loop = "+to_string(this->gng_status));
-				if(this->gng_status == GNG_TERMINATED) break;
+			while(this->m_gng_status != GNG_RUNNING) {
+				DBG(1, "GNGAlgorithm::status in database loop = "+to_string(this->m_gng_status));
+				if(this->m_gng_status == GNG_TERMINATED) break;
 				this->status_change_condition.wait(this->status_change_mutex);
 			}
 		}
@@ -727,14 +726,14 @@ namespace gmum{
 
 		DBG(3, "GNGAlgorithm::init successful, starting the loop");
 
-		t3 = boost::posix_time::microsec_clock::local_time();
+//		t3 = boost::posix_time::microsec_clock::local_time();
 		int iteration = 0;
-		DBG(1, "GNGAlgorithm::gng_status="+to_string(this->gng_status));
-		while (this->gng_status != GNG_TERMINATED) {
+		DBG(1, "GNGAlgorithm::gng_status="+to_string(this->m_gng_status));
+		while (this->m_gng_status != GNG_TERMINATED) {
 
-			while(this->gng_status != GNG_RUNNING) {
-				DBG(1, "GNGAlgorithm::status in main loop = "+to_string(this->gng_status));
-				if(this->gng_status == GNG_TERMINATED) break;
+			while(this->m_gng_status != GNG_RUNNING) {
+				DBG(1, "GNGAlgorithm::status in main loop = "+to_string(this->m_gng_status));
+				if(this->m_gng_status == GNG_TERMINATED) break;
 				this->status_change_condition.wait(this->status_change_mutex);
 			}
 
@@ -771,15 +770,15 @@ namespace gmum{
 
 			DBG(1, "GNGAlgorithm::add new node");
 
-			t1 = boost::posix_time::microsec_clock::local_time();
+//			t1 = boost::posix_time::microsec_clock::local_time();
 			AddNewNode();
 			if (m_toggle_uniformgrid && ug->check_grow()){
 				DBG(10, "GNGAlgorithm:: resizing uniform grid");
 				ResizeUniformGrid();
 			}
-			t2 = boost::posix_time::microsec_clock::local_time();
-			dt = t2 - t1;
-			times["resize"] += dt.total_microseconds();
+//			t2 = boost::posix_time::microsec_clock::local_time();
+//			dt = t2 - t1;
+//			times["resize"] += dt.total_microseconds();
 			++c; //epoch
 			if (!m_toggle_lazyheap ) DecreaseAllErrors();
 			if (this->m_utility_option == BasicUtility) decrease_all_utility();
@@ -796,13 +795,13 @@ namespace gmum{
 		DBG(30, "GNGAlgorithm::Terminated server");
 		this->running = false;
 
-		t4 = boost::posix_time::microsec_clock::local_time();
-		dt = t4 - t3;
-		REPORT(times["adapt1"]);
-		REPORT(times["adapt2"]);
-		REPORT(times["uniform_grid_search"]);
-		REPORT(times["resize"]);
-		REPORT(dt.total_microseconds() / (double) 1000000);
+//		t4 = boost::posix_time::microsec_clock::local_time();
+//		dt = t4 - t3;
+//		REPORT(times["adapt1"]);
+//		REPORT(times["adapt2"]);
+//		REPORT(times["uniform_grid_search"]);
+//		REPORT(times["resize"]);
+//		REPORT(dt.total_microseconds() / (double) 1000000);
 
 	}
 

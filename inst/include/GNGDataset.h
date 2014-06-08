@@ -10,13 +10,9 @@
 #include <algorithm>
 #include <string.h>
 #include <vector>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/interprocess/offset_ptr.hpp>
-#include <boost/thread/recursive_mutex.hpp>
-#include "SHMemoryManager.h"
+
+#include "Threading.h"
 #include "Utils.h"
 #include "DebugCollector.h"
 #include "GNGGlobals.h"
@@ -241,7 +237,7 @@ namespace gmum{
 		const unsigned int pos_dim_, meta_dim_, vertex_dim_;
 		const unsigned int prob_location_;
 
-		boost::recursive_mutex * mutex_;
+		gmum::gmum_recursive_mutex * mutex_;
 		Storage storage_;
 		std::vector<int> data_layout_;
 
@@ -256,7 +252,7 @@ namespace gmum{
 		* is no probability data in meta data. If there is then
 		*/
 		GNGDatasetSimple(
-				boost::recursive_mutex *mutex,
+				gmum::gmum_recursive_mutex *mutex,
 				unsigned int pos_dim,
 				unsigned int vertex_dim, unsigned int meta_dim, unsigned int prob_location=-1,
 				bool sampling=true):

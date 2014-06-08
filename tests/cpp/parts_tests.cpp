@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <utility>
 #include <vector>
+#include "Threading.h"
 #include "gtest/gtest.h"
-#include <boost/thread/mutex.hpp>
 /** Include all tests */
 
 using namespace std;
@@ -21,7 +21,7 @@ TEST(GraphTests, BasicGraphTest) {
 	dbg.set_debug_level(7);
 	unsigned int dim = 6;
 
-	boost::recursive_mutex grow_mutex;
+	gmum::gmum_recursive_mutex grow_mutex;
 	RAMGNGGraph<GNGNode, GNGEdge> g(&grow_mutex, dim, N_start);
 
 	ASSERT_EQ(g.existsNode(0), false);
@@ -176,7 +176,7 @@ using namespace std;
 //	dbg.set_debug_level(3);
 //
 //    unsigned int dim = 6;
-//    boost::recursive_mutex phase_2_lock;
+//    gmum::gmum_recursive_mutex phase_2_lock;
 //    unsigned int num_examples = 100, meta_data_dim = 10;
 //    //Probabilistic dataaset
 //    GNGDatasetSimple<GNGDatasetStorageRAM> dataset(
@@ -231,7 +231,7 @@ using namespace std;
 //
 //TEST(DatabaseTestsSeq, BasicGraphTest){
 //	dbg.set_debug_level(3);
-//	boost::recursive_mutex phase_2_lock;
+//	gmum::gmum_recursive_mutex phase_2_lock;
 //    unsigned int dim = 6;
 //    unsigned int num_examples = 100, meta_data_dim = 10;
 //    //Probabilistic dataaset

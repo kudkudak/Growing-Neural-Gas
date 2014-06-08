@@ -6,25 +6,25 @@
  */
 
 #ifndef EXTMEMORYMANAGER_H
-#define	EXTMEMORYMANAGER_H
+#define	 EXTMEMORYMANAGER_H
 #include <cstddef>
 #include <string>
 
 #include "Utils.h"
 
-#include <boost/thread.hpp>
-#include <boost/date_time.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/noncopyable.hpp>
-#include <boost/interprocess/managed_shared_memory.hpp>
-#include <boost/interprocess/managed_heap_memory.hpp>
-#include <boost/interprocess/shared_memory_object.hpp>
-#include <boost/interprocess/mapped_region.hpp>
-#include <boost/interprocess/sync/scoped_lock.hpp>
-#include <boost/exception/exception.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
-                
+//#include <boost/thread.hpp>
+//#include <boost/date_time.hpp>
+//#include <boost/shared_ptr.hpp>
+//#include <boost/noncopyable.hpp>
+//#include <boost/interprocess/managed_shared_memory.hpp>
+//#include <boost/interprocess/managed_heap_memory.hpp>
+//#include <boost/interprocess/shared_memory_object.hpp>
+//#include <boost/interprocess/mapped_region.hpp>
+//#include <boost/interprocess/sync/scoped_lock.hpp>
+//#include <boost/exception/exception.hpp>
+//#include <boost/uuid/uuid_generators.hpp>
+//#include <boost/uuid/uuid_io.hpp>
+//
 namespace gmum{
 	/** Interface abstracting away implementation of allocation.
 	 */
