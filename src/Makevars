@@ -1,8 +1,5 @@
-SOURCES.EXTRA = ../inst/include/tinythread/tinythread.cpp
-
-SOURCES.OURS = Utils.cpp GNGAlgorithm.cpp   GNGGraph.cpp     GNGServer.cpp   RInterface.cpp  Threading.cpp   UniformGrid.hpp
-
-OBJS=$(SOURCES.EXTRA:.cpp=.o) $(SOURCES.OURS:cpp:.o)
+SOURCES = $(wildcard tinythread/*.cpp gng/*.cpp)
+OBJECTS=$(SOURCES:.cpp=.o)
 
 
 R_HOME := $(shell R RHOME)
@@ -13,6 +10,12 @@ RCPPLIBS := $(shell echo 'Rcpp:::LdFlags()' | $(R_HOME)/bin/R --vanilla --slave)
 RCPPARMAINCL :=	$(shell echo 'RcppArmadillo:::CxxFlags()' | $(R_HOME)/bin/R --vanilla --slave)	
 
 
-PKG_CPPFLAGS := -O4 -I../inst/include -I../inst/tinythread -I. $(shell $(R_HOME)/bin/R CMD config CPPFLAGS)
+PKG_CPPFLAGS := -O4 -I../inst/include -I../inst/include/gng -I../inst/tinythread -I. $(shell $(R_HOME)/bin/R CMD config CPPFLAGS)
 PKG_CXXFLAGS := -O4 $(RCPPFLAGS) $(RCPPINCL) $(RCPPARMAINCL) $(RINSIDEINCL) $(shell $(R_HOME)/bin/R CMD config CXXFLAGS) -g -pthread -fpic  
 PKG_LIBS := -O4 $(RLDFLAGS) $(RRPATH) $(RBLAS) $(RLAPACK) $(RCPPLIBS) $(RINSIDELIBS) -lpthread
+
+
+all: $(SHLIB)
+
+clean:
+	@rm -f $(OBJECTS)
