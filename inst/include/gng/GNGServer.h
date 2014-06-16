@@ -20,12 +20,9 @@
 #include "GNGGraph.h"
 #include "GNGDataset.h"
 #include "GNGAlgorithm.h"
-#include "Threading.h"
 #include "Utils.h"
-
-
 #include <RcppArmadillo.h>
-#include <armadillo>
+
 
 using namespace Rcpp;
 using namespace arma;
@@ -33,6 +30,9 @@ using namespace gmum;
 //#endif
 
 
+
+
+#include "Threading.h"
 
 /** Holds together all logic and objects.*/
 class GNGServer{

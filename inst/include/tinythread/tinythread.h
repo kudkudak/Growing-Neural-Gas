@@ -55,33 +55,13 @@ freely, subject to the following restrictions:
 /// different sections of this documentation. A good place to start is:
 /// tinythread.h.
 
-// Which platform are we on?
-#if !defined(_TTHREAD_PLATFORM_DEFINED_)
-  #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-    #define _TTHREAD_WIN32_
-  #else
-    #define _TTHREAD_POSIX_
-  #endif
+  #define _TTHREAD_POSIX_
   #define _TTHREAD_PLATFORM_DEFINED_
-#endif
 
-// Platform specific includes
-#if defined(_TTHREAD_WIN32_)
-  #ifndef WIN32_LEAN_AND_MEAN
-    #define WIN32_LEAN_AND_MEAN
-    #define __UNDEF_LEAN_AND_MEAN
-  #endif
-  #include <windows.h>
-  #ifdef __UNDEF_LEAN_AND_MEAN
-    #undef WIN32_LEAN_AND_MEAN
-    #undef __UNDEF_LEAN_AND_MEAN
-  #endif
-#else
   #include <pthread.h>
   #include <signal.h>
   #include <sched.h>
   #include <unistd.h>
-#endif
 
 // Generic includes
 #include <ostream>

@@ -8,9 +8,7 @@
 #ifndef SHGRAPHDEFS_H
 #define SHGRAPHDEFS_H
 
-
-
-#include "GNGDataset.h"
+#include <iostream>
 #include "GNGGlobals.h"
 #include <cmath>
 #include <vector>
@@ -72,7 +70,7 @@ public:
 
     ~GNGNode() {
         if (_position_owner){
-        	cerr<<"Position owner, dim = "<<dim<<endl;
+        	std::cerr<<"Position owner, dim = "<<dim<<std::endl;
         	delete[] position;
 
         }
