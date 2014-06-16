@@ -14,7 +14,7 @@
 
 
 using namespace Rcpp;
-using namespace arma;
+
 
 //#endif
 
