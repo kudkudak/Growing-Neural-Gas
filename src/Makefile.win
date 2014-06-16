@@ -1,7 +1,8 @@
 #### Replace with content of .Makefile.win to compile manually. Make sure you have Rtools installed and listed in PATH ####
 	
-all: GrowingNeuralGas.dll
-	
+all:
+	@echo "Installing dll"
+
 clean:
 	@rm -f $(OBJECTS)
 
