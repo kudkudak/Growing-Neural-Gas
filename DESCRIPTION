@@ -10,12 +10,11 @@ Depends:
     RcppArmadillo(>= 0.4.300.0),
     igraph(>= 0.7.1),
     testthat(>= 0.8.1)
-LinkingTo: Rcpp
+LinkingTo: Rcpp, RcppArmadillo
 Suggests:
     RUnit
 Description: Cluster big amounts of data using online lightspeed implementation
     of Growing Neural Gas.
-OS_type: unix
 License: MIT
 Packaged: 2014-01-08 22:39:25 UTC; staszek
 NeedsCompilation: yes

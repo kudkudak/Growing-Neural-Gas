@@ -15,7 +15,7 @@
 #include <iostream>
 #include <fstream>
 
-
+#include "Utils.h"
 #include "GNGNode.h"
 #include "GNGGlobals.h"
 #include "Threading.h"
@@ -363,10 +363,10 @@ namespace gmum{
 					for (unsigned int i = 0; i < g.size(); ++i) {
 							string tmp = "";
 							if (occupied[i]) {
-									tmp = tmp + to_string(g[i]) + ":";
+									tmp = tmp + to_str(g[i]) + ":";
 									FOREACH(it2, g[i]){
-											tmp += to_string((*it2)->nr) + "[" +
-											to_string((((*it2)->rev))->nr) + "],";
+											tmp += to_str((*it2)->nr) + "[" +
+											to_str((((*it2)->rev))->nr) + "],";
 									}
 									tmp = tmp + "\n";
 							}
