@@ -98,6 +98,8 @@ This is not a full documentation. Please refer to R package documentation (pdf v
 
     *  uniformgrid_optimization - TRUE/FALSE. If TRUE please pass bounding box
        parameters also.
+
+    *  lambda - how often to add new vertices. Default is 200
  
     *  lazyheap_optimization - TRUE/FALSE. 
 

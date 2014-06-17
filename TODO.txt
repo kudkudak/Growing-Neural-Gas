@@ -34,3 +34,5 @@ To remember:
 * Add CSV/sparse dataset
 
 * Dynamic changing of parameters
+
+* Add uniform grid and lazy heap documentation
