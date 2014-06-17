@@ -265,6 +265,8 @@ error_statistics.gng <- NULL
 #' 
 #' @param lazyheap.optimization TRUE/FALSE. You cannot use utility option with this, so please pass FALSE here then.
 #' 
+#' @param lambda Every lambda iteration is added new vertex. Default 200
+#' 
 #' @param max.nodes Maximum number of nodes (after reaching this size it will continue running, but won't add new nodes)
 #' 
 #' @param eps_n Default 0.0006. How strongly adapt neighbour node
@@ -381,6 +383,7 @@ evalqOnLoad({
                         eps_w= 0.05, dim=-1, uniformgrid_boundingbox_sides=c(), uniformgrid_boundingbox_origin=c(),
                         experimental_utility_option = gng.experimental.utility.option.off,
                         experimental_utility_k = 1.5, max_edge_age = 200, experimental_vertex_extra_data=FALSE,
+                        lambda=200,
                         load_model_filename = ""
                         
     ){
@@ -414,6 +417,7 @@ evalqOnLoad({
       config$eps_n = eps_n
       config$eps_w = eps_w
       config$dim = dim
+      config$lambda = lambda
       
       if(experimental_vertex_extra_data == TRUE){
         config$vertex_extra_data_dim = 1
