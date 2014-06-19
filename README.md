@@ -61,14 +61,13 @@ You can also refer to R package documentation (pdf version
 ```Matlab
 library("GrowingNeuralGas")
 
-max_nodes <- 600
-
 # Create main GNG object (without optimization) with dataset sampling according
 #to probability passed as last coordinate
 gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3)
 
-# Add examples (note: you can avoid here copy using set_memory_move_examples)
-gng$insert_examples(preset=gng.preset.sphere, N=10000, prob=0.8)
+# Add examples (note: you can avoid here copy using gng$insert_examples or set_memory_move_examples)
+# Note: we are adding preset dataset with all sampling probabilities set to 80%
+insert_examples(gng, preset=gng.preset.sphere, N=10000, prob=0.8)
 
 # Run algorithm in parallel
 run(gng)
@@ -76,13 +75,17 @@ run(gng)
 # Wait for the graph to converge
 print("Waiting to converge")
 while(number_nodes(gng) != max_nodes) 
-    Sys.sleep(1.0)
+  Sys.sleep(1.0)
 
 # Find closest node to vector [1,1,1]
 predict(gng, c(1,1,1))
 
+# Find mean error
+mean_error(gng)
+
 # Plot with first 2 coordinates
-plot(gng, mode=gng.plot.2d.errors, vertex.color=gng.plot.color.cluster, layout=gng.plot.layout.igraph.v2d)
+plot(gng, mode=gng.plot.2d.errors, vertex.color=gng.plot.color.cluster, 
+     layout=gng.plot.layout.v2d)
 
 # Terminate GNG, to free memory you should call rm(gng)
 terminate(gng)
