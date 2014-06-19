@@ -1,10 +1,8 @@
 #Growing Neural Gas in R
 
 Easy to install and use package for GNG algorithm.
-Part of gmum.R project. See gmum research group page [here](http://gmum.ii.uj.edu.pl) .
 
-**Note**: Support for Windows is experimental, I am working on that. Current
-work on dev: better igraph integration, demo using word2vec and adding cosine similarity metric.
+Part of gmum.R project. See gmum research group page [here](http://gmum.ii.uj.edu.pl).
 
 ##General
 ------
@@ -37,6 +35,9 @@ Daniel Fiser, Jan Faigl, Miroslav Kulich optimization paper [FGNG: A fast multi-
 
 ##Installation
 -----------
+
+**Note**: Support for Windows is experimental, I am working on that. Current
+work on dev: better igraph integration, demo using word2vec and adding cosine similarity metric.
 
 You can install it as an R package, it is easiest to do it using devtools (of
 course make sure you download devtools package in the first place).
