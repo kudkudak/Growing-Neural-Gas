@@ -1,6 +1,10 @@
 #Growing Neural Gas in R
 
+Easy to install and use package for GNG algorithm.
 Part of gmum.R project. See gmum research group page [here](http://gmum.ii.uj.edu.pl) .
+
+**Note**: Support for Windows is experimental, I am working on that. Current
+work on dev: better igraph integration, demo using word2vec and adding cosine similarity metric.
 
 ##General
 ------
@@ -179,7 +183,7 @@ Feel free to contribute to the code. Contributions should be posted as pull requ
 
 ##Known issues
 ---------
-* Package is not released for Windows yet.
+* Package is not released for Windows yet (however 64 bit should work)
 
 * Due to bug in RStudio you might experience session crashes when creating many
   gng objects.
