@@ -62,6 +62,8 @@ You can also refer to R package documentation (pdf version
 ```Matlab
 library("GrowingNeuralGas")
 
+max_nodes <- 600
+
 # Create main GNG object (without optimization) with dataset sampling according
 #to probability passed as last coordinate
 gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3)
