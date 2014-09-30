@@ -1,6 +1,6 @@
 #Growing Neural Gas in R
 
-Easy to install and use package for GNG algorithm.
+Easy to install and use package for fast **online** GNG algorithm.
 
 Part of gmum.R project. See gmum research group page [here](http://gmum.ii.uj.edu.pl).
 
