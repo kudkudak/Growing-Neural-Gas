@@ -183,7 +183,7 @@ namespace gmum{
 				if(m_size == 0) throw "Zero sized Heap max extraction?";
 
 
-				DBG(1, "Heap::extractMax() size="+gmum::to_string(m_size))
+				DBG(1, "Heap::extractMax() size="+gmum::to_string(m_size));
 
 				HeapNode * tmp=m_heap[0];
 				T extracted = tmp->val;

@@ -8,15 +8,9 @@
 #ifndef GNGCONFIGURATION_H
 #define	 GNGCONFIGURATION_H
 
-//#ifdef RCPP_INTERFACE
-
-#include <RcppArmadillo.h>
-
-
+#ifdef RCPP_INTERFACE
 using namespace Rcpp;
-
-
-//#endif
+#endif
 
 #include <vector>
 
@@ -79,6 +73,10 @@ using namespace Rcpp;
 		/**Epsilion n*/
 		double eps_n;//=0.0006;
 
+
+		/**Pseudodistance function used (might be non metric)*/
+		int distance_function;
+
 		/**Dimensionality of examples*/
 		int dim;
 		/**Type of used database, unsgined int for compabititlity with Rcpp**/
@@ -139,9 +137,13 @@ using namespace Rcpp;
 			eps_w=0.05;
 			eps_n=0.0006;
 
+			distance_function = gmum::GNGGraph::Euclidean;
+
+
             interprocess_communication = false;
 		}
 
+#ifdef RCPP_INTERFACE
 		void setUniformGridAxis(NumericVector v){
 			axis.clear();
 			for(int i=0;i<v.size();++i){
@@ -161,7 +163,7 @@ using namespace Rcpp;
 		NumericVector getUniformGridOrigin(){
 			return NumericVector(orig.begin(), orig.end());
 		}
-
+#endif
 
 		/** Get default configuration of GNG Server */
 		static GNGConfiguration getDefaultConfiguration(){
@@ -186,6 +188,11 @@ using namespace Rcpp;
 			if(! (dim < 20 || ! uniformgrid_optimization)){
 				DBG(20, "ERROR: Too big dimensionality for uniformgrid_optimization");
 				cerr<<"ERROR: Too big dimensionality for uniformgrid_optimization\n";
+				return false;
+			}
+			if(! (distance_function!=gmum::GNGGraph::Euclidean || ! uniformgrid_optimization)){
+				DBG(20, "ERROR: You can use only Euclidean distance function with uniformgrid optimization");
+				cerr<<"ERROR: You can use only Euclidean distance function with uniformgrid optimization\n";
 				return false;
 			}
 			if(! (!uniformgrid_optimization or (dim == axis.size() && dim == orig.size()))){

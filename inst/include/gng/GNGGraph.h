@@ -14,14 +14,12 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
+#include <cassert>
 
 #include "Utils.h"
 #include "GNGNode.h"
 #include "GNGGlobals.h"
 #include "Threading.h"
-#include "boost/graph/adjacency_list.hpp"
-#include "boost/graph/adjacency_list.hpp"
-#include "boost/graph/graphml.hpp"
 
 using namespace std;
 
@@ -34,6 +32,12 @@ namespace gmum{
 	class GNGGraph
 	{
 	public:
+
+		enum GNGDistanceFunction{
+			Euclidean,
+			Cosine
+		};
+
 
 			virtual ~ GNGGraph() {
 			}
@@ -70,6 +74,9 @@ namespace gmum{
 
 			//TODO: move it to GNGNode
 			virtual double getDist(int a, int b) = 0;
+
+			//TODO: move it to GNGNode
+			virtual double getEuclideanDist(const double * pos_1, const double * pos_2) const= 0;
 
 			//TODO: move it to GNGNode
 			virtual double getDist(const double *pos_a, const double *pos_b) const =
@@ -145,15 +152,14 @@ namespace gmum{
 			std::vector < int > next_free; //TODO: has to be public : /
 			int firstFree;
 
-
-
+			GNGDistanceFunction dist_fnc;
 
 
 			typedef typename Node::EdgeIterator EdgeIterator;
 
 			RAMGNGGraph(Mutex * mutex, unsigned int dim,
-						int initial_pool_size):maximum_index(-1), mutex(mutex),
-					gng_dim(dim), firstFree(-1), nodes(0) {
+						int initial_pool_size, GNGDistanceFunction dist_fnc = Euclidean):maximum_index(-1), mutex(mutex),
+					gng_dim(dim), firstFree(-1), nodes(0), dist_fnc(dist_fnc) {
 					positions.resize(initial_pool_size * gng_dim);
 					//Initialize graph data structures
 					g.resize(initial_pool_size);
@@ -216,26 +222,44 @@ namespace gmum{
 			///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
 			double
 			getDist(int a, int b) {
-					double
-					distance = 0;
-					for (int i = 0; i < this->gng_dim; ++i) {
+					return getDist(g[a].position, g[b].position);
+			}
 
-							distance +=
-									(g[a].position[i] - g[b].position[i]) * (g[a].position[i] -
-													g[b].position[i]);
-					}
-					return distance;
+
+			double
+			getEuclideanDist(const double *pos_a, const double *pos_b) const{
+				double
+				distance = 0;
+				for (int i = 0; i < this->gng_dim; ++i)
+						distance += (pos_a[i] - pos_b[i])
+						* (pos_a[i] - pos_b[i]);
+
+				return distance;
 			}
 
 			///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
 			double
 			getDist(const double *pos_a, const double *pos_b) const {
+				if(dist_fnc == Euclidean){
 					double
 					distance = 0;
 					for (int i = 0; i < this->gng_dim; ++i)
 							distance += (pos_a[i] - pos_b[i]) * (pos_a[i] - pos_b[i]);
 
 					return distance;
+				}else if(dist_fnc==Cosine){
+					double norm_1 = 0, norm_2 = 0, distance = 0;
+
+					for (int i = 0; i < this->gng_dim; ++i){
+						norm_1 += (pos_a[i]) * (pos_a[i]);
+						norm_2 += (pos_b[i]) * (pos_b[i]);
+						distance += pos_a[i]*pos_b[i];
+					}
+
+					norm_1 = sqrt(norm_1);
+					norm_2 = sqrt(norm_2);
+					return 1.0 - distance/(norm_1*norm_2);
+				}
 			}
 
 			///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
@@ -583,26 +607,26 @@ namespace gmum{
 
 
 
-	using namespace boost;
-	using namespace std;
-
-	struct boost_vertex_desc
-	{
-		int index;
-		double error;
-
-		double extra_data;
-
-		/* GraphML doesn't allow for array types*/
-		double v0, v1, v2;
-
-		double utility;
-//		std::string position_dump;
-	};
-
-	struct boost_edge_desc{
-		double dist;
-	};
+//	using namespace boost;
+//	using namespace std;
+//
+//	struct boost_vertex_desc
+//	{
+//		int index;
+//		double error;
+//
+//		double extra_data;
+//
+//		/* GraphML doesn't allow for array types*/
+//		double v0, v1, v2;
+//
+//		double utility;
+////		std::string position_dump;
+//	};
+//
+//	struct boost_edge_desc{
+//		double dist;
+//	};
 
 
 	std::string writeToGraphML(GNGGraph &g, string filename="");

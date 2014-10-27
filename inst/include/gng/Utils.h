@@ -98,6 +98,8 @@ std::string to_str(const T& x){
     return ss.str();
 }
 
+
+
 struct BasicException : public std::exception
 {
    std::string s;
@@ -107,6 +109,16 @@ struct BasicException : public std::exception
        return s.c_str(); 
    }
 };
+
+//conflicting with boost namespace
+namespace gmum{
+template<class T>
+std::string to_string(const T& x){
+    stringstream ss;
+    ss<<x;
+    return ss.str();
+}
+}
 
 
 

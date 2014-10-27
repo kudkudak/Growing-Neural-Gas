@@ -1,8 +1,8 @@
-#include "gtest/gtest.h"
-#include "GNG.h"
-
+#include <gtest/gtest.h>
+#include "../../inst/include/gng/GNG.h"
+DebugCollector dbg;
 using namespace gmum;
-#include "parts_tests.cpp"
+//#include "parts_tests.cpp"
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

@@ -2,7 +2,7 @@
  * File constructs R Interface, exports necessary classes and functions using Rcpp package
  */
 
-#define RCPP_INTERFACE
+#ifdef RCPP_INTERFACE
 
 #include <RcppCommon.h>
 
@@ -58,6 +58,12 @@ RCPP_MODULE(gng_module){
 			"3: DatasetBaggingProbability - examples are sampled with probability equal to pos_dim+vertex_dim coordinate (last number in vector)")
 	.field("max_nodes", &GNGConfiguration::max_nodes)
 	.field("vertex_extra_data_dim", &GNGConfiguration::dataset_vertex_extra_dim)
+
+	.field("distance_function", &GNGConfiguration::distance_function,
+			"Distance function used: Euclidean, or Cosine. Note that "
+			"cosine isn't a metric and all theoretical guarantees of GNG won't work"
+			"Default Euclidean.")
+
 	.method("check_correctness", &GNGConfiguration::check_correctness);
 
 	class_<GNGServer>("GNGServer").
@@ -82,3 +88,5 @@ RCPP_MODULE(gng_module){
 }
 
 #include <RcppArmadillo.h>
+
+#endif

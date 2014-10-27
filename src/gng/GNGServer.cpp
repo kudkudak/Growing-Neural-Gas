@@ -85,7 +85,8 @@ error_statistics(error_statistics_size, 0.0)
 
         this->gngGraph = std::auto_ptr<RAMGNGGraph<GNGNode, GNGEdge> >(
                 new RAMGNGGraph<GNGNode, GNGEdge>(&grow_mutex,
-                current_configuration.dim, current_configuration.starting_nodes));
+                current_configuration.dim, current_configuration.starting_nodes,
+                (gmum::GNGGraph::GNGDistanceFunction)current_configuration.distance_function));
     }else{
         throw BasicException("Not supported GNGConfiguration type");
     }
