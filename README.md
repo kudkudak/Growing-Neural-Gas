@@ -1,6 +1,6 @@
 #Growing Neural Gas in R
 
-Easy to install and use package for GNG algorithm.
+Easy to install and use package for fast **online** GNG algorithm.
 
 Part of gmum.R project. See gmum research group page [here](http://gmum.ii.uj.edu.pl).
 
@@ -36,8 +36,7 @@ Daniel Fiser, Jan Faigl, Miroslav Kulich optimization paper [FGNG: A fast multi-
 ##Installation
 -----------
 
-**Note**: Support for Windows is experimental, I am working on that. Current
-work on dev: better igraph integration, demo using word2vec and adding cosine similarity metric.
+**Note**: Support for Windows is experimental, I am working on that. 
 
 You can install it as an R package, it is easiest to do it using devtools (of
 course make sure you download devtools package in the first place).
@@ -51,6 +50,8 @@ I recommend using RStudio, especially for plotting.
 See **Known issues** if your installation fails. There are few problems with
 R/igraph that are platform dependent.
 
+
+
 ##Usage
 
 For more detailed usage see code in demo folder, or in tests/testthat folder.
@@ -61,6 +62,8 @@ You can also refer to R package documentation (pdf version
 
 ```Matlab
 library("GrowingNeuralGas")
+
+max_nodes <- 600
 
 # Create main GNG object (without optimization) with dataset sampling according
 #to probability passed as last coordinate
@@ -173,6 +176,21 @@ pointer later on, only add new examples). You can also use function
 insert_examples(gng, ...), but this will perform 2 copies in RAM due to R design.
 
 
+
+##Current work
+----------
+
+* Adapting Robust GNG strategies (http://www.researchgate.net/publication/8171175_Robust_growing_neural_gas_algorithm_with_application_in_cluster_analysis)
+
+* Windows 32 and 64 bit dll
+
+* Better igraph methods for clustering
+
+* MDL based clustering (as in RGNG)
+
+* Simple metric for clustering quality (PQ?)
+
+* Testing cosine similarity for GNG
 
 ##Testing
 -----
