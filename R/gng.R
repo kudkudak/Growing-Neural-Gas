@@ -384,12 +384,12 @@ evalqOnLoad({
                         experimental_utility_option = gng.experimental.utility.option.off,
                         experimental_utility_k = 1.5, max_edge_age = 200, experimental_vertex_extra_data=FALSE,
                         lambda=200,
-                        load_model_filename = "",
-                        use_cosine = FALSE
+                        load_model_filename = ""
                         
     ){
       
       gng.dist.cosine = 1
+      gng.dist.euclidean = 0
       
       
       
@@ -411,10 +411,10 @@ evalqOnLoad({
       
       
       config <- new(GNGConfiguration)
+
+      # Cosine is not supported (and probably won't be)
+      config$distance_function = gng.dist.euclidean
       
-      if(use_cosine){
-         config$distance_function = gng.dist.cosine
-      }
       
       # Fill in configuration
       config$dataset_type=dataset_type

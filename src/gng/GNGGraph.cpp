@@ -26,7 +26,7 @@ namespace gmum{
 		out<<"<key id=\"key6\" for=\"node\" attr.name=\"v1\" attr.type=\"double\" />\n";
 		out<<"<key id=\"key7\" for=\"node\" attr.name=\"v2\" attr.type=\"double\" />\n";
 
-		out<<"<graph id=\"G\" edgedefault=\"undirected\" parse.nodeids=\"canonical\" parse.edgeids=\"canonical\" \"parse.order=\"nodesfirst\">\n";
+		out<<"<graph id=\"G\" edgedefault=\"undirected\" parse.nodeids=\"canonical\" parse.edgeids=\"canonical\" parse.order=\"nodesfirst\">\n";
 
 		std::map<int, int> gng_index_to_graph_index;
 
@@ -54,8 +54,8 @@ namespace gmum{
 			  {
 					FOREACH(edg, g[i]){
 						if(g[i].nr > (*edg)->nr){ //directed!
-							out<<"<edge id=\"e"<<l++<<"\" source=\""<<
-									gng_index_to_graph_index[(*edg)->nr]<<"\" target=\""<<
+							out<<"<edge id=\"e"<<l++<<"\" source=\"n"<<
+									gng_index_to_graph_index[(*edg)->nr]<<"\" target=\"n"<<
 									gng_index_to_graph_index[g[i].nr]<<
 									"\">\n";
 							out<<"<data key=\"key0\">"<<g.getDist(i, (*edg)->nr)<<"</data>";
@@ -65,7 +65,7 @@ namespace gmum{
 
 			  }
 		}
-		out<<"</graph>\n<</graphml>\n";
+		out<<"</graph>\n</graphml>\n";
 		g.unlock();
 
 	}
@@ -77,8 +77,9 @@ namespace gmum{
 			return ss.str();
 		  }
 		  else{
-			ofstream myfile;
+			ofstream myfile(filename.c_str());
 			writeToGraphML(g, myfile);
+			myfile.close();
 			return "";
 		  }
 

@@ -43,12 +43,13 @@ for(k in 1:2){
   # pause(gng)
   
   test_that("GNG has reached expected number of vertexes", {
-    expect_that(n, is_less_than(100) )
+    expect_that(n < 100, is_true() )
   })
   print("Test::Completness test")
   
   # Find closest node
   predict(gng, c(1,1,1))
+ 
   
   # 
   # # Get igraph
@@ -65,7 +66,7 @@ for(k in 1:2){
   
   test_that("GNG has converged", {
     error_before = mean_error(gng)
-    expect_that(error_before, is_less_than(50.0/max_nodes) )
+    expect_that(error_before  < 50.0/max_nodes, is_true() )
   })
   print("Test::Convergence test")
   

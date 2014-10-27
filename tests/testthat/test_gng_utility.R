@@ -52,7 +52,10 @@ print("Test::Jumped distribution added")
 Sys.sleep(35.0)
 pause(gng)
 plot(gng, start_s=10, mode=gng.plot.2d.errors)
-plot(gng, mode=gng.plot.rgl3d)
+
+if("rgl" %in% rownames(installed.packages()) == FALSE) {
+  plot(gng, mode=gng.plot.rgl3d)
+}
 
 
 
@@ -70,7 +73,7 @@ print("Test::No isolated vertexes")
 
 test_that("GNG has converged", {
   error_before = mean_error(gng)
-  expect_that(error_before, is_less_than(50.0/max_nodes) )
+  expect_that(error_before < 50/max_nodes, is_true() )
 })
 
 print("Test::Convergence test")

@@ -9,6 +9,7 @@
 #define	 GNGCONFIGURATION_H
 
 #ifdef RCPP_INTERFACE
+#include <RcppArmadillo.h>
 using namespace Rcpp;
 #endif
 
@@ -190,7 +191,7 @@ using namespace Rcpp;
 				cerr<<"ERROR: Too big dimensionality for uniformgrid_optimization\n";
 				return false;
 			}
-			if(! (distance_function!=gmum::GNGGraph::Euclidean || ! uniformgrid_optimization)){
+			if(! (distance_function==gmum::GNGGraph::Euclidean || ! uniformgrid_optimization)){
 				DBG(20, "ERROR: You can use only Euclidean distance function with uniformgrid optimization");
 				cerr<<"ERROR: You can use only Euclidean distance function with uniformgrid optimization\n";
 				return false;
