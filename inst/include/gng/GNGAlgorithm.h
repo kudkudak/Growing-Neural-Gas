@@ -333,7 +333,7 @@ namespace gmum{
 	struct GNGGraphAccessHack{
 		static GNGGraph * pool;
 		static double dist(int index, double *position){
-			return pool->getDist((*pool)[index].position, position);
+			return pool->getEuclideanDist((*pool)[index].position, position);
 		}
 	};
 

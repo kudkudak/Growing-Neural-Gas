@@ -1,12 +1,14 @@
-#include "GNG.h"
-#include "Utils.h"
-#include "GNGGraph.h"
-#include "GNGDataset.h"
+#include "../../inst/include/gng/GNG.h"
+#include "../../inst/include/gng/Utils.h"
+#include "../../inst/include/gng/GNGGraph.h"
+#include "../../inst/include/gng/GNGDataset.h"
+#include "../../inst/include/gng/Threading.h"
+
 #include <algorithm>
 #include <utility>
 #include <vector>
-#include "Threading.h"
-#include "gtest/gtest.h"
+
+#include <gtest/gtest.h>
 /** Include all tests */
 
 using namespace std;

@@ -1,8 +1,5 @@
-#include "gtest/gtest.h"
-#include "GNG.h"
-
-
-#include "basic_integration_tests.cpp"
+#include <gtest/gtest.h>
+#include "../../inst/include/gng/GNG.h"
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

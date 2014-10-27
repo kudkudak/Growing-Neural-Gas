@@ -21,11 +21,14 @@
 #include "GNGDataset.h"
 #include "GNGAlgorithm.h"
 #include "Utils.h"
+
+
+#ifdef RCPP_INTERFACE
 #include <RcppArmadillo.h>
-
-
 using namespace Rcpp;
 using namespace arma;
+#endif
+
 using namespace gmum;
 //#endif
 
@@ -148,7 +151,7 @@ public:
         }
 
 
-//#ifdef RCPP_INTERFACE
+#ifdef RCPP_INTERFACE
 
     SEXP m_current_dataset_memory; //will be deleted in ~delete
     ///Moderately slow function returning node descriptors
@@ -234,7 +237,7 @@ public:
 
 
 
-	//#endif
+#endif
 
     ///Calculate error per node
     double calculateAvgErrorNode() {

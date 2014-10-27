@@ -1,7 +1,8 @@
-#include "GNG.h"
-#include "GNGServer.h"
-#include "Utils.h"
-#include "gtest/gtest.h"
+#include "../../inst/include/gng/GNG.h" //TODO: path problems
+#include "../../inst/include/gng/GNGServer.h"
+#include "../../inst/include/gng/Utils.h"
+
+#include <gtest/gtest.h>
 #include <algorithm>
 #include <utility>
 #include <vector>
@@ -15,11 +16,11 @@ unsigned int sleep_ms = 200;
 pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database=1000,
         int ms_loop = 5000,  string save_filename="", double* extra_examples=0,
         int extra_samples_size=0) {
-    GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();  
+    GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.uniformgrid_optimization = true;
     if(cnf) config=*cnf;
     config.datasetType = GNGConfiguration::DatasetSamplingProb;
-    
+
     GNGServer *s = GNGServer::constructTestServer(config);
 
     DBG(10, "test_convergence::current pool");
@@ -29,7 +30,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     DBG(10, "running algorithm");
 
 
-    s->run();   
+    s->run();
 
     cerr<<"Allocating "<<(config.dim+1)*num_database<<endl<<flush;
     double * vect = new double[(config.dim+1)*num_database];
@@ -42,17 +43,17 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
              else
             	 vect[j+(i)*(config.dim+1)] = 0.5;
     }
-    
-    
+
+
     DBG(10, "Allocated examples\n");
     cerr<<"Allocated examples\n";
-    
+
     if(extra_examples){
         cerr<<"Adding extra examples\n";
         s->insertExamples(&extra_examples[0],
         		extra_samples_size/(config.dim+1), extra_samples_size);
         cerr<<"Database size="<<s->getDatabase().getSize()<<endl;
-    }    
+    }
     cerr<<"Adding main examples\n";
     s->insertExamples(&vect[0], num_database, num_database*(config.dim+1));
     cerr<<"Database size="<<s->getDatabase().getSize()<<endl;
@@ -66,7 +67,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
 
 
     cerr<< "testNewInterface::Collecting results\n";
-    
+
     int iteration = 0;
 
     while(true){
@@ -77,31 +78,31 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
        vector<double> stats = s->getErrorStatistics();
        write_array(&stats[0], &stats[stats.size()-1]);
        REPORT_PRODUCTION(s->getAlgorithm().CalculateAccumulatedError()
-               /(s->getGraph().getNumberNodes()+0.)); 
+               /(s->getGraph().getNumberNodes()+0.));
        if(iteration >= ms_loop/sleep_ms) break;
     }
-    
+
 
     s->terminate();
-    
+
     int test;
     while(s->getAlgorithm().running == true){
     	gmum::sleep(sleep_ms);
     }
 
     gmum::sleep(sleep_ms);
-            
+
     pair<double , double> t = pair<double, double>(s->getGraph().getNumberNodes(),
             s->getAlgorithm().CalculateAccumulatedError()
                /(s->getGraph().getNumberNodes()+0.));
-    
+
 
     if(save_filename!=""){
         cerr<<"BasicTests::Saving to GraphML\n";
         writeToGraphML(s->getGraph(), save_filename);
     }
-    
- 
+
+
     delete s;
     return t;
  }

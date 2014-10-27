@@ -10,7 +10,7 @@
 #ifndef THREADING_H
 #define THREADING_H
 
-#include "tinythread/tinythread.h"
+#include "../tinythread/tinythread.h" //TODO: path problems
 
 namespace gmum{
 	///recursive mutex providing interface as boost::recursive_mutex
