@@ -23,6 +23,7 @@ gng$set_debug_level(11)
 # Set examples pointer, note: this is the most
 # efficient way to pass examples, however you can use it
 # only once (it sets hard link to memory inside)
+# For normal usage you might prefer gng$insert_examples(ex_binded), or insert_examples(gng, ex_binded)
 gng$set_memory_move_examples(ex_binded)
 
 # Run algorithm in parallel
