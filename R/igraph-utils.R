@@ -16,7 +16,7 @@ library(igraph)
    }
    g = graph.empty()
    tryCatch({
-   		g <<- read.graph(filename, format=c("graphml"))
+   		g = read.graph(filename, format=c("graphml"))
 	    }
      , 
        error= 
