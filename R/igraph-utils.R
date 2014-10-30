@@ -14,7 +14,21 @@ library(igraph)
       warning("Wrong filename returning empty graph")
       graph.empty()
    }
-   g = read.graph(filename, format=c("graphml"))
+   g = graph.empty()
+   tryCatch({
+   		g <<- read.graph(filename, format=c("graphml"))
+	    }
+     , 
+       error= 
+       
+       function(error){
+  	  warning(error$message)
+	  warning("Please install igraph with support for GraphML! You are probably on Linux. This package won't plot graphs without
+	     graphml support in igraph")	   
+	   
+       }
+   )
+   g
 }
 
 
