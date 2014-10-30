@@ -1,16 +1,15 @@
 library(igraph)
 
-if("rgl" %in% rownames(installed.packages()) == TRUE){
   .gng.plot3d<-function(gngServer){
-    tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
-    gngServer$export_to_graphml(tmp_name)
-    print("Reading GraphML dumped")
-    .visualizeIGraphRGL(.readFromGraphML(tmp_name))
-    file.remove(tmp_name)
+	if("rgl" %in% rownames(installed.packages()) == TRUE){
+	    g <- .gng.construct_igraph(gngServer)
+	    .visualizeIGraphRGL(g)
+	}else{
+	    warning("To plot 3d please install rgl")
+	}
   }
   #' Draw igraph using rgl - assumes >=3 dimensions and draws 3 first
   .visualizeIGraphRGL<-function(g, radius=NULL){
-    library(multicore)
     library(rgl)
     library(igraph)
     
@@ -31,7 +30,6 @@ if("rgl" %in% rownames(installed.packages()) == TRUE){
     
     # Write 3d positions
     for(i in 1:nodes){
-      
       x[i]=V(g)[i]$v0
       y[i]=V(g)[i]$v1
       z[i]=V(g)[i]$v2
@@ -78,7 +76,6 @@ if("rgl" %in% rownames(installed.packages()) == TRUE){
     
     rgl.lines(x_lines[1:k-1],y_lines[1:k-1],z_lines[1:k-1],color="bisque")
   }
-}
 .gng.plot2d.errors<-function(gngServer, vertex.color, layout, start_s=2){
   tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
   gngServer$export_to_graphml(tmp_name)

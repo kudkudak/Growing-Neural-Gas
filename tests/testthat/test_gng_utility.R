@@ -1,3 +1,4 @@
+
 library("GrowingNeuralGas")
 library(igraph)
 library(testthat)
@@ -52,6 +53,10 @@ print("Test::Jumped distribution added")
 Sys.sleep(35.0)
 pause(gng)
 plot(gng, start_s=10, mode=gng.plot.2d.errors)
+
+GrowingNeuralGas::number_nodes(gng)
+g <- GrowingNeuralGas::convert_igraph(gng)
+length(V(g))
 
 if("rgl" %in% rownames(installed.packages()) == TRUE) {
   plot(gng, mode=gng.plot.rgl3d)
