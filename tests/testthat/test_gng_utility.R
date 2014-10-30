@@ -53,7 +53,7 @@ Sys.sleep(35.0)
 pause(gng)
 plot(gng, start_s=10, mode=gng.plot.2d.errors)
 
-if("rgl" %in% rownames(installed.packages()) == FALSE) {
+if("rgl" %in% rownames(installed.packages()) == TRUE) {
   plot(gng, mode=gng.plot.rgl3d)
 }
 
