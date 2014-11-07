@@ -1,7 +1,7 @@
 SOURCES = $(wildcard tinythread/*.cpp gng/*.cpp)
 OBJECTS=$(SOURCES:.cpp=.o)
 
-RCPPFLAGS := $(shell $(R_HOME)/bin/R CMD config --cppflags)
+CPPFLAGS := $(shell $(R_HOME)/bin/R CMD config --cppflags)
 RLDFLAGS := $(shell $(R_HOME)/bin/R CMD config --ldflags)
 RCPPINCL := $(shell $(R_HOME)/bin/Rscript -e "Rcpp:::CxxFlags()")
 RCPPLIBS := $(shell $(R_HOME)/bin/Rscript -e "Rcpp:::LdFlags()")

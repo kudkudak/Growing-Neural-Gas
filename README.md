@@ -38,8 +38,7 @@ Daniel Fiser, Jan Faigl, Miroslav Kulich optimization paper [FGNG: A fast multi-
 
 **Note**: Support for Windows is experimental, I am working on that. 
 
-You can install it as an R package, it is easiest to do it using devtools (of
-course make sure you download devtools package in the first place).
+You can install it as an R package, it is easiest to do it using devtools (make sure you download devtools and RCurl packages in the first place).
 
 ```Matlab
 devtools::install_github("kudkudak/Growing-Neural-Gas")
