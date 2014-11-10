@@ -1,4 +1,4 @@
-Package: GrowingNeuralGas
+Package: gmum.r
 Version: 0.5
 Date: 2014-01-08
 Title: Online, very fast big-data clustering algorithm Growing Neural Gas
@@ -10,7 +10,7 @@ Depends:
     RcppArmadillo(>= 0.4.300.0),
     igraph(>= 0.7.1),
     BH
-LinkingTo: Rcpp, RcppArmadillo
+LinkingTo: Rcpp, RcppArmadillo, BH
 Suggests:
     RUnit
 Description: Cluster big amounts of data using online lightspeed implementation
