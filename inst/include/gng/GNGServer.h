@@ -88,7 +88,7 @@ public:
     }
 
     void setDebugLevel(int level){
-    	dbg.set_debug_level(level);
+	//dbg.set_debug_level(level);
     }
 
     
@@ -196,12 +196,7 @@ public:
     	return NumericVector(x.begin(), x.end());
     }
 	void RinsertExamples(Rcpp::NumericMatrix &  ex){
-
-
 		arma::mat * points = new arma::mat(ex.begin(), ex.nrow(), ex.ncol(), false);
-
-
-
 		arma::inplace_trans( *points, "lowmem");
 		this->_handle_addExamples(points->memptr(),(unsigned int)points->n_cols,
 				(unsigned int)points->n_rows*points->n_cols);
@@ -251,16 +246,14 @@ public:
 
     ///Terminate algorithm
     void terminate(){
-    	DBG(20, "GNGServer::collect_statistics interrupting");
-
-    	DBG(20, "GNGServer::collect_statistics finished");
     	getAlgorithm().terminate();
-    	DBG(20, "GNGServer::getAlgorithm terminated");
-
-    	collect_statistics_thread->join();
-    	algorithm_thread->join();
-
-    	gmum::sleep(1000);
+    	DBG(20, "GNGServer::getAlgorithm terminated, joining algorithm thread");
+    	if(algorithm_thread)
+		algorithm_thread->join();
+    	DBG(20, "GNGServer::algorithm thread terminated, joining statistic thread");
+    	if(collect_statistics_thread)
+		collect_statistics_thread->join();
+    	gmum::sleep(100);
     }
 
     GNGConfiguration getConfiguration(){

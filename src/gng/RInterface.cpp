@@ -5,13 +5,11 @@
 #ifdef RCPP_INTERFACE
 
 #include <RcppCommon.h>
-
 using namespace Rcpp;
-
-
 
 class GNGConfiguration;
 class GNGServer;
+
 RCPP_EXPOSED_CLASS(GNGConfiguration);
 RCPP_EXPOSED_CLASS(GNGServer);
 
@@ -23,11 +21,9 @@ RCPP_EXPOSED_CLASS(GNGServer);
 using namespace gmum;
 
 
-DebugCollector dbg;
 
 
 RCPP_MODULE(gng_module){
-	/// GNGConfiguration class
 	class_<GNGConfiguration>("GNGConfiguration" )
 	.constructor()
 
@@ -67,7 +63,7 @@ RCPP_MODULE(gng_module){
 	.method("check_correctness", &GNGConfiguration::check_correctness);
 
 	class_<GNGServer>("GNGServer").
-      constructor<GNGConfiguration*>()
+			 constructor<GNGConfiguration*>()
 			.method("dump_memory", &GNGServer::dumpMemory)
 			.method("set_memory_move_examples", &GNGServer::RsetExamples, "This function is tricky. It will use"
 					"your memory to store examples, so you shouldn't modify the matrix afterwards")

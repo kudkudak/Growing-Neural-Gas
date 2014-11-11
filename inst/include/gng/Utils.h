@@ -11,11 +11,11 @@
 
 
 #ifdef DEBUG_GMUM
-#define DBG(level, text) dbg.push_back(level, text);
+#define DBG(level, text, verbosity) dbg.push_back(level, text, verbosity);
 #define REPORT_PRODUCTION(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
 #define REPORT(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
 #else
-#define DBG(level, text)
+#define DBG(level, text, verbosity)
 #define REPORT(x)
 #define REPORT_PRODUCTION(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
 #endif
