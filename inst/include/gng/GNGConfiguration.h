@@ -74,6 +74,7 @@ using namespace Rcpp;
 		/**Epsilion n*/
 		double eps_n;//=0.0006;
 
+		int verbosity;
 
 		/**Pseudodistance function used (might be non metric)*/
 		int distance_function;
@@ -102,6 +103,8 @@ using namespace Rcpp;
 
 		GNGConfiguration(){
 			//Not reusing code because of peculiar problem with Rcpp
+			verbosity = 10;
+
 			dataset_vertex_extra_dim = 0;
 
 			starting_nodes = 100;
@@ -177,27 +180,27 @@ using namespace Rcpp;
 			if(experimental_utility_option != UtilityOff &&
 					(uniformgrid_optimization || lazyheap_optimization)){
 				cerr<<"ERROR: please turn OFF optimization when using experimental utility option\n";
-				DBG(20, "ERROR: please turn OFF optimization when using experimental utility option\n");
+
 				return false;
 			}
 
 			if(datasetType > 3 or datasetType <= 0){
 				cerr<<"ERROR: wrong database specified\n";
-				DBG(20, "ERROR: wrong database specified\n");
+
 				return false;
 			}
 			if(! (dim < 20 || ! uniformgrid_optimization)){
-				DBG(20, "ERROR: Too big dimensionality for uniformgrid_optimization");
+
 				cerr<<"ERROR: Too big dimensionality for uniformgrid_optimization\n";
 				return false;
 			}
 			if(! (distance_function==gmum::GNGGraph::Euclidean || ! uniformgrid_optimization)){
-				DBG(20, "ERROR: You can use only Euclidean distance function with uniformgrid optimization");
+
 				cerr<<"ERROR: You can use only Euclidean distance function with uniformgrid optimization\n";
 				return false;
 			}
 			if(! (!uniformgrid_optimization or (dim == axis.size() && dim == orig.size()))){
-				DBG(20, "ERROR: dimensionality doesn't agree with axis and orig");
+
 				cerr<<"ERROR: dimensionality doesn't agree with axis and orig"<<endl;
 				return false;
 			}

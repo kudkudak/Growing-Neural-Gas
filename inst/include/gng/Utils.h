@@ -8,18 +8,6 @@
 #ifndef UTILS_H
 #define	UTILS_H
 
-
-
-#ifdef DEBUG_GMUM
-#define DBG(level, text, verbosity) dbg.push_back(level, text, verbosity);
-#define REPORT_PRODUCTION(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
-#define REPORT(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
-#else
-#define DBG(level, text, verbosity)
-#define REPORT(x)
-#define REPORT_PRODUCTION(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
-#endif
-
 #include <cstdio>
 #include <iostream>
 #include <algorithm>
@@ -42,21 +30,26 @@ typedef long long LL;
 #define ST first
 #define ND second
 
-
-
-
-
 #include <sstream>
 #include <string>
 #include <map>
 #include <cmath>
 
-
 //c-like random functions
 #include <stdlib.h>
 #include <time.h>
 
-#include "DebugCollector.h"
+#include "Logger.h"
+
+#ifdef DEBUG_GMUM
+#define DBG(logger, level, text) logger->log(level, text);
+#define REPORT_PRODUCTION(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
+#define REPORT(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
+#else
+#define DBG(verbosity, level, text )
+#define REPORT(x)
+#define REPORT_PRODUCTION(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
+#endif
 
 void __init_rnd();
 int __rnd(int min, int max);
@@ -64,68 +57,59 @@ int __int_rnd(int min, int max);
 double __double_rnd(double min, double max);
 
 template<class T>
-void write_array(T* begin, T*end){
-	for(;begin!=end;++begin){
-		std::cerr<<*begin<<",";
+void write_array(T* begin, T*end) {
+	for (; begin != end; ++begin) {
+		std::cerr << *begin << ",";
 	}
-	std::cerr<<endl;
-}
-
-
-template<class T>
-void write_cnt(T begin, T end){
-	for(;begin!=end;++begin){
-		std::cerr<<*begin<<",";
-	}
-	std::cerr<<endl;
+	std::cerr << endl;
 }
 
 template<class T>
-std::string write_cnt_str(T begin, T end){
-    std::stringstream ss;
-    
-	for(;begin!=end;++begin){
-		ss<<*begin<<",";
+void write_cnt(T begin, T end) {
+	for (; begin != end; ++begin) {
+		std::cerr << *begin << ",";
 	}
-    return ss.str();
+	std::cerr << endl;
 }
-
 
 template<class T>
-std::string to_str(const T& x){
-    stringstream ss;
-    ss<<x;
-    return ss.str();
+std::string write_cnt_str(T begin, T end) {
+	std::stringstream ss;
+
+	for (; begin != end; ++begin) {
+		ss << *begin << ",";
+	}
+	return ss.str();
 }
 
+template<class T>
+std::string to_str(const T& x) {
+	stringstream ss;
+	ss << x;
+	return ss.str();
+}
 
-
-struct BasicException : public std::exception
-{
-   std::string s;
-   BasicException(std::string ss) : s(ss) {}
-   ~BasicException() throw () {} // Updated
-   const char* what() const throw() { 
-       return s.c_str(); 
-   }
+struct BasicException: public std::exception {
+	std::string s;
+	BasicException(std::string ss) :
+			s(ss) {
+	}
+	~BasicException() throw () {
+	} // Updated
+	const char* what() const throw () {
+		return s.c_str();
+	}
 };
 
 //conflicting with boost namespace
-namespace gmum{
+namespace gmum {
 template<class T>
-std::string to_string(const T& x){
-    stringstream ss;
-    ss<<x;
-    return ss.str();
+std::string to_string(const T& x) {
+	stringstream ss;
+	ss << x;
+	return ss.str();
 }
 }
-
-
-
-
-
-
-
 
 #include <string.h>
 #include <iostream>
@@ -133,23 +117,16 @@ std::string to_string(const T& x){
 #include <vector>
 using namespace std;
 
-
-
 const int __one__ = 1;
-const bool isCpuLittleEndian = 1 == *(char*)(&__one__); // CPU endianness
+const bool isCpuLittleEndian = 1 == *(char*) (&__one__); // CPU endianness
 const bool isFileLittleEndian = false;  // output endianness - you choose :)
 
+void _write_bin(ostream & out, double v);
 
-
-void _write_bin(ostream & out, double v );
-
-void _write_bin_vect(ostream & out, vector<double> & v );
+void _write_bin_vect(ostream & out, vector<double> & v);
 
 double _load_bin(istream & in);
 
 vector<double> _load_bin_vector(istream & in);
-
-
-
 
 #endif	/* UTILS_H */

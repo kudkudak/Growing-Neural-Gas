@@ -7,13 +7,13 @@
 #ifndef GNGINCLUDE_H
 #define	 GNGINCLUDE_H
 
+#include "Logger.h"
 #include "GNGGlobals.h"
 #include "UniformGrid.h"
 #include "GNGNode.h"
 #include "GNGGraph.h"
 #include "GNGDataset.h"
 #include "GNGAlgorithm.h"
-#include "DebugCollector.h"
 #include "GNGDefines.h"
 #include "GNGConfiguration.h"
 #include "GNGServer.h"

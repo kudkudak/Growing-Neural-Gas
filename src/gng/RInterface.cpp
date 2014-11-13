@@ -59,7 +59,7 @@ RCPP_MODULE(gng_module){
 			"Distance function used: Euclidean, or Cosine. Note that "
 			"cosine isn't a metric and all theoretical guarantees of GNG won't work"
 			"Default Euclidean.")
-
+	.field("verbosity", &GNGConfiguration::verbosity)
 	.method("check_correctness", &GNGConfiguration::check_correctness);
 
 	class_<GNGServer>("GNGServer").
@@ -70,10 +70,7 @@ RCPP_MODULE(gng_module){
 			.method("run", &GNGServer::run)
 			.method("pause", &GNGServer::pause)
 			.method("dump_graph", &GNGServer::serializeGraph)
-			.method("set_debug_level", &GNGServer::setDebugLevel)
-			.method("get_configuration", &GNGServer::getConfiguration)
 			.method("terminate", &GNGServer::terminate)
-
 			.method("get_mean_error", &GNGServer::getMeanError)
 			.method("get_number_nodes", &GNGServer::getNumberNodes)
 			.method("export_to_graphml", &GNGServer::exportsToGraphML)

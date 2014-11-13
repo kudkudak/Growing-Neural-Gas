@@ -384,7 +384,7 @@ evalqOnLoad({
                         experimental_utility_option = gng.experimental.utility.option.off,
                         experimental_utility_k = 1.5, max_edge_age = 200, experimental_vertex_extra_data=FALSE,
                         lambda=200,
-                        load_model_filename = ""
+                        load_model_filename = "", verbosity=0
                         
     ){
       
@@ -428,6 +428,7 @@ evalqOnLoad({
       config$eps_w = eps_w
       config$dim = dim
       config$lambda = lambda
+      config$verbosity = verbosity
       
       if(experimental_vertex_extra_data == TRUE){
         config$vertex_extra_data_dim = 1
@@ -463,7 +464,6 @@ evalqOnLoad({
       
       # Construct server
       server = new(GNGServer, config)
-      server$set_debug_level(10)
       server
     }
     
