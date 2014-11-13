@@ -5,76 +5,80 @@ library(igraph)
 	    g <- .gng.construct_igraph(gngServer)
 	    .visualizeIGraphRGL(g)
 	}else{
-	    warning("To plot 3d please install rgl")
+	    warning("Please install rgl package to plot 3d graphs")
 	}
   }
   #' Draw igraph using rgl - assumes >=3 dimensions and draws 3 first
   .visualizeIGraphRGL<-function(g, radius=NULL){
-    library(rgl)
-    library(igraph)
-    
-    if(length(V(g))==0) return
-    
-    iteration<-0
-    nodes <- length(V(g))
-    
-    # Init 3d data
-    x_lines <- c(1:2*length(E(g)))
-    y_lines <- c(1:2*length(E(g)))
-    z_lines <- c(1:2*length(E(g)))
-    k<-1
-    m<-1
-    x<-c(1:nodes)
-    y<-c(1:nodes)
-    z<-c(1:nodes)
-    
-    # Write 3d positions
-    for(i in 1:nodes){
-      x[i]=V(g)[i]$v0
-      y[i]=V(g)[i]$v1
-      z[i]=V(g)[i]$v2
-    }
-    
-    # TODO: edges might be huge..
-    for(edg_idx in 1:length(E(g)))
-    {
-      edg <- get.edges(g, E(g)[edg_idx])
-      x_lines[k] = V(g)[edg[1]]$v0
-      y_lines[k] = V(g)[edg[1]]$v1
-      z_lines[k] = V(g)[edg[1]]$v2
-      
-      x_lines[k+1] = V(g)[edg[2]]$v0
-      y_lines[k+1] = V(g)[edg[2]]$v1
-      z_lines[k+1] = V(g)[edg[2]]$v2
-      k = k + 2
-    }  
-    
-    if(is.null(radius)){
-      radius <- 8.0*(0.3333* (abs(max(x) - min(x))+abs(max(y) - min(y))+abs(max(z) - min(z)))/(nodes+0.0))
-    }
-    
-    cx <- V(g)$error
-    cx <- abs(cx)/max(abs(cx)) 
-    cy <- c(1:(nodes))
-    cz <- c(1:(nodes))
-    
-    cy <- 0.1
-    cz <- 0.1
-    print(cx)
-    
-    
-    ### Draw graph ###
-    rgl.clear()
-    rgl.light()
-    rgl.bg(color="white")
-    axes3d(edges="bbox")
-    
-    
-    rgl.spheres(x,y,z, 
-                radius = rep(radius, length(cx)), 
-                col=rgb(cx,cy, cz))
-    
-    rgl.lines(x_lines[1:k-1],y_lines[1:k-1],z_lines[1:k-1],color="bisque")
+    if("rgl" %in% rownames(installed.packages()) == TRUE){
+	    library(rgl)
+	    library(igraph)
+	    
+	    if(length(V(g))==0) return
+	    
+	    iteration<-0
+	    nodes <- length(V(g))
+	    
+	    # Init 3d data
+	    x_lines <- c(1:2*length(E(g)))
+	    y_lines <- c(1:2*length(E(g)))
+	    z_lines <- c(1:2*length(E(g)))
+	    k<-1
+	    m<-1
+	    x<-c(1:nodes)
+	    y<-c(1:nodes)
+	    z<-c(1:nodes)
+	    
+	    # Write 3d positions
+	    for(i in 1:nodes){
+	      x[i]=V(g)[i]$v0
+	      y[i]=V(g)[i]$v1
+	      z[i]=V(g)[i]$v2
+	    }
+	    
+	    # TODO: edges might be huge..
+	    for(edg_idx in 1:length(E(g)))
+	    {
+	      edg <- get.edges(g, E(g)[edg_idx])
+	      x_lines[k] = V(g)[edg[1]]$v0
+	      y_lines[k] = V(g)[edg[1]]$v1
+	      z_lines[k] = V(g)[edg[1]]$v2
+	      
+	      x_lines[k+1] = V(g)[edg[2]]$v0
+	      y_lines[k+1] = V(g)[edg[2]]$v1
+	      z_lines[k+1] = V(g)[edg[2]]$v2
+	      k = k + 2
+	    }  
+	    
+	    if(is.null(radius)){
+	      radius <- 8.0*(0.3333* (abs(max(x) - min(x))+abs(max(y) - min(y))+abs(max(z) - min(z)))/(nodes+0.0))
+	    }
+	    
+	    cx <- V(g)$error
+	    cx <- abs(cx)/max(abs(cx)) 
+	    cy <- c(1:(nodes))
+	    cz <- c(1:(nodes))
+	    
+	    cy <- 0.1
+	    cz <- 0.1
+	    print(cx)
+	    
+	    
+	    ### Draw graph ###
+	    rgl.clear()
+	    rgl.light()
+	    rgl.bg(color="white")
+	    axes3d(edges="bbox")
+	    
+	    
+	    rgl.spheres(x,y,z, 
+			radius = rep(radius, length(cx)), 
+			col=rgb(cx,cy, cz))
+	    
+	    rgl.lines(x_lines[1:k-1],y_lines[1:k-1],z_lines[1:k-1],color="bisque")
+	}else{
+    		warning("Please install rgl package to plot 3d graph")
+    	}
   }
 .gng.plot2d.errors<-function(gngServer, vertex.color, layout, start_s=2){
   tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
