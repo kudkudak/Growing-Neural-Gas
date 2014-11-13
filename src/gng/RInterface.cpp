@@ -72,6 +72,7 @@ RCPP_MODULE(gng_module){
 			.method("dump_graph", &GNGServer::serializeGraph)
 			.method("terminate", &GNGServer::terminate)
 			.method("get_mean_error", &GNGServer::getMeanError)
+			.method("get_configuration", &GNGServer::getConfiguration)
 			.method("get_number_nodes", &GNGServer::getNumberNodes)
 			.method("export_to_graphml", &GNGServer::exportsToGraphML)
 			.method("get_node", &GNGServer::getNode)

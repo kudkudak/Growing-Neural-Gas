@@ -1,4 +1,4 @@
-Package: gmum.r
+Package: GrowingNeuralGas
 Version: 0.5
 Date: 2014-01-08
 Title: Online, very fast big-data clustering algorithm Growing Neural Gas

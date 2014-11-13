@@ -90,6 +90,10 @@ public:
 		//dbg.set_debug_level(level);
 	}
 
+	GNGConfiguration getConfiguration(){
+		return current_configuration;
+	}
+
 	static GNGServer * constructTestServer(GNGConfiguration config) {
 		return new GNGServer(&config);
 	}
