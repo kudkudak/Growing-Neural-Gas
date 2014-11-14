@@ -510,11 +510,13 @@ evalqOnLoad({
       warning("Trying to plot very large graph (>4000 nodes). It might take a while.")
     }
     if(x$get_number_nodes() == 0){
-      stop("Empty graph")
+      warning("Empty graph")
+      return
     }
     
     if(mode == gng.plot.rgl3d && !("rgl" %in% rownames(installed.packages()))){
-      stop("Please install rgl and reload the package to plot 3d")
+      warning("Please install rgl and reload the package to plot 3d")
+      return
     }
     
     if(mode == gng.plot.rgl3d){

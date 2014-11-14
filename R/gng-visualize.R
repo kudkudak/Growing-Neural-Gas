@@ -85,6 +85,8 @@ library(igraph)
   gngServer$export_to_graphml(tmp_name)
   ig = .readFromGraphML(tmp_name )
   
+  if(length(V(g))==0) return
+  
   if(vertex.color == 'extra'){
     vertex.color = c(1:length(V(ig)))
     max_col = 0
@@ -104,6 +106,8 @@ library(igraph)
   gngServer$export_to_graphml(tmp_name)
   ig = .readFromGraphML(tmp_name )
   
+  if(length(V(g))==0) return
+
   if(vertex.color == 'extra'){
     vertex.color = c(1:length(V(ig)))
     max_col = 0
