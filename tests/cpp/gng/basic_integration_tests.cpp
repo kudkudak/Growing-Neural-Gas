@@ -1,11 +1,12 @@
-#include "../../inst/include/gng/GNG.h" //TODO: path problems
-#include "../../inst/include/gng/GNGServer.h"
-#include "../../inst/include/gng/Utils.h"
+#include "gng/GNG.h" //TODO: path problems
+#include "gng/GNGServer.h"
+#include "gng/Utils.h"
 
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include <algorithm>
 #include <utility>
 #include <vector>
+
 using namespace std;
 using namespace gmum;
 
