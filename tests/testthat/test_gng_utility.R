@@ -8,7 +8,7 @@ max_nodes <- 600
 # Construct gng object
 gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3,
            experimental_utility_option = gng.experimental.utility.option.basic,
-           experimental_vertex_extra_data=TRUE
+           experimental_vertex_extra_data=TRUE, verbosity=10
            )
 
 gng$get_configuration()$vertex_extra_data_dim
@@ -22,7 +22,6 @@ ex_binded <- cbind(ex, rep(2.0, nrow(ex) ))
 ex_binded <- cbind(ex_binded, rep(0.6, nrow(ex) ))
 print(dim(ex_binded))
 
-gng$set_debug_level(10)
 
 gng$insert_examples(ex_binded)
 

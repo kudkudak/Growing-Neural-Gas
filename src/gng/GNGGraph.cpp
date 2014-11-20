@@ -1,4 +1,3 @@
-
 #include "GNGGraph.h"
 
 #include <iostream>
@@ -6,84 +5,90 @@
 
 using namespace std;
 
+namespace gmum {
 
-namespace gmum{
+void writeToGraphML(GNGGraph &g, std::ostream & out) {
+	g.lock();
 
-	void writeToGraphML(GNGGraph &g, std::ostream & out){
-		g.lock();
+	out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	out
+			<< "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">\n";
 
-		out<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-		out<<"<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">\n";
+	out
+			<< "<key id=\"key0\" for=\"edge\" attr.name=\"dist\" attr.type=\"double\" />\n";
+	out
+			<< "<key id=\"key1\" for=\"node\" attr.name=\"error\" attr.type=\"double\" />\n";
+	out
+			<< "<key id=\"key2\" for=\"node\" attr.name=\"extra_data\" attr.type=\"double\" />\n";
+	out
+			<< "<key id=\"key3\" for=\"node\" attr.name=\"gng_index\" attr.type=\"int\" />\n";
+	out
+			<< "<key id=\"key4\" for=\"node\" attr.name=\"utility\" attr.type=\"double\" />\n";
+	out
+			<< "<key id=\"key5\" for=\"node\" attr.name=\"v0\" attr.type=\"double\" />\n";
+	out
+			<< "<key id=\"key6\" for=\"node\" attr.name=\"v1\" attr.type=\"double\" />\n";
+	out
+			<< "<key id=\"key7\" for=\"node\" attr.name=\"v2\" attr.type=\"double\" />\n";
 
+	out
+			<< "<graph id=\"G\" edgedefault=\"undirected\" parse.nodeids=\"canonical\" parse.edgeids=\"canonical\" parse.order=\"nodesfirst\">\n";
 
+	std::map<int, int> gng_index_to_graph_index;
 
-		out<<"<key id=\"key0\" for=\"edge\" attr.name=\"dist\" attr.type=\"double\" />\n";
-		out<<"<key id=\"key1\" for=\"node\" attr.name=\"error\" attr.type=\"double\" />\n";
-		out<<"<key id=\"key2\" for=\"node\" attr.name=\"extra_data\" attr.type=\"double\" />\n";
-		out<<"<key id=\"key3\" for=\"node\" attr.name=\"gng_index\" attr.type=\"int\" />\n";
-		out<<"<key id=\"key4\" for=\"node\" attr.name=\"utility\" attr.type=\"double\" />\n";
-		out<<"<key id=\"key5\" for=\"node\" attr.name=\"v0\" attr.type=\"double\" />\n";
-		out<<"<key id=\"key6\" for=\"node\" attr.name=\"v1\" attr.type=\"double\" />\n";
-		out<<"<key id=\"key7\" for=\"node\" attr.name=\"v2\" attr.type=\"double\" />\n";
+	unsigned int k = 0;
+	for (int i = 0; i <= g.getMaximumIndex(); ++i) {
 
-		out<<"<graph id=\"G\" edgedefault=\"undirected\" parse.nodeids=\"canonical\" parse.edgeids=\"canonical\" parse.order=\"nodesfirst\">\n";
+		if (g.existsNode(i)) {
+			gng_index_to_graph_index[g[i].nr] = k; //TODO:To be honest I dnt remember purpose of g[i].nr..
 
-		std::map<int, int> gng_index_to_graph_index;
-
-		unsigned int k = 0;
-		for(int i=0;i<=g.getMaximumIndex();++i){
-
-			if(g.existsNode(i))
+			out << "<node id=\"n" << k++ << "\">\n";
+			out << "<data key=\"key1\">" << g[i].error << "</data>\n";
+			out << "<data key=\"key2\">" << g[i].extra_data << "</data>\n";
+			out << "<data key=\"key3\">" << g[i].nr << "</data>\n";
+			out << "<data key=\"key4\">" << g[i].utility << "</data>\n";
+			out << "<data key=\"key5\">" << g[i].position[0] << "</data>\n";
+			out << "<data key=\"key6\">" << g[i].position[1] << "</data>\n";
+			out << "<data key=\"key7\">" << g[i].position[2] << "</data>\n";
+			out << "</node>\n";
+		}
+	}
+	unsigned int l = 0;
+	for (unsigned int i = 0; i <= g.getMaximumIndex(); ++i) {
+		if (g.existsNode(i)) {
+			FOREACH(edg, g[i])
 			{
-				gng_index_to_graph_index[g[i].nr] = k; //TODO:To be honest I dnt remember purpose of g[i].nr..
-
-				out<<"<node id=\"n"<<k++<<"\">\n";
-				out<<"<data key=\"key1\">"<<g[i].error<<"</data>\n";
-				out<<"<data key=\"key2\">"<<g[i].extra_data<<"</data>\n";
-				out<<"<data key=\"key3\">"<<g[i].nr<<"</data>\n";
-				out<<"<data key=\"key4\">"<<g[i].utility<<"</data>\n";
-				out<<"<data key=\"key5\">"<<g[i].position[0]<<"</data>\n";
-				out<<"<data key=\"key6\">"<<g[i].position[1]<<"</data>\n";
-				out<<"<data key=\"key7\">"<<g[i].position[2]<<"</data>\n";
-				out<<"</node>\n";
+				if (g[i].nr > (*edg)->nr) { //directed!
+					out << "<edge id=\"e" << l++ << "\" source=\"n"
+							<< gng_index_to_graph_index[(*edg)->nr]
+							<< "\" target=\"n"
+							<< gng_index_to_graph_index[g[i].nr] << "\">\n";
+					out << "<data key=\"key0\">" << g.getDist(i, (*edg)->nr)
+							<< "</data>";
+					out << "</edge>\n";
+				}
 			}
-		}
-		unsigned int l = 0;
-		for (unsigned int i = 0; i <= g.getMaximumIndex(); ++i){
-			  if(g.existsNode(i))
-			  {
-					FOREACH(edg, g[i]){
-						if(g[i].nr > (*edg)->nr){ //directed!
-							out<<"<edge id=\"e"<<l++<<"\" source=\"n"<<
-									gng_index_to_graph_index[(*edg)->nr]<<"\" target=\"n"<<
-									gng_index_to_graph_index[g[i].nr]<<
-									"\">\n";
-							out<<"<data key=\"key0\">"<<g.getDist(i, (*edg)->nr)<<"</data>";
-							out<<"</edge>\n";
-						}
-					}
 
-			  }
 		}
-		out<<"</graph>\n</graphml>\n";
-		g.unlock();
+	}
+	out << "</graph>\n</graphml>\n";
+	g.unlock();
 
+}
+
+std::string writeToGraphML(GNGGraph &g, string filename) {
+	if (filename == "") {
+		std::stringstream ss;
+		writeToGraphML(g, ss);
+		return ss.str();
+	} else {
+		ofstream myfile(filename.c_str());
+		writeToGraphML(g, myfile);
+		myfile.close();
+		return "";
 	}
 
-	std::string writeToGraphML(GNGGraph &g, string filename){
-		  if(filename==""){
-			std::stringstream ss;
-			writeToGraphML(g, ss);
-			return ss.str();
-		  }
-		  else{
-			ofstream myfile(filename.c_str());
-			writeToGraphML(g, myfile);
-			myfile.close();
-			return "";
-		  }
-
-	}
+}
 //
 //  std::string writeToGraphMLBoost(GNGGraph &g, string filename){
 //

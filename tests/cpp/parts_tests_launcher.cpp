@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include "../../inst/include/gng/GNG.h"
-DebugCollector dbg;
+
 using namespace gmum;
 //#include "parts_tests.cpp"
 

@@ -1,9 +1,9 @@
 #include "Threading.h"
 
-namespace gmum{
+namespace gmum {
 
-	void sleep(int ms){
-		tthread::this_thread::sleep_for(tthread::chrono::milliseconds(ms));
-	}
+void sleep(int ms) {
+	tthread::this_thread::sleep_for(tthread::chrono::milliseconds(ms));
+}
 
 }

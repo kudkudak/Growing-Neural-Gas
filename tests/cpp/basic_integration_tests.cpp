@@ -23,11 +23,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
 
     GNGServer *s = GNGServer::constructTestServer(config);
 
-    DBG(10, "test_convergence::current pool");
-
     cerr<<s->getGraph().reportPool()<<endl;
-
-    DBG(10, "running algorithm");
 
 
     s->run();
@@ -45,7 +41,6 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     }
 
 
-    DBG(10, "Allocated examples\n");
     cerr<<"Allocated examples\n";
 
     if(extra_examples){
@@ -63,8 +58,6 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     	int ex = s->getDatabase().drawExample();
     	write_array(s->getDatabase().getPosition(ex), s->getDatabase().getPosition(ex)+(config.dim+1));
     }
-    DBG(12, "testNewInterface::Server running");
-
 
     cerr<< "testNewInterface::Collecting results\n";
 
@@ -109,7 +102,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
 #include <cmath>
 
 TEST(BasicTests, BasicConvergenceUtility){
-    dbg.set_debug_level(10);
+
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.experimental_utility_option = GNGConfiguration::UtilityBasicOn;
 
@@ -119,7 +112,7 @@ TEST(BasicTests, BasicConvergenceUtility){
 }
 
 TEST(BasicTests, Serialization){
-	dbg.set_debug_level(10);
+
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.uniformgrid_optimization = true;
     config.datasetType = GNGConfiguration::DatasetSamplingProb;
@@ -152,9 +145,6 @@ TEST(BasicTests, Serialization){
     	int ex = s->getDatabase().drawExample();
     	write_array(s->getDatabase().getPosition(ex), s->getDatabase().getPosition(ex)+(config.dim+1));
     }
-    DBG(12, "testNewInterface::Server running");
-
-
 
     cerr<< "testNewInterface::Collecting results\n";
 
@@ -186,7 +176,6 @@ TEST(BasicTests, Serialization){
     s->serializeGraph("test.graph.bin");
     delete s;
 
-	dbg.set_debug_level(10);
 
 	GNGConfiguration config2 = GNGConfiguration::getDefaultConfiguration();
 	config2.load_graph_filename = "test.graph.bin";
@@ -199,7 +188,7 @@ TEST(BasicTests, Serialization){
 
 
 TEST(BasicTests, BasicConvergence){
-    dbg.set_debug_level(10);
+
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     pair<double, double> results = test_convergence(&config, 1000, 6000,
     		"basic_convergence.graphml");
@@ -208,7 +197,7 @@ TEST(BasicTests, BasicConvergence){
 }
 
 TEST(BasicTests, FewDimsSkewedUGConvergence){
-    dbg.set_debug_level(10);
+
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.uniformgrid_optimization =  true;
     config.max_nodes = 1000;
@@ -235,7 +224,7 @@ TEST(BasicTests, FewDimsSkewedUGConvergence){
 
 
 TEST(BasicTests, FewDimsUGConvergence){
-    dbg.set_debug_level(10);
+
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.uniformgrid_optimization =  true;
     config.max_nodes = 2000;
@@ -250,7 +239,6 @@ TEST(BasicTests, FewDimsUGConvergence){
     ASSERT_LE(results.second, 5.0);
 }
 TEST(BasicTests, ManyDimsUGConvergence){
-    dbg.set_debug_level(10);
 
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.uniformgrid_optimization =  true;
@@ -267,7 +255,7 @@ TEST(BasicTests, ManyDimsUGConvergence){
 
 TEST(BasicTests, ManyDimsNoUG){
     cerr<<"BasicTests::ManyDimsNoUG"<<endl;
-    dbg.set_debug_level(10);
+
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.uniformgrid_optimization =  false;
     config.dim = 50;
@@ -280,7 +268,7 @@ TEST(BasicTests, ManyDimsNoUG){
 }
 
 TEST(BasicTests, BasicConvergeLazyHeapUG){
-    dbg.set_debug_level(10);
+
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.lazyheap_optimization = true;
     config.max_nodes = 2000;

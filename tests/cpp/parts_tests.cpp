@@ -17,14 +17,18 @@ using namespace gmum;
  * Basic test
  */
 TEST(GraphTests, BasicGraphTest) {
+	boost::shared_ptr<Logger> logger = boost::shared_ptr<Logger>(new Logger(10));
 	cerr << "Testing GraphTest\n";
 
 	int N_start = 30;
-	dbg.set_debug_level(7);
+
 	unsigned int dim = 6;
 
 	gmum::gmum_recursive_mutex grow_mutex;
-	RAMGNGGraph<GNGNode, GNGEdge> g(&grow_mutex, dim, N_start);
+	RAMGNGGraph<GNGNode, GNGEdge> g(&grow_mutex, dim,
+			N_start, //Initial pool size
+			GNGGraph::Euclidean, //Used metric
+			logger); //Logger
 
 	ASSERT_EQ(g.existsNode(0), false);
 	ASSERT_EQ(g.getNumberNodes(), 0);
@@ -65,13 +69,13 @@ TEST(GraphTests, BasicGraphTest) {
 	ASSERT_EQ(g.getNumberNodes(), N_start - 1);
 
 	/** WARNING: highly intrusive test ! Can change implementation*/
-	DBG(10, "First free = "+gmum::to_string(g.firstFree));
-	DBG(10, "First free = "+gmum::to_string(g.next_free[g.firstFree]));
+	DBG(logger,10, "First free = "+gmum::to_string(g.firstFree));
+	DBG(logger,10, "First free = "+gmum::to_string(g.next_free[g.firstFree]));
 	ASSERT_EQ(g.firstFree, 20);
 	ASSERT_EQ(g.next_free[g.firstFree], 15); //might fail if not doubling
 	ASSERT_EQ(g.next_free[15], 10);
 
-	DBG(10, "Test OK");
+	DBG(logger,10, "Test OK");
 
 	cerr << "Getting size\n" << g[0].size() << " " << g[0].capacity() << endl
 			<< flush;
@@ -101,7 +105,7 @@ TEST(GraphTests, BasicGraphTest) {
 	//Check memory consistency
 	ASSERT_EQ(g[0].position[3], 0.4);
 
-	DBG(10, "Test OK");
+	DBG(logger,10, "Test OK");
 
 	cerr << "Growing\n" << flush;
 
@@ -130,13 +134,12 @@ TEST(GraphTests, BasicGraphTest) {
 
 
 
-	dbg.set_debug_level(2);
 
 	cerr << "Serializing graph\n";
 	g.serialize("graph.bin");
 	cerr << "Loading serialized graph\n";
 
-	RAMGNGGraph<GNGNode, GNGEdge> g2(&grow_mutex, dim, N_start);
+	RAMGNGGraph<GNGNode, GNGEdge> g2(&grow_mutex, dim, N_start, GNGGraph::Euclidean, logger);
 
 
 	g2.load("graph.bin");
@@ -176,14 +179,17 @@ using namespace std;
  * Basic test
  */
 TEST(DatabaseTests, BasicGraphTest){
-	dbg.set_debug_level(3);
+	boost::shared_ptr<Logger> logger = boost::shared_ptr<Logger>(new Logger(10));
+	int m_verbosity = 3;
 
     unsigned int dim = 6;
     gmum::gmum_recursive_mutex phase_2_lock;
     unsigned int num_examples = 100, meta_data_dim = 10;
     //Probabilistic dataaset
     GNGDatasetSimple<GNGDatasetStorageRAM> dataset(
-    		&phase_2_lock,dim, meta_data_dim, 0, -1);
+    		&phase_2_lock,dim, meta_data_dim, 0, -1,
+			true, //Sampling
+			logger); //Logger
 
 
 
@@ -193,7 +199,9 @@ TEST(DatabaseTests, BasicGraphTest){
 
 
     GNGDatasetSimple<GNGDatasetStorageRAM> dataset2(
-    		&phase_2_lock, dim, meta_data_dim, 1, 0);
+    		&phase_2_lock, dim, meta_data_dim, 1, 0,
+			true, //Sampling
+			logger); //Logger
 
 
 
@@ -233,13 +241,15 @@ TEST(DatabaseTests, BasicGraphTest){
 
 
 TEST(DatabaseTestsSeq, BasicGraphTest){
-	dbg.set_debug_level(3);
+	boost::shared_ptr<Logger> logger = boost::shared_ptr<Logger>(new Logger(10));
+
+	int m_verbosity = 3;
 	gmum::gmum_recursive_mutex phase_2_lock;
     unsigned int dim = 6;
     unsigned int num_examples = 100, meta_data_dim = 10;
     //Probabilistic dataaset
     GNGDatasetSimple<GNGDatasetStorageRAM> dataset(
-    		&phase_2_lock, dim, meta_data_dim, 0, -1, false);
+    		&phase_2_lock, dim, meta_data_dim, 0, -1, false, logger);
 
     double * x = new double[num_examples*(meta_data_dim+dim)];
 
@@ -247,7 +257,9 @@ TEST(DatabaseTestsSeq, BasicGraphTest){
 
 
     GNGDatasetSimple<GNGDatasetStorageRAM> dataset2(
-    		&phase_2_lock, dim, meta_data_dim, 1, 0);
+    		&phase_2_lock, dim, meta_data_dim, 1, 0,
+			true, //Sampling
+			logger); //Logger
 
 
     x = new double[num_examples*(meta_data_dim+dim+1)];

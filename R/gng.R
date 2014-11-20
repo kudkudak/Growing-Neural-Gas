@@ -384,7 +384,7 @@ evalqOnLoad({
                         experimental_utility_option = gng.experimental.utility.option.off,
                         experimental_utility_k = 1.5, max_edge_age = 200, experimental_vertex_extra_data=FALSE,
                         lambda=200,
-                        load_model_filename = ""
+                        load_model_filename = "", verbosity=0
                         
     ){
       
@@ -428,6 +428,7 @@ evalqOnLoad({
       config$eps_w = eps_w
       config$dim = dim
       config$lambda = lambda
+      config$verbosity = verbosity
       
       if(experimental_vertex_extra_data == TRUE){
         config$vertex_extra_data_dim = 1
@@ -463,7 +464,6 @@ evalqOnLoad({
       
       # Construct server
       server = new(GNGServer, config)
-      server$set_debug_level(10)
       server
     }
     
@@ -510,11 +510,13 @@ evalqOnLoad({
       warning("Trying to plot very large graph (>4000 nodes). It might take a while.")
     }
     if(x$get_number_nodes() == 0){
-      stop("Empty graph")
+      warning("Empty graph")
+      return
     }
     
     if(mode == gng.plot.rgl3d && !("rgl" %in% rownames(installed.packages()))){
-      stop("Please install rgl and reload the package to plot 3d")
+      warning("Please install rgl and reload the package to plot 3d")
+      return
     }
     
     if(mode == gng.plot.rgl3d){
@@ -640,6 +642,8 @@ evalqOnLoad({
         stop("Presets work only for dimensionality 3")
       }
       object$insert_examples(preset(N, center=center, r=r, prob=prob))
+    }else{ 
+      object$insert_examples(examples)
     }
   }
   

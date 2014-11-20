@@ -10,93 +10,117 @@
 
 #include "Heap.h"
 #include "GNGGraph.h"
-namespace gmum{
-	struct ErrorNode{
-		double error;
-		int i;
-		ErrorNode(const ErrorNode & orig){ error = orig.error; i = orig.i; }
-		ErrorNode(double error, int i):error(error), i(i){}
-		ErrorNode(){}
-		bool operator>(const ErrorNode& rhs){ return error>rhs.error;}
-		bool operator<(const ErrorNode& rhs){ return error<rhs.error;}
-		bool operator>=(const ErrorNode& rhs){ return error>=rhs.error;}
-		bool operator<=(const ErrorNode& rhs){ return error<=rhs.error;}
-		friend std::ostream & operator<<(std::ostream & out, const ErrorNode & rhs){ out<<"("<<rhs.error<<","<<rhs.i<<")"; return out;}
-	};
+namespace gmum {
+struct ErrorNode {
+	double error;
+	int i;
+	ErrorNode(const ErrorNode & orig) {
+		error = orig.error;
+		i = orig.i;
+	}
+	ErrorNode(double error, int i) :
+			error(error), i(i) {
+	}
+	ErrorNode() {
+	}
+	bool operator>(const ErrorNode& rhs) {
+		return error > rhs.error;
+	}
+	bool operator<(const ErrorNode& rhs) {
+		return error < rhs.error;
+	}
+	bool operator>=(const ErrorNode& rhs) {
+		return error >= rhs.error;
+	}
+	bool operator<=(const ErrorNode& rhs) {
+		return error <= rhs.error;
+	}
+	friend std::ostream & operator<<(std::ostream & out,
+			const ErrorNode & rhs) {
+		out << "(" << rhs.error << "," << rhs.i << ")";
+		return out;
+	}
+};
 
-	class GNGLazyErrorHeap: protected Heap<ErrorNode>{
-		typedef Heap<ErrorNode> super;
+class GNGLazyErrorHeap: protected Heap<ErrorNode> {
+	typedef Heap<ErrorNode> super;
 
-	protected:
-		std::vector<void*> m_buffer; // <HeapNode*, GNGNode->nr>
-		std::vector<bool> m_isonlist;
+protected:
+	std::vector<void*> m_buffer; // <HeapNode*, GNGNode->nr>
+	std::vector<bool> m_isonlist;
 
+	int m_buffer_size;
+	void checkBufferSize() {
+		if (m_buffer_size >= SIZE(m_buffer)) {
+			m_buffer.resize(3 * m_buffer_size);
+			m_isonlist.resize(3 * m_buffer_size);
+		} //domyslnie bool ma false (jako T())
+	}
 
-		int m_buffer_size;
-		void checkBufferSize(){
-			if(m_buffer_size >= SIZE(m_buffer)){ m_buffer.resize(3*m_buffer_size); m_isonlist.resize(3*m_buffer_size); } //domyslnie bool ma false (jako T())
+	std::list<int> L; //list of nodes to be inserted on lazy top operation
+public:
+	std::list<int> & getLazyList() {
+		return L;
+	}
+
+	GNGLazyErrorHeap() :
+			m_buffer_size(0), super() {
+	}
+
+	void insertLazy(int nr) {
+		m_buffer_size = std::max(m_buffer_size, nr + 1);
+		checkBufferSize();
+
+		if (!m_isonlist[nr]) {
+			L.push_back(nr);
+			m_isonlist[nr] = true;
 		}
+	}
 
-		std::list<int > L; //list of nodes to be inserted on lazy top operation
-	public:
-		 std::list<int> & getLazyList()  { return L; }
+	void updateLazy(int nr) {
+		m_buffer_size = std::max(m_buffer_size, nr + 1);
+		checkBufferSize();
+		if (m_buffer[nr])
+			super::remove(m_buffer[nr]);
+		m_buffer[nr] = 0;
 
-		GNGLazyErrorHeap():m_buffer_size(0),super(){}
-
-		void insertLazy(int nr){
-		   m_buffer_size = std::max(m_buffer_size, nr + 1);
-		   checkBufferSize();
-
-			if(!m_isonlist[nr]){
-				L.push_back(nr);
-				m_isonlist[nr]=true;
-			}
+		if (!m_isonlist[nr]) {
+			L.push_back(nr);
+			m_isonlist[nr] = true;
 		}
+	}
 
-		void updateLazy(int nr){
-			m_buffer_size = std::max(m_buffer_size, nr + 1);
-			checkBufferSize();
-			if(m_buffer[nr]) super::remove(m_buffer[nr]);
-			m_buffer[nr]=0;
+	void update(int nr, double new_error) {
+		m_buffer_size = std::max(m_buffer_size, nr + 1);
+		checkBufferSize();
 
+		if (m_buffer[nr])
+			super::remove(m_buffer[nr]);
+		m_buffer[nr] = super::insert(ErrorNode(new_error, nr));
+	}
 
-			if(!m_isonlist[nr]){
-				L.push_back(nr);
-			   m_isonlist[nr]=true;
-			}
-		}
+	void insert(int nr, double error) {
+		m_buffer_size = std::max(m_buffer_size, nr + 1);
+		checkBufferSize();
 
-		void update(int nr,double new_error){
-			m_buffer_size = std::max(m_buffer_size, nr + 1);
-			checkBufferSize();
+		if (m_buffer[nr] == 0)
+			m_buffer[nr] = reinterpret_cast<void*>(super::insert(
+					ErrorNode(error, nr)));
+		m_isonlist[nr] = false;
+	}
 
-			if(m_buffer[nr]) super::remove(m_buffer[nr]);
-			m_buffer[nr] = super::insert(ErrorNode(new_error,nr));
-		}
+	ErrorNode extractMax() {
 
-		void insert(int nr, double error){
-			m_buffer_size = std::max(m_buffer_size,nr+1);
-			checkBufferSize();
+		ErrorNode max = super::extractMax();
 
-			if(m_buffer[nr]==0)
-					m_buffer[nr]=reinterpret_cast<void*>(
-					super::insert(ErrorNode(error,nr))
-			 );
-			m_isonlist[nr]=false;
-		}
+		m_buffer[max.i] = 0; //mark that it is removed from the heap
+		return max;
+	}
 
-		ErrorNode extractMax(){
+	using super::print;
+	using super::getSize;
 
-			ErrorNode max = super::extractMax();
-
-			m_buffer[max.i]=0; //mark that it is removed from the heap
-			return max;
-		}
-
-		using super::print;
-		using super::getSize;
-
-	};
+};
 }
 #endif	/* GNGLAZYERRORHEAP_H */
 

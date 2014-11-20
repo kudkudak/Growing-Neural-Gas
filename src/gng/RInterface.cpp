@@ -5,13 +5,11 @@
 #ifdef RCPP_INTERFACE
 
 #include <RcppCommon.h>
-
 using namespace Rcpp;
-
-
 
 class GNGConfiguration;
 class GNGServer;
+
 RCPP_EXPOSED_CLASS(GNGConfiguration);
 RCPP_EXPOSED_CLASS(GNGServer);
 
@@ -23,11 +21,9 @@ RCPP_EXPOSED_CLASS(GNGServer);
 using namespace gmum;
 
 
-DebugCollector dbg;
 
 
 RCPP_MODULE(gng_module){
-	/// GNGConfiguration class
 	class_<GNGConfiguration>("GNGConfiguration" )
 	.constructor()
 
@@ -63,22 +59,20 @@ RCPP_MODULE(gng_module){
 			"Distance function used: Euclidean, or Cosine. Note that "
 			"cosine isn't a metric and all theoretical guarantees of GNG won't work"
 			"Default Euclidean.")
-
+	.field("verbosity", &GNGConfiguration::verbosity)
 	.method("check_correctness", &GNGConfiguration::check_correctness);
 
 	class_<GNGServer>("GNGServer").
-      constructor<GNGConfiguration*>()
+			 constructor<GNGConfiguration*>()
 			.method("dump_memory", &GNGServer::dumpMemory)
 			.method("set_memory_move_examples", &GNGServer::RsetExamples, "This function is tricky. It will use"
 					"your memory to store examples, so you shouldn't modify the matrix afterwards")
 			.method("run", &GNGServer::run)
 			.method("pause", &GNGServer::pause)
 			.method("dump_graph", &GNGServer::serializeGraph)
-			.method("set_debug_level", &GNGServer::setDebugLevel)
-			.method("get_configuration", &GNGServer::getConfiguration)
 			.method("terminate", &GNGServer::terminate)
-
 			.method("get_mean_error", &GNGServer::getMeanError)
+			.method("get_configuration", &GNGServer::getConfiguration)
 			.method("get_number_nodes", &GNGServer::getNumberNodes)
 			.method("export_to_graphml", &GNGServer::exportsToGraphML)
 			.method("get_node", &GNGServer::getNode)

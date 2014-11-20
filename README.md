@@ -38,8 +38,7 @@ Daniel Fiser, Jan Faigl, Miroslav Kulich optimization paper [FGNG: A fast multi-
 
 **Note**: Support for Windows is experimental, I am working on that. 
 
-You can install it as an R package, it is easiest to do it using devtools (of
-course make sure you download devtools package in the first place).
+You can install it as an R package, it is easiest to do it using devtools (make sure you download devtools and RCurl packages in the first place).
 
 ```Matlab
 devtools::install_github("kudkudak/Growing-Neural-Gas")
@@ -180,17 +179,7 @@ insert_examples(gng, ...), but this will perform 2 copies in RAM due to R design
 ##Current work
 ----------
 
-* Adapting Robust GNG strategies (http://www.researchgate.net/publication/8171175_Robust_growing_neural_gas_algorithm_with_application_in_cluster_analysis)
-
-* Windows 32 and 64 bit dll
-
-* Better igraph methods for clustering
-
-* MDL based clustering (as in RGNG)
-
-* Simple metric for clustering quality (PQ?)
-
-* Testing cosine similarity for GNG
+* Windows 32 and 64 bit dll (should finish in early december)
 
 ##Testing
 -----
@@ -205,7 +194,7 @@ Feel free to contribute to the code. Contributions should be posted as pull requ
 
 ##Known issues
 ---------
-* Package is not released for Windows yet (however 64 bit should work)
+* Package is not released for Windows yet (however release version might work as it contains compiled dll)
 
 * Due to bug in RStudio you might experience session crashes when creating many
   gng objects.
