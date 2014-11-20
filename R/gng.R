@@ -642,6 +642,8 @@ evalqOnLoad({
         stop("Presets work only for dimensionality 3")
       }
       object$insert_examples(preset(N, center=center, r=r, prob=prob))
+    }else{ 
+      object$insert_examples(examples)
     }
   }
   
