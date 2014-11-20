@@ -85,7 +85,7 @@ library(igraph)
   gngServer$export_to_graphml(tmp_name)
   ig = .readFromGraphML(tmp_name )
   
-  if(length(V(g))==0) return
+  if(length(V(ig))==0) return
   
   if(vertex.color == 'extra'){
     vertex.color = c(1:length(V(ig)))
@@ -106,7 +106,7 @@ library(igraph)
   gngServer$export_to_graphml(tmp_name)
   ig = .readFromGraphML(tmp_name )
   
-  if(length(V(g))==0) return
+  if(length(V(ig))==0) return
 
   if(vertex.color == 'extra'){
     vertex.color = c(1:length(V(ig)))
