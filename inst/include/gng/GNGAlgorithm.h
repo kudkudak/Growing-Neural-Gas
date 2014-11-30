@@ -183,6 +183,7 @@ private:
 
 	void IncreaseErrorNew(GNGNode * node, double error) {
 		FixErrorNew(node);
+		assert(m_lambda - s <= m_betha_powers_size -1);
 		node->error += m_betha_powers[m_lambda - s] * error;
 		errorHeap.updateLazy(node->nr);
 	}
@@ -191,14 +192,17 @@ private:
 		if (node->error_cycle == c)
 			return;
 
-		//        if(c - node->error_cycle >= m_betha_powers_to_n_length){
-		//            delete[] m_betha_powers_to_n;
-		//            m_betha_powers_to_n_length *= 2;
-		//            m_betha_powers_to_n = new double[m_betha_powers_to_n_length];
-		//            REP(i, m_betha_powers_to_n_length)
-		//            m_betha_powers_to_n[i] = std::pow(m_betha, m_lambda * (double) (i));
-		//        }
-		//
+		if(c - node->error_cycle >= m_betha_powers_to_n_length){
+			DBG_2(m_logger, 5, "Recreating m_betha_powers_to_n");
+			delete[] m_betha_powers_to_n;
+			m_betha_powers_to_n_length *= 2;
+			m_betha_powers_to_n = new double[m_betha_powers_to_n_length];
+			REP(i, m_betha_powers_to_n_length)
+			m_betha_powers_to_n[i] = std::pow(m_betha, m_lambda * (double) (i));
+		}
+
+		assert(c - node->error_cycle  <= m_betha_powers_to_n_length -1);
+
 		node->error = m_betha_powers_to_n[c - node->error_cycle] * node->error;
 		node->error_cycle = c;
 	}

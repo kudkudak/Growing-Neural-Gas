@@ -5,8 +5,10 @@
 #include <string>
 
 class Logger {
-	int m_verbosity;
+
 public:
+	int m_verbosity;
+
 	Logger(int verbosity): m_verbosity(verbosity){
 
 	}

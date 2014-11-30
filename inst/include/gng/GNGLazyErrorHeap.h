@@ -80,9 +80,11 @@ public:
 	void updateLazy(int nr) {
 		m_buffer_size = std::max(m_buffer_size, nr + 1);
 		checkBufferSize();
+
 		if (m_buffer[nr])
 			super::remove(m_buffer[nr]);
 		m_buffer[nr] = 0;
+
 
 		if (!m_isonlist[nr]) {
 			L.push_back(nr);
@@ -102,6 +104,7 @@ public:
 	void insert(int nr, double error) {
 		m_buffer_size = std::max(m_buffer_size, nr + 1);
 		checkBufferSize();
+
 
 		if (m_buffer[nr] == 0)
 			m_buffer[nr] = reinterpret_cast<void*>(super::insert(

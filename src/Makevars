@@ -2,8 +2,8 @@ SOURCES = $(wildcard tinythread/*.cpp gng/*.cpp)
 OBJECTS=$(SOURCES:.cpp=.o)
 
 R_HOME :=  $(shell R RHOME)
-DEBUG := #no debug -D GMUM_DEBUG
-GNG_FLAGS := -DRCPP_INTERFACE
+DEBUG := -DNDEBUG_GMUM  -DDEBUG_GMUM_2
+GNG_FLAGS := -D RCPP_INTERFACE
 
 CPPFLAGS := $(shell $(R_HOME)/bin/R CMD config --cppflags)
 RLDFLAGS := $(shell $(R_HOME)/bin/R CMD config --ldflags)
@@ -11,7 +11,7 @@ RCPPINCL := $(shell $(R_HOME)/bin/Rscript -e "Rcpp:::CxxFlags()")
 RCPPLIBS := $(shell $(R_HOME)/bin/Rscript -e "Rcpp:::LdFlags()")
 RCPPARMAINCL :=	$(shell $(R_HOME)/bin/Rscript -e "RcppArmadillo:::CxxFlags()")	
 
-PKG_CPPFLAGS := -O4  -I../inst/include -I../inst/include/gng -I../inst/tinythread -I. $(CPPFLAGS) $(RCPPINCL) $(RCPPARMAINCL)
+PKG_CPPFLAGS := -O4 $(DEBUG) -I../inst/include -I../inst/include/gng -I../inst/tinythread -I. $(CPPFLAGS) $(RCPPINCL) $(RCPPARMAINCL)
 PKG_CXXFLAGS := -O4 $(GNG_FLAGS) $(DEBUG) $(RCPPFLAGS) $(RCPPINCL) $(RCPPARMAINCL) $(RINSIDEINCL) $(shell $(R_HOME)/bin/R CMD config CXXFLAGS) -g -pthread -fpic  
-PKG_LIBS := -O4 $(RLDFLAGS) $(RRPATH) $(RBLAS) $(RLAPACK) $(RCPPLIBS) $(RLDFLAGS) $(RINSIDELIBS) -lpthread 
+PKG_LIBS := -O4 $(DEBUG) $(RLDFLAGS) $(RRPATH) $(RBLAS) $(RLAPACK) $(RCPPLIBS) $(RLDFLAGS) $(RINSIDELIBS) -lpthread 
 

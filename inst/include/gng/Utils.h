@@ -8,13 +8,8 @@
 #ifndef UTILS_H
 #define	UTILS_H
 
-#include <cstdio>
-#include <iostream>
-#include <algorithm>
-#include <string>
+#include <exception>
 #include <vector>
-#include <list>
-
 using namespace std;
 typedef vector<int> VI;
 typedef long long LL;
@@ -41,12 +36,22 @@ typedef long long LL;
 
 #include "Logger.h"
 
+#ifdef DEBUG_GMUM_2
+#define DBG_2(logger, level, text) logger->log(level, text);
+#define REPORT_PRODUCTION_2(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
+#define REPORT_2(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
+#else
+#define DBG_2(verbosity, level, text)
+#define REPORT_2(x)
+#define REPORT_PRODUCTION_2(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
+#endif
+
 #ifdef DEBUG_GMUM
 #define DBG(logger, level, text) logger->log(level, text);
 #define REPORT_PRODUCTION(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
 #define REPORT(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
 #else
-#define DBG(verbosity, level, text )
+#define DBG(verbosity, level, text)
 #define REPORT(x)
 #define REPORT_PRODUCTION(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
 #endif

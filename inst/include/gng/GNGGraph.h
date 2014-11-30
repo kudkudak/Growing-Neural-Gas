@@ -252,7 +252,7 @@ public:
 				createdNode > maximum_index ? createdNode : maximum_index;
 
 		//Assuming it is clear here
-#ifdef DEBUG
+#ifdef GMUM_DEBUG
 		assert(g[createdNode].size() == 0);
 #endif
 
@@ -513,7 +513,7 @@ private:
 	///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
 	void resizeGraph() {
 		//DBG(m_logger,5, "GNGGraph::resizing graph from "+to_string(g.size()));
-		DBG(m_logger,5, "GNGGraph::resizing");
+		DBG_2(m_logger,5, "GNGGraph::resizing");
 		unsigned int previous_size = g.size();
 		//Grow positions pool
 
@@ -545,7 +545,7 @@ private:
 		next_free[g.size() - 1] = -1;
 		firstFree = previous_size;
 
-		DBG(m_logger,5, "GNGGraph::resizing done"); DBG(m_logger,5, to_str(firstFree)); DBG(m_logger,5, to_str(next_free[previous_size]));
+		DBG_2(m_logger,5, "GNGGraph::resizing done"); DBG(m_logger,5, to_str(firstFree)); DBG(m_logger,5, to_str(next_free[previous_size]));
 		//DBG(m_logger,5, "GNGGraph::resizing graph from "+to_string(g.size())+" done");
 	}
 };
