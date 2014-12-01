@@ -37,6 +37,7 @@ public:
 	double m_eps_w, m_eps_n; //epsilon of the winner and of the neighbour
 	int m_max_age;
 	int m_max_nodes;
+	int m_iteration;
 
 	bool m_toggle_uniformgrid, m_toggle_lazyheap;
 
@@ -135,6 +136,10 @@ public:
 
 	void setMaxNodes(int value) {
 		m_max_nodes = value;
+	}
+
+	int getIteration() const{
+		return m_iteration;
 	}
 
 	double CalculateAccumulatedError();

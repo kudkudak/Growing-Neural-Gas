@@ -83,7 +83,7 @@ GNGAlgorithm::GNGAlgorithm(GNGGraph * g, GNGDataset* db,
 				uniformgrid_optimization), m_toggle_lazyheap(
 				lazyheap_optimization), running(false), m_utility_option(
 				utility_option), m_error(0.0), m_utility_k(utility_k), m_logger(
-				logger) {
+				logger), m_iteration(0) {
 	DBG(m_logger, 1, "GNGAlgorithm:: Constructing object");DBG(m_logger, 10, "GNGAlgorithm::Constructed object with utility "+to_string(utility_option)+" "+to_string(utility_k));
 
 	if (m_toggle_uniformgrid) {
@@ -286,8 +286,7 @@ void GNGAlgorithm::Adapt(const double * ex, const double * extra) {
 		DBG(m_logger, 1, "GNGAlgorithm::Adapt::Found nearest");
 
 //			Time t2(boost::posix_time::microsec_clock::local_time());
-//			TimeDuration dt = t2 - t1;
-
+//			TimeDuration dt = t2 A
 //			times["uniform_grid_search"] += dt.total_microseconds();
 
 #ifdef GMUM_DEBUG_2
@@ -722,7 +721,6 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 	DBG(m_logger, 3, "GNGAlgorithm::init successful, starting the loop");
 
 //		t3 = boost::posix_time::microsec_clock::local_time();
-	int iteration = 0;
 	DBG_2(m_logger, 1, "GNGAlgorithm::gng_status="+to_string(this->m_gng_status));
 	while (this->m_gng_status != GNG_TERMINATED) {
 
@@ -737,7 +735,6 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 			g_db->lock();
 			m_g.lock();
 
-			++iteration;
 
 			DBG(m_logger, 0, "GNGAlgorithm::draw example");
 
@@ -776,6 +773,8 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 			decrease_all_utility();
 		m_g.unlock();
 		g_db->unlock();
+
+		++m_iteration;
 	}
 	m_g.lock();
 	g_db->lock();
