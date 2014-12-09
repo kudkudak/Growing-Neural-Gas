@@ -37,7 +37,7 @@ void writeToGraphML(GNGGraph &g, std::ostream & out) {
 	std::map<int, int> gng_index_to_graph_index;
 
 	unsigned int k = 0;
-	for (int i = 0; i <= g.getMaximumIndex(); ++i) {
+	for (int i = 0; i <= g.get_maximum_index(); ++i) {
 
 		if (g.existsNode(i)) {
 			gng_index_to_graph_index[g[i].nr] = k; //TODO:To be honest I dnt remember purpose of g[i].nr..
@@ -54,7 +54,7 @@ void writeToGraphML(GNGGraph &g, std::ostream & out) {
 		}
 	}
 	unsigned int l = 0;
-	for (unsigned int i = 0; i <= g.getMaximumIndex(); ++i) {
+	for (unsigned int i = 0; i <= g.get_maximum_index(); ++i) {
 		if (g.existsNode(i)) {
 			FOREACH(edg, g[i])
 			{
@@ -63,8 +63,7 @@ void writeToGraphML(GNGGraph &g, std::ostream & out) {
 							<< gng_index_to_graph_index[(*edg)->nr]
 							<< "\" target=\"n"
 							<< gng_index_to_graph_index[g[i].nr] << "\">\n";
-					out << "<data key=\"key0\">" << g.getDist(i, (*edg)->nr)
-							<< "</data>";
+					out << "<data key=\"key0\">" << g.get_dist(i, (*edg)->nr) << "</data>";
 					out << "</edge>\n";
 				}
 			}

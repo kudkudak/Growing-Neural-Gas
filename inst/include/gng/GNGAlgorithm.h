@@ -155,7 +155,7 @@ private:
 
 	void resetUniformGrid(double * orig, double *axis, double l) {
 		ug->purge(orig, axis, l);
-		int maximum_index = m_g.getMaximumIndex();
+		int maximum_index = m_g.get_maximum_index();
 
 		REP(i, maximum_index + 1)
 		{
@@ -183,7 +183,7 @@ private:
 	void ResizeUniformGrid();
 
 	bool stoppingCriterion() {
-		return m_g.getNumberNodes() > m_max_nodes;
+		return m_g.get_number_nodes() > m_max_nodes;
 	}
 
 	void IncreaseErrorNew(GNGNode * node, double error) {
@@ -214,7 +214,7 @@ private:
 
 	double GetMaximumError() const {
 		double max_error = 0;
-		int maximumIndex = m_g.getMaximumIndex();
+		int maximumIndex = m_g.get_maximum_index();
 		REP(i,maximumIndex+1)
 		{
 			if (m_g.existsNode(i)) {
@@ -245,7 +245,7 @@ private:
 	}
 
 	void DecreaseAllErrors() {
-		int maximumIndex = m_g.getMaximumIndex();
+		int maximumIndex = m_g.get_maximum_index();
 		REP(i,maximumIndex+1)
 		{
 			if (m_g.existsNode(i)) {
@@ -274,11 +274,11 @@ private:
 
 	void utility_criterion_check() {
 
-		if (m_g.getNumberNodes() < 10)
+		if (m_g.get_number_nodes() < 10)
 			return; //just in case
 
 		double max_error = this->GetMaximumError();
-		int maximumIndex = m_g.getMaximumIndex();
+		int maximumIndex = m_g.get_maximum_index();
 
 		double min_utility = 100000000;
 		int min_utility_index = -1;
@@ -307,7 +307,7 @@ private:
 
 	}
 	void decrease_all_utility() {
-		int maximumIndex = m_g.getMaximumIndex();
+		int maximumIndex = m_g.get_maximum_index();
 		for (int i = 0; i <= maximumIndex; ++i) {
 			if (m_g.existsNode(i)) {
 				set_utility(i, get_utility(i) * (m_betha));
@@ -321,7 +321,7 @@ private:
 struct GNGGraphAccessHack {
 	static GNGGraph * pool;
 	static double dist(int index, double *position) {
-		return pool->getEuclideanDist((*pool)[index].position, position);
+		return pool->get_euclidean_dist((*pool)[index].position, position);
 	}
 };
 
