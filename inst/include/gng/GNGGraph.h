@@ -54,29 +54,28 @@ public:
 	/** This is specific for GNG Graph - e
 	 * each node is assigned index. It fetches maximum node index
 	 */
-	virtual unsigned int getMaximumIndex() const = 0;
+	virtual unsigned int get_maximum_index() const = 0;
 
 	/*
 	 * @return True if exists node in the graph
 	 */
 	virtual bool existsNode(unsigned int) const = 0;
 
-	virtual int getDim() const = 0;
+	virtual int get_dim() const = 0;
 
 	virtual GNGNode & operator[](int i) = 0;
 
-	virtual unsigned int getNumberNodes() const = 0;
+	virtual unsigned int get_number_nodes() const = 0;
 
 	//TODO: move it to GNGNode
-	virtual double getDist(int a, int b) = 0;
+	virtual double get_dist(int a, int b) = 0;
 
 	//TODO: move it to GNGNode
-	virtual double getEuclideanDist(const double * pos_1,
+	virtual double get_euclidean_dist(const double * pos_1,
 			const double * pos_2) const= 0;
 
 	//TODO: move it to GNGNode
-	virtual double getDist(const double *pos_a, const double *pos_b) const =
-	0;
+	virtual double get_dist(const double *pos_a, const double *pos_b) const = 0;
 
 	/* Initialize node with position attribute */
 	virtual int newNode(const double *position) = 0;
@@ -167,7 +166,7 @@ public:
 	/** This is specific for GNG Graph - e
 	 * each node is assigned index. It fetches maximum node index
 	 */
-	virtual unsigned int getMaximumIndex() const {
+	virtual unsigned int get_maximum_index() const {
 		return this->maximum_index;
 	}
 	/* @note NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
@@ -192,7 +191,7 @@ public:
 	const double *getPosition(int nr) const {
 		return g[nr].position;
 	}
-	unsigned int getNumberNodes() const {
+	unsigned int get_number_nodes() const {
 		return this->nodes;
 	}
 
@@ -203,11 +202,11 @@ public:
 	}
 
 	///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
-	double getDist(int a, int b) {
-		return getDist(g[a].position, g[b].position);
+	double get_dist(int a, int b) {
+		return get_dist(g[a].position, g[b].position);
 	}
 
-	double getEuclideanDist(const double *pos_a, const double *pos_b) const {
+	double get_euclidean_dist(const double *pos_a, const double *pos_b) const {
 		double distance = 0;
 		for (int i = 0; i < this->gng_dim; ++i)
 			distance += (pos_a[i] - pos_b[i]) * (pos_a[i] - pos_b[i]);
@@ -216,7 +215,7 @@ public:
 	}
 
 	///NOT THREAD SAFE - USE ONLY FROM ALGORITHM THREAD OR LOCK
-	double getDist(const double *pos_a, const double *pos_b) const {
+	double get_dist(const double *pos_a, const double *pos_b) const {
 		if (dist_fnc == Euclidean) {
 			double distance = 0;
 			for (int i = 0; i < this->gng_dim; ++i)
@@ -378,7 +377,7 @@ public:
 
 	}
 
-	virtual int getDim() const {
+	virtual int get_dim() const {
 		return gng_dim;
 	}
 

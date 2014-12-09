@@ -94,7 +94,7 @@ GNGAlgorithm::GNGAlgorithm(GNGGraph * g, GNGDataset* db,
 		ug->setDistFunction(GNGGraphAccessHack::dist);
 
 		// Restore uniform grid state
-		int maximum_index = m_g.getMaximumIndex();
+		int maximum_index = m_g.get_maximum_index();
 		REP(i, maximum_index + 1)
 		{
 			if (m_g.existsNode(i))
@@ -103,7 +103,7 @@ GNGAlgorithm::GNGAlgorithm(GNGGraph * g, GNGDataset* db,
 
 	}
 	if (m_toggle_lazyheap) {
-		int maximum_index = m_g.getMaximumIndex();
+		int maximum_index = m_g.get_maximum_index();
 		REP(i, maximum_index + 1)
 		{
 			if (m_g.existsNode(i))
@@ -149,10 +149,10 @@ void GNGAlgorithm::RandomInit() {
 	if (ex2_extra_ptr)
 		m_g[1].extra_data = ex2_extra_ptr[0];
 
-	DBG(m_logger, 3, "RandomInit::created nodes graph size="+to_string(m_g.getNumberNodes()));
+	DBG(m_logger, 3, "RandomInit::created nodes graph size="+to_string(m_g.get_number_nodes()));
 
 #ifdef GMUM_DEBUG_2
-	assert(m_g.getNumberNodes()==2);
+	assert(m_g.get_number_nodes()==2);
 #endif
 
 	if (m_toggle_uniformgrid) {
@@ -192,7 +192,7 @@ void GNGAlgorithm::AddNewNode() {
 
 	DBG_2(m_logger, 4, "GNGAlgorith::AddNewNode::search completed and successful");
 
-	if (m_max_nodes <= m_g.getNumberNodes()) {
+	if (m_max_nodes <= m_g.get_number_nodes()) {
 		DBG(m_logger, 4, "GNGAlgorith::AddNewNode:: achieved maximum number of nodes");
 		delete[] error_nodes_new;
 		return;
@@ -252,7 +252,7 @@ void GNGAlgorithm::AddNewNode() {
 	delete[] error_nodes_new;
 }
 int GNGAlgorithm::predict(const std::vector<double> & ex) {
-	if (m_g.getNumberNodes() == 0) {
+	if (m_g.get_number_nodes() == 0) {
 		return -1; //No node
 	}
 
@@ -279,7 +279,7 @@ void GNGAlgorithm::Adapt(const double * ex, const double * extra) {
 	GNGNode * nearest[2];
 	if (m_toggle_uniformgrid) {
 
-		DBG(m_logger, 1, "GNGAlgorithm::Adapt::Graph size "+to_string(m_g.getNumberNodes()));
+		DBG(m_logger, 1, "GNGAlgorithm::Adapt::Graph size "+to_string(m_g.get_number_nodes()));
 
 		std::vector<int> nearest_index = ug->findNearest(ex, 2); //TwoNearestNodes(ex->position);
 
@@ -302,8 +302,8 @@ void GNGAlgorithm::Adapt(const double * ex, const double * extra) {
 
 #ifdef GMUM_DEBUG_2
 
-		double error0 = m_g.getDist(nearest[0]->position, ex);
-		double error1 = m_g.getDist(nearest[1]->position, ex);
+		double error0 = m_g.get_dist(nearest[0]->position, ex);
+		double error1 = m_g.get_dist(nearest[1]->position, ex);
 
 		if(error1 < error0) {
 			throw BasicException("Failed UG - returned nodes in reversed order ?");
@@ -331,12 +331,12 @@ void GNGAlgorithm::Adapt(const double * ex, const double * extra) {
 
 	DBG_2(m_logger, 4, "GNGAlgorith::Adapt::found nearest nodes to the drawn example " + to_string(*nearest[0]) + " " + to_string(*nearest[1]));
 
-	double error = m_g.getDist(nearest[0]->position, ex);
+	double error = m_g.get_dist(nearest[0]->position, ex);
 	if (this->m_utility_option == BasicUtility) {
 
 		DBG(m_logger, 4, "GNGAlgorithm::Adapt::setting utility");
 
-		double error_2 = m_g.getDist(nearest[1]->position, ex);
+		double error_2 = m_g.get_dist(nearest[1]->position, ex);
 
 		this->set_utility(nearest[0]->nr,
 				this->get_utility(nearest[0]->nr) + error_2 - error);
@@ -481,12 +481,12 @@ double GNGAlgorithm::CalculateAccumulatedError() {
 
 	//TODO: Why does it lock?
 
-	int maximumIndex = m_g.getMaximumIndex();
+	int maximumIndex = m_g.get_maximum_index();
 	m_accumulated_error = 0.0;
 
 	if (this->m_toggle_lazyheap) {
 		m_g.lock();
-		int maximumIndex = m_g.getMaximumIndex();
+		int maximumIndex = m_g.get_maximum_index();
 		m_accumulated_error = 0.0;
 
 		REP(i, maximumIndex + 1)
@@ -517,7 +517,7 @@ double GNGAlgorithm::CalculateAccumulatedError() {
 }
 
 void GNGAlgorithm::TestAgeCorrectness() {
-	int maximumIndex = m_g.getMaximumIndex();
+	int maximumIndex = m_g.get_maximum_index();
 
 	REP(i, maximumIndex + 1)
 	{
@@ -541,7 +541,7 @@ void GNGAlgorithm::ResizeUniformGrid() {
 	DBG_2(m_logger, 6, "GNGAlgorithm::Resize Uniform Grid");DBG(m_logger, 6, "GNGAlgorithm::Resize Uniform Grid old_l=" + to_string(ug->getCellLength()));DBG(m_logger, 6, "GNGAlgorithm::Resize Uniform Grid new_l=" + to_string(ug->getCellLength() / m_grow_rate));
 
 	ug->new_l(ug->getCellLength() / m_grow_rate);
-	int maximum_index = m_g.getMaximumIndex();
+	int maximum_index = m_g.get_maximum_index();
 
 	REP(i, maximum_index + 1)
 		if (m_g.existsNode(i))
@@ -558,7 +558,7 @@ GNGNode ** GNGAlgorithm::LargestErrorNodes() {
 	largest[1] = 0;
 	double error = -1.0;
 
-	REP(i, m_g.getMaximumIndex() + 1)
+	REP(i, m_g.get_maximum_index() + 1)
 	{
 		if (m_g.existsNode(i)) {
 			error = std::max(error, m_g[i].error);
@@ -567,7 +567,7 @@ GNGNode ** GNGAlgorithm::LargestErrorNodes() {
 
 	DBG(m_logger, 2, "LargestErrorNodes::found maximum error");
 
-	REP(i, m_g.getMaximumIndex() + 1)
+	REP(i, m_g.get_maximum_index() + 1)
 	{
 		if (m_g.existsNode(i)) {
 			if (m_g[i].error == error)
@@ -621,17 +621,17 @@ GNGNode ** GNGAlgorithm::TwoNearestNodes(const double * position) { //to the exa
 	while (!m_g.existsNode(start_index))
 		++start_index;
 	DBG(m_logger, 1, "GNGAlgorithm::just called TwoNearestNodes");
-	double dist = m_g.getDist(position, m_g[start_index].position);
+	double dist = m_g.get_dist(position, m_g[start_index].position);
 	nearest[0] = &m_g[start_index];
 
 	DBG(m_logger, 1, "GNGAlgorithm::starting search of nearest node from " + to_string(start_index));
 
-	for (int i = start_index + 1; i <= m_g.getMaximumIndex(); ++i) { //another idea for storing list of actual nodes?
+	for (int i = start_index + 1; i <= m_g.get_maximum_index(); ++i) { //another idea for storing list of actual nodes?
 
 		if (m_g.existsNode(i)) {
 			DBG(m_logger, 1, "calculating new_dist\n");
 
-			double new_dist = m_g.getDist(position, m_g[i].position);
+			double new_dist = m_g.get_dist(position, m_g[i].position);
 
 			if (dist > new_dist) {
 				dist = new_dist;
@@ -648,12 +648,12 @@ GNGNode ** GNGAlgorithm::TwoNearestNodes(const double * position) { //to the exa
 
 	while (!m_g.existsNode(start_index) || start_index == nearest[0]->nr)
 		++start_index;
-	dist = m_g.getDist(position, m_g[start_index].position);
+	dist = m_g.get_dist(position, m_g[start_index].position);
 	nearest[1] = &m_g[start_index];
 
-	for (int i = start_index + 1; i <= m_g.getMaximumIndex(); ++i) { //another idea for storing list of actual nodes?
+	for (int i = start_index + 1; i <= m_g.get_maximum_index(); ++i) { //another idea for storing list of actual nodes?
 		if (m_g.existsNode(i) && i != nearest[0]->nr) {
-			double new_dist = m_g.getDist(position, m_g[i].position);
+			double new_dist = m_g.get_dist(position, m_g[i].position);
 
 			if (dist > new_dist) {
 				dist = new_dist;
@@ -705,13 +705,13 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 		}
 	}
 
-	if (m_g.getNumberNodes() == 0) {
+	if (m_g.get_number_nodes() == 0) {
 		g_db->lock();
 		m_g.lock();
 		RandomInit();
 		m_g.unlock();
 		g_db->unlock();
-	} else if (m_g.getNumberNodes() == 1) {
+	} else if (m_g.get_number_nodes() == 1) {
 		cerr << "Incorrect passed graph to GNGAlgorithm. Aborting\n";
 		throw BasicException("Incorrect passed graph to GNGAlgorithm");
 	}
@@ -746,7 +746,7 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 			g_db->unlock();
 		}
 #ifdef GMUM_DEBUG_2
-		for (int i = 0; i <= m_g.getMaximumIndex(); ++i) { //another idea for storing list of actual nodes?
+		for (int i = 0; i <= m_g.get_maximum_index(); ++i) { //another idea for storing list of actual nodes?
 			if (m_g.existsNode(i) && m_g[i].edgesCount == 0 && m_utility_option == None) {
 				cerr<<"Error at " + to_string<int>(i))<<endl;
 			}

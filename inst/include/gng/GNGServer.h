@@ -113,7 +113,7 @@ public:
 	}
 
 	unsigned int getNumberNodes() const {
-		int nr = this->gngGraph->getNumberNodes();
+		int nr = this->gngGraph->get_number_nodes();
 		return nr;
 	}
 
@@ -232,7 +232,7 @@ public:
 	///Calculate error per node
 	double calculateAvgErrorNode() {
 		return this->getAlgorithm().CalculateAccumulatedError()
-				/ (this->getGraph().getNumberNodes() + 0.0f);
+				/ (this->getGraph().get_number_nodes() + 0.0f);
 	}
 
 	///Pause algorithm
