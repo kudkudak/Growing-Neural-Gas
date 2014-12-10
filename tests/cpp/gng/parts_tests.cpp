@@ -17,6 +17,7 @@ using namespace gmum;
  * Basic test
  */
 TEST(GraphTests, BasicGraphTest) {
+
 	boost::shared_ptr<Logger> logger = boost::shared_ptr<Logger>(new Logger(10));
 	cerr << "Testing GraphTest\n";
 
@@ -71,14 +72,13 @@ TEST(GraphTests, BasicGraphTest) {
 	/** WARNING: highly intrusive test ! Can change implementation*/
 	DBG(logger,10, "First free = "+gmum::to_string(g.firstFree));
 	DBG(logger,10, "First free = "+gmum::to_string(g.next_free[g.firstFree]));
-	ASSERT_EQ(g.firstFree, 20);
-	ASSERT_EQ(g.next_free[g.firstFree], 15); //might fail if not doubling
+	ASSERT_EQ(g.first_free, 20);
+	ASSERT_EQ(g.next_free[g.first_free], 15); //might fail if not doubling
 	ASSERT_EQ(g.next_free[15], 10);
 
 	DBG(logger,10, "Test OK");
 
-	cerr << "Getting size\n" << g[0].size() << " " << g[0].capacity() << endl
-			<< flush;
+	cerr << "Getting size\n" << g[0].size() << " " << g[0].capacity() << endl << flush;
 
 	g.addUDEdge(0, 1);
 	g.addUDEdge(0, 2);
@@ -294,5 +294,3 @@ TEST(DatabaseTestsSeq, BasicGraphTest){
 		ASSERT_LE(dataset2.getPosition(c)[0], 0.9);
     }
 }
-
-
