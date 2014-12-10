@@ -8,31 +8,20 @@ using namespace std;
 namespace gmum {
 
 void writeToGraphML(GNGGraph &g, std::ostream & out) {
+
 	g.lock();
 
 	out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-	out
-			<< "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">\n";
-
-	out
-			<< "<key id=\"key0\" for=\"edge\" attr.name=\"dist\" attr.type=\"double\" />\n";
-	out
-			<< "<key id=\"key1\" for=\"node\" attr.name=\"error\" attr.type=\"double\" />\n";
-	out
-			<< "<key id=\"key2\" for=\"node\" attr.name=\"extra_data\" attr.type=\"double\" />\n";
-	out
-			<< "<key id=\"key3\" for=\"node\" attr.name=\"gng_index\" attr.type=\"int\" />\n";
-	out
-			<< "<key id=\"key4\" for=\"node\" attr.name=\"utility\" attr.type=\"double\" />\n";
-	out
-			<< "<key id=\"key5\" for=\"node\" attr.name=\"v0\" attr.type=\"double\" />\n";
-	out
-			<< "<key id=\"key6\" for=\"node\" attr.name=\"v1\" attr.type=\"double\" />\n";
-	out
-			<< "<key id=\"key7\" for=\"node\" attr.name=\"v2\" attr.type=\"double\" />\n";
-
-	out
-			<< "<graph id=\"G\" edgedefault=\"undirected\" parse.nodeids=\"canonical\" parse.edgeids=\"canonical\" parse.order=\"nodesfirst\">\n";
+	out << "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">\n";
+	out << "<key id=\"key0\" for=\"edge\" attr.name=\"dist\" attr.type=\"double\" />\n";
+	out << "<key id=\"key1\" for=\"node\" attr.name=\"error\" attr.type=\"double\" />\n";
+	out << "<key id=\"key2\" for=\"node\" attr.name=\"extra_data\" attr.type=\"double\" />\n";
+	out << "<key id=\"key3\" for=\"node\" attr.name=\"gng_index\" attr.type=\"int\" />\n";
+	out << "<key id=\"key4\" for=\"node\" attr.name=\"utility\" attr.type=\"double\" />\n";
+	out << "<key id=\"key5\" for=\"node\" attr.name=\"v0\" attr.type=\"double\" />\n";
+	out << "<key id=\"key6\" for=\"node\" attr.name=\"v1\" attr.type=\"double\" />\n";
+	out << "<key id=\"key7\" for=\"node\" attr.name=\"v2\" attr.type=\"double\" />\n";
+	out << "<graph id=\"G\" edgedefault=\"undirected\" parse.nodeids=\"canonical\" parse.edgeids=\"canonical\" parse.order=\"nodesfirst\">\n";
 
 	std::map<int, int> gng_index_to_graph_index;
 
@@ -53,8 +42,10 @@ void writeToGraphML(GNGGraph &g, std::ostream & out) {
 			out << "</node>\n";
 		}
 	}
+
 	unsigned int l = 0;
-	for (unsigned int i = 0; i <= g.get_maximum_index(); ++i) {
+
+	for (unsigned int i = 0; i <= g.get_maximum_index(); ++i)
 		if (g.existsNode(i)) {
 			FOREACH(edg, g[i])
 			{
@@ -69,13 +60,14 @@ void writeToGraphML(GNGGraph &g, std::ostream & out) {
 			}
 
 		}
-	}
+
 	out << "</graph>\n</graphml>\n";
 	g.unlock();
 
 }
 
 std::string writeToGraphML(GNGGraph &g, string filename) {
+
 	if (filename == "") {
 		std::stringstream ss;
 		writeToGraphML(g, ss);
@@ -194,5 +186,5 @@ std::string writeToGraphML(GNGGraph &g, string filename) {
 //	  }
 //
 //	}
-
 }
+
