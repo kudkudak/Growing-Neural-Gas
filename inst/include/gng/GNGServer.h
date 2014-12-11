@@ -119,6 +119,10 @@ public:
 		gngGraph->unlock();
 	}
 
+	unsigned int getCurrentIteration() const{
+		return gngAlgorithm->getIteration();
+	}
+
 	///Exports GNG state to file
 	void exportToGraphML(std::string filename) {
 		try{

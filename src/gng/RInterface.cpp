@@ -57,6 +57,7 @@ RCPP_MODULE(gng_module){
 			 .constructor<std::string>()
 			.method("dump_memory", &GNGServer::dumpMemory)
 			.method("run", &GNGServer::run)
+			.method("get_current_iteration", &GNGServer::getCurrentIteration)
 			.method("pause", &GNGServer::pause)
 			.method("terminate", &GNGServer::terminate)
 			.method("get_mean_error", &GNGServer::getMeanError)
