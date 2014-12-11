@@ -54,7 +54,7 @@ vector<double> _load_bin_vector(istream & in) {
 	int N = (int) _load_bin(in);
 	vector<double> x;
 	x.reserve(N);
-	cout << "Size " << N << endl;
+	REPORT(N);
 	for (int i = 0; i < N; ++i) {
 		x.push_back(_load_bin(in));
 	}

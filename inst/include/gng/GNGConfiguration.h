@@ -43,13 +43,7 @@ using namespace Rcpp;
 			UtilityBasicOn
 		};
 
-		///Utility constant
-		double experimental_utility_k;
 
-		///Utility option. Currently supported simples utility
-		int experimental_utility_option;
-
-		int message_bufor_size;
 		/**Maximum number of nodes*/
 		int max_nodes;//=1000;
 		/**Uniform grid optimization*/
@@ -57,6 +51,12 @@ using namespace Rcpp;
 		/**Lazy heap optimization*/
 		bool lazyheap_optimization;
 		/**Bounding box specification*/
+
+
+		/**Dimensionality of examples*/
+		int dim;
+
+
 		std::vector<double> orig;
 		std::vector<double> axis;
 		/**Max edge age*/
@@ -79,59 +79,39 @@ using namespace Rcpp;
 		/**Pseudodistance function used (might be non metric)*/
 		int distance_function;
 
-		/**Dimensionality of examples*/
-		int dim;
 		/**Type of used database, unsgined int for compabititlity with Rcpp**/
 		unsigned int datasetType;
-		/**Id of the server*/
-		int serverId;
 
 		/**Initial reserve memory for nodes */
 		int starting_nodes;
 
-		bool interprocess_communication; /**< Should server listen for incommin connection from other processes? Not possible in the current version */
+		///Utility constant
+		double experimental_utility_k;
 
-		///Load serialized algorithm state from this file
-		std::string load_graph_filename;
-
-
-		///Dimensionality of vertex extra data (will be possible to vote on this data among vertices). Not suported yet.
-		unsigned int dataset_vertex_extra_dim;
+		///Utility option. Currently supported simples utility
+		int experimental_utility_option;
 
 	public:
 
 
 		GNGConfiguration(){
-			//Not reusing code because of peculiar problem with Rcpp
+
 			verbosity = 10;
 
-			dataset_vertex_extra_dim = 0;
-
 			starting_nodes = 100;
-
-			message_bufor_size = 10000*sizeof(double);
-
-			orig.push_back(0.0);
-			orig.push_back(0.0);
-			orig.push_back(0.0);
-
-			axis.push_back(1.0);
-			axis.push_back(1.0);
-			axis.push_back(1.0);
 
 			experimental_utility_option = (int)UtilityOff;
 			experimental_utility_k = 1.5;
 
 			graph_storage = RAMMemory;
 
-			serverId = 0;
 			dim = 3;
+			setBoundingBox(0, 1);
+
 			datasetType = DatasetSampling;
 			max_nodes=1000;
 			uniformgrid_optimization=false;
 			graph_memory_bound = 200000*sizeof(double);
-
-			load_graph_filename = "";
 
 			lazyheap_optimization=false;
 			max_age=200;
@@ -144,30 +124,124 @@ using namespace Rcpp;
 			distance_function = gmum::GNGGraph::Euclidean;
 
 
-            interprocess_communication = false;
 		}
 
-#ifdef RCPP_INTERFACE
-		void setUniformGridAxis(NumericVector v){
-			axis.clear();
-			for(int i=0;i<v.size();++i){
-				axis.push_back(v(i));
+
+		void deserialize(std::istream & in){
+			///Utility constant
+			in >> experimental_utility_k;
+
+			///Utility option. Currently supported simples utility
+			in >> experimental_utility_option;
+
+			/**Maximum number of nodes*/
+			in >>  max_nodes;//=1000;
+			/**Uniform grid optimization*/
+			in >>  uniformgrid_optimization;//=true,lazyheap=true;
+			/**Lazy heap optimization*/
+			in >>  lazyheap_optimization;
+			/**Bounding box specification*/
+
+			/**Dimensionality of examples*/
+			in >>  dim;
+
+			REPORT(dim);
+
+			orig = vector<double>(dim, 0);
+			axis = vector<double>(dim, 0);
+
+			for(int i=0;i<dim;++i){
+				in >>axis[i]>>orig[i];
 			}
+			/**Max edge age*/
+			in >>  max_age;//=200;
+			/**Alpha coefficient*/
+			in >>  alpha;//=0.95;
+			/**Beta coefficient*/
+			in >> beta;//=0.9995;
+			/**Lambda coefficient*/
+			in >>  lambda;//=200;
+			/**Epsilion v. How strongly move winning node*/
+			in >>  eps_w;//=0.05;
+			/**Memory bound*/
+			in >>  graph_memory_bound;
+			/**Epsilion n*/
+			in >> eps_n;//=0.0006;
+
+			in >>  verbosity;
+
+			/**Pseudodistance function used (might be non metric)*/
+			in >> distance_function;
+
+
+			/**Type of used database, unsgined int for compabititlity with Rcpp**/
+			in >> datasetType;
+
+			/**Initial reserve memory for nodes */
+			in >> starting_nodes;
 		}
-		NumericVector getUniformGridAxis(){
-			return NumericVector(axis.begin(), axis.end());
+
+		void serialize(std::ostream & out){
+			///Utility constant
+			out << experimental_utility_k << endl;
+
+			///Utility option. Currently supported simples utility
+			out <<  experimental_utility_option<< endl;
+
+			/**Maximum number of nodes*/
+			out <<  max_nodes<< endl;//=1000;
+			/**Uniform grid optimization*/
+			out <<  uniformgrid_optimization<< endl;//=true,lazyheap=true;
+			/**Lazy heap optimization*/
+			out <<  lazyheap_optimization<< endl;
+			/**Bounding box specification*/
+
+			/**Dimensionality of examples*/
+			out <<  dim<< endl;
+
+			REPORT(dim);
+
+			for(int i=0;i<dim;++i){
+				out<<axis[i]<< endl<<orig[i]<<endl;
+			}
+			/**Max edge age*/
+			out <<  max_age<< endl;//=200;
+			/**Alpha coefficient*/
+			out <<  alpha<< endl;//=0.95;
+			/**Beta coefficient*/
+			out <<  beta<< endl;//=0.9995;
+			/**Lambda coefficient*/
+			out <<  lambda<< endl;//=200;
+			/**Epsilion v. How strongly move winning node*/
+			out <<  eps_w<< endl;//=0.05;
+			/**Memory bound*/
+			out <<  graph_memory_bound<< endl;
+			/**Epsilion n*/
+			out <<  eps_n<< endl;//=0.0006;
+
+			out <<  verbosity<< endl;
+
+			/**Pseudodistance function used (might be non metric)*/
+			out <<  distance_function<< endl;
+
+
+			/**Type of used database, unsgined int for compabititlity with Rcpp**/
+			out <<  datasetType<< endl;
+
+			/**Initial reserve memory for nodes */
+			out <<  starting_nodes; //imporant not to add endl for binary correctness
 		}
-		void setUniformGridOrigin(NumericVector v){
-			orig.clear();
-			for(int i=0;i<v.size();++i){
-				orig.push_back(v(i));
+
+		//This is a simplification - we assume square box
+		void setBoundingBox(double min, double max){
+			orig = vector<double>();
+			axis = vector<double>();
+			for(int i=0;i<dim;++i){
+				orig.push_back(min);
+				axis.push_back(max - min);
 			}
 		}
 
-		NumericVector getUniformGridOrigin(){
-			return NumericVector(orig.begin(), orig.end());
-		}
-#endif
 
 		/** Get default configuration of GNG Server */
 		static GNGConfiguration getDefaultConfiguration(){

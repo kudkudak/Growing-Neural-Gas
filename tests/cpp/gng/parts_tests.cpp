@@ -132,17 +132,23 @@ TEST(GraphTests, BasicGraphTest) {
 	std::copy(edges_first_10_bef.begin(), edges_first_10_bef.end(),
 			std::back_inserter(serialized_edges_first_10_bef));
 
+	std::ofstream output;
+	output.open("graph.bin", ios::out | ios::binary);
 
 
 
 	cerr << "Serializing graph\n";
-	g.serialize("graph.bin");
+	g.serialize(output);
 	cerr << "Loading serialized graph\n";
 
 	RAMGNGGraph<GNGNode, GNGEdge> g2(&grow_mutex, dim, N_start, GNGGraph::Euclidean, logger);
+	output.close();
+
+	std::ifstream input;
+	input.open("graph.bin", ios::in | ios::binary);
 
 
-	g2.load("graph.bin");
+	g2.load(input);
 	cerr << "Loaded\n";
 
 	string pool_after = g2.reportPool();

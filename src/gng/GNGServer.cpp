@@ -1,14 +1,21 @@
 #include "GNGServer.h"
 
-GNGServer::GNGServer(GNGConfiguration * configuration_ptr) :
-		error_statistics_end(0), error_statistics_start(0), error_statistics_size(
-				10000), error_statistics_delay_ms(1000), error_statistics(
-				error_statistics_size, 0.0), collect_statistics_thread(0), algorithm_thread(
-				0) {
+GNGServer::GNGServer(GNGConfiguration configuration, std::istream * input_graph){
+	init(configuration, input_graph);
+}
+
+void GNGServer::init(GNGConfiguration configuration, std::istream * input_graph){
+
+
+	error_statistics_end = 0;
+	error_statistics_start = 0;
+	error_statistics_delay_ms =1000;
+	error_statistics_size = 10000;
+	error_statistics = vector<double>(error_statistics_size, 0.0);
+	collect_statistics_thread = 0;
+	algorithm_thread = 0;
 	m_current_dataset_memory_was_set = false;
 	m_running_thread_created = false;
-
-	GNGConfiguration configuration = *configuration_ptr;
 
 	m_logger = boost::shared_ptr<Logger>(new Logger(configuration.verbosity));
 
@@ -16,10 +23,6 @@ GNGServer::GNGServer(GNGConfiguration * configuration_ptr) :
 
 	if (!configuration.check_correctness())
 		throw BasicException("Invalid configuration passed to GNGServer");
-
-	if (configuration.interprocess_communication)
-		throw BasicException(
-				"Current version doesn't allow for crossprocess communication");
 
 	this->current_configuration = configuration; //assign configuration
 
@@ -29,12 +32,6 @@ GNGServer::GNGServer(GNGConfiguration * configuration_ptr) :
 		throw BasicException("Not supported GNGConfiguration type");
 	}
 
-//        if(configuration.interprocess_communication){
-//            this->shm->new_named_segment("MessageBufor",current_configuration.message_bufor_size);
-//            this->message_bufor_mutex = this->shm->get_named_segment("MessageBufor")->construct<
-//                    boost::interprocess::interprocess_mutex>("MessageBuforMutex")();
-//        }
-
 	/** Construct database **/
 	if (current_configuration.datasetType
 			== GNGConfiguration::DatasetSampling) {
@@ -42,7 +39,7 @@ GNGServer::GNGServer(GNGConfiguration * configuration_ptr) :
 		this->gngDataset = std::auto_ptr<GNGDataset>(
 				new GNGDatasetSimple<GNGDatasetStorageRAM>(&database_mutex,
 						current_configuration.dim,
-						current_configuration.dataset_vertex_extra_dim, 0, //Dimensionality of info dim
+						0 /* extra dim */, 0, //Dimensionality of info dim
 						true, //Sampling
 						m_logger));
 	} else if (current_configuration.datasetType
@@ -52,7 +49,7 @@ GNGServer::GNGServer(GNGConfiguration * configuration_ptr) :
 		this->gngDataset = std::auto_ptr<GNGDataset>(
 				new GNGDatasetSimple<GNGDatasetStorageRAM>(&database_mutex,
 						current_configuration.dim,
-						current_configuration.dataset_vertex_extra_dim, 1, 0,
+						0 /* extra dim */, 1/*probability dim*/, 0,
 						true, //Sampling
 						m_logger));
 	} else if (current_configuration.datasetType
@@ -61,7 +58,7 @@ GNGServer::GNGServer(GNGConfiguration * configuration_ptr) :
 		this->gngDataset = std::auto_ptr<GNGDataset>(
 				new GNGDatasetSimple<GNGDatasetStorageRAM>(&database_mutex,
 						current_configuration.dim,
-						current_configuration.dataset_vertex_extra_dim, 0, -1,
+						0 /* extra dim */, 0 /*probability dim*/, -1,
 						false, //Sampling
 						m_logger));
 	} else {
@@ -80,15 +77,9 @@ GNGServer::GNGServer(GNGConfiguration * configuration_ptr) :
 	/** Construct graph **/
 	if (current_configuration.graph_storage == GNGConfiguration::SharedMemory) {
 		throw BasicException("Not supported SharedMemory configuration");
-//            SharedMemoryGraphStorage * storage
-//                    = this->shm->get_named_segment("GraphStorage")->
-//                    construct<SharedMemoryGraphStorage >("storage")(GNGServer::START_NODES);
-//            this->gngGraph = std::auto_ptr<ExtGNGGraph<SharedMemoryGraphStorage> >(
-//                    new SHGNGGraph<SharedMemoryGraphStorage>(&this->gngAlgorithmControl->grow_mutex, storage,
-//                    configuration.dim));
-//            DBG(m_logger,10, "GNGServer()::constructed shared graph");
 	} else if (current_configuration.graph_storage
 			== GNGConfiguration::RAMMemory) {
+		REPORT(current_configuration.starting_nodes);
 
 		this->gngGraph =
 				std::auto_ptr<RAMGNGGraph<GNGNode, GNGEdge> >(
@@ -101,9 +92,9 @@ GNGServer::GNGServer(GNGConfiguration * configuration_ptr) :
 		throw BasicException("Not supported GNGConfiguration type");
 	}
 
-	if (current_configuration.load_graph_filename != "") {
-		DBG(m_logger,10, "GNGServer():::loading serialized graph");
-		gngGraph->load(current_configuration.load_graph_filename);
+
+	if(input_graph){
+		this->gngGraph->load(*input_graph);
 	}
 
 	DBG(m_logger,10, "GNGServer()::constructing algorithm object");
@@ -129,5 +120,4 @@ GNGServer::GNGServer(GNGConfiguration * configuration_ptr) :
 
 }
 
-gmum::gmum_recursive_mutex GNGServer::static_lock;
 

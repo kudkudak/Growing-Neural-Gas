@@ -96,8 +96,8 @@ public:
 		return "";
 	}
 
-	virtual void load(std::string filename) = 0;
-	virtual void serialize(std::string filename) = 0;
+	virtual void load(std::istream & in) = 0;
+	virtual void serialize(std::ostream & out) = 0;
 
 };
 
@@ -393,11 +393,10 @@ public:
 	/*
 	 * format is [N] [gng_dim] N* [0/1 + vertex] N*[ [l] l*[gng_idx]]
 	 */
-	void serialize(std::string filename) {
+	void serialize(std::ostream &  output) {
 		this->lock();
 
-		std::ofstream output;
-		output.open(filename.c_str(), ios::out | ios::binary);
+
 		vector<double> S;
 		S.reserve(10000);
 
@@ -438,17 +437,13 @@ public:
 
 		_write_bin_vect(output, S);
 
-		output.close();
 
 		this->unlock();
 	}
-	void load(std::string filename) {
+	void load(std::istream &  input) {
 		this->lock();
 
-		std::ifstream input;
-		input.open(filename.c_str(), ios::in | ios::binary);
-
-		DBG(m_logger,7, "GNGGraph:: loading "+filename);
+		DBG(m_logger,7, "GNGGraph:: loading ");
 
 		vector<double> S = _load_bin_vector(input);
 		vector<double>::iterator itr = S.begin();
@@ -504,7 +499,6 @@ public:
 			next_free[i] = (int) *(++itr);
 		}
 
-		input.close();
 
 		this->unlock();
 	}

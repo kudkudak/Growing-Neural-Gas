@@ -371,13 +371,14 @@ convert_igraph.gng <- NULL
 #'
 insert_examples.gng <- NULL
 
+
 loadModule('gng_module', TRUE)
 
 # Lazy loading to allow for discovery of all files
 evalqOnLoad({
     
     
-    GNG <<- function(dataset_type=gng.dataset.sequential, beta=0.99, 
+    GNG <<- function(beta=0.99, 
                         alpha=0.5, uniformgrid_optimization=FALSE, 
                         lazyheap_optimization=FALSE, max_nodes=1000, eps_n=0.0006, 
                         eps_w= 0.05, dim=-1, uniformgrid_boundingbox_sides=c(), uniformgrid_boundingbox_origin=c(),
@@ -412,12 +413,8 @@ evalqOnLoad({
       
       config <- new(GNGConfiguration)
 
-      # Cosine is not supported (and probably won't be)
-      config$distance_function = gng.dist.euclidean
-      
-      
       # Fill in configuration
-      config$dataset_type=dataset_type
+      config$dataset_type=gng.dataset.sequential
       config$beta = beta
       config$max_edge_age = max_edge_age
       config$alpha = alpha

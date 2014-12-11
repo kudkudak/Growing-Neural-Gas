@@ -7,20 +7,21 @@
 #ifndef GNGSERVER_H
 #define GNGSERVER_H
 
-#include "GNGDefines.h"
-#include "GNGConfiguration.h"
-
-#include <cstdlib> //std::system
+#include <cstdlib>
 #include <cstddef>
 #include <map>
 #include <exception>
 #include <memory>
 
+#include "GNGDefines.h"
+#include "GNGConfiguration.h"
 #include "GNGGlobals.h"
 #include "GNGGraph.h"
 #include "GNGDataset.h"
 #include "GNGAlgorithm.h"
 #include "Utils.h"
+#include "Threading.h"
+
 
 #ifdef RCPP_INTERFACE
 #include <RcppArmadillo.h>
@@ -29,9 +30,6 @@ using namespace arma;
 #endif
 
 using namespace gmum;
-//#endif
-
-#include "Threading.h"
 
 /** Holds together all logic and objects.*/
 class GNGServer {
@@ -50,26 +48,31 @@ class GNGServer {
 
 	GNGConfiguration current_configuration;
 
-	/** Singleton mutex*/
-	static gmum::gmum_recursive_mutex static_lock;
-
 	std::auto_ptr<gmum::GNGAlgorithm> gngAlgorithm;
-	std::auto_ptr<GNGGraph> gngGraph;
-	std::auto_ptr<GNGDataset> gngDataset;
+	std::auto_ptr<gmum::GNGGraph> gngGraph;
+	std::auto_ptr<gmum::GNGDataset> gngDataset;
+
+	//Called from constructors
+	void init(GNGConfiguration configuration, std::istream * input_graph = 0);
 
 public:
 	boost::shared_ptr<Logger> m_logger;
 
 	/**Construct GNGServer using configuration*/
-	GNGServer(GNGConfiguration * configuration_ptr);
+	GNGServer(GNGConfiguration configuration, std::istream * input_graph);
 
-	/*Serialize state of the algorithm to file
-	 * @note: This won't serialize configuration unfortunately. Please make sure
-	 * that GNGServer is loaded using the same configuration
-	 */
-	void serializeGraph(std::string filename) {
-		this->gngGraph->serialize(filename);
+	GNGServer(std::string filename){
+		std::ifstream input;
+		input.open(filename.c_str(), ios::in | ios::binary);
+
+		GNGConfiguration conf;
+		conf.deserialize(input);
+
+		init(conf, &input);
 	}
+
+
+
 
 	void run() {
 		if (!m_running_thread_created) {
@@ -86,23 +89,50 @@ public:
 		}
 	}
 
-	void setDebugLevel(int level) {
-		//dbg.set_debug_level(level);
-	}
 
 	GNGConfiguration getConfiguration(){
 		return current_configuration;
 	}
 
 	static GNGServer * constructTestServer(GNGConfiguration config) {
-		return new GNGServer(&config);
+		return new GNGServer(config, 0 /*input_graph*/);
 	}
 
-	///Export graph to GraphML format
-	void exportsToGraphML(std::string filename) {
-		gngGraph->lock();
-		assert(filename != "");
-		writeToGraphML(getGraph(), filename);
+	void save(std::string filename){
+		std::ofstream output;
+		output.open(filename.c_str(), ios::out | ios::binary);
+
+		current_configuration.serialize(output);
+
+		try{
+			gngGraph->lock();
+			assert(filename != "");
+			gngGraph->serialize(output);
+		}catch(...){
+			cerr<<"Failed exporting to GraphML\n";
+			#ifdef DEBUG_GMUM
+				throw BasicException("Failed exporting to GraphML\n");
+			#endif
+			gngGraph->unlock(); //No RAII, yes..
+			return;
+		}
+		gngGraph->unlock();
+	}
+
+	///Exports GNG state to file
+	void exportToGraphML(std::string filename) {
+		try{
+			gngGraph->lock();
+			assert(filename != "");
+			writeToGraphML(getGraph(), filename);
+		}catch(...){
+			cerr<<"Failed exporting to GraphML\n";
+			#ifdef DEBUG_GMUM
+				throw BasicException("Failed exporting to GraphML\n");
+			#endif
+			gngGraph->unlock(); //No RAII, yes..
+			return;
+		}
 		gngGraph->unlock();
 	}
 
@@ -152,7 +182,10 @@ public:
 	}
 
 #ifdef RCPP_INTERFACE
-
+	//Constructor needed for RCPPInterface
+	GNGServer(GNGConfiguration * configuration){
+		init(*configuration, 0 /*input_graph*/);
+	}
 	SEXP m_current_dataset_memory; //will be deleted in ~delete
 	///Moderately slow function returning node descriptors
 	Rcpp::List getNode(unsigned int gng_index) {
@@ -197,12 +230,37 @@ public:
 	}
 	void RinsertExamples(Rcpp::NumericMatrix & ex) {
 		arma::mat * points = new arma::mat(ex.begin(), ex.nrow(), ex.ncol(), false);
+
+		//Check if normalised
+		arma::Row<double> max_colwise = arma::max(*points, 0 /*dim*/);
+		arma::Row<double> min_colwise = arma::min(*points, 0 /*dim*/);
+		arma::Row<double> diff = max_colwise - min_colwise;
+		float max = arma::max(diff), min = arma::min(diff);
+		if(abs(max - min) > 1.0){
+			cerr<<"Warning: it is advised to scale data to a constant range for optimal algorithm behavior \n";
+		}
+
+		//Check if data fits in bounding box
+		if(current_configuration.uniformgrid_optimization){
+			for(int i=0;i<current_configuration.dim; ++i){
+				if(current_configuration.orig[i] > min_colwise[i] || current_configuration.orig[i]+current_configuration.axis[i] < max_colwise[i]){
+					cerr<<"Error: please scale your data to match range passed to gng.optimized\n";
+					cerr<<"Error: returning, did not insert examples\n";
+					return;
+				}
+			}
+		}
+
+
 		arma::inplace_trans( *points, "lowmem");
 		this->_handle_addExamples(points->memptr(),(unsigned int)points->n_cols,
 				(unsigned int)points->n_rows*points->n_cols);
 		arma::inplace_trans( *points, "lowmem");
 	}
+	//Not used in API but left for reference
 	void RsetExamples(Rcpp::NumericMatrix & ex) {
+		throw 1;
+
 		//Release previous if was present
 		if(m_current_dataset_memory_was_set) {
 			throw "You cannot set example memory pool more than once!";
@@ -262,66 +320,6 @@ public:
 		return *this->gngDataset.get();
 	}
 
-//
-//    SHMemoryManager * getSHM(){
-//        return this->shm.get();
-//    }
-
-	/**Run main processing loop for shared memory communication channel
-	 * @note: Not developed for now, until there is a need for crossprocess communication
-	 */
-//    void runSHListeningDaemon(){
-//        
-//        DBG(m_logger,12, "GNGServer:: runSHListeningDaemon");
-//        
-//        //TODO: add pause checking
-//        while(true){
-//           message_bufor_mutex->lock();
-//
-//           SHGNGMessage * current_message = this->getSHM()->get_named_segment("MessageBufor")->find_or_construct<SHGNGMessage>("current_message")();
-//           int state = current_message->state;
-//           if(state == SHGNGMessage::Waiting){
-//                int type = current_message->type;
-//
-//                
-//                DBG(m_logger,12, "GNGServer::runListeningDaemon caught message of type "+to_string<int>(type));
-//                
-//
-//                if(type == SHGNGMessage::AddExamples){
-//                    SHGNGMessageAddExamples * message_params = this->
-//                            getSHM()->get_named_segment("MessageBufor")->find<SHGNGMessageAddExamples>("current_message_params").first;
-//
-//
-//                    if(!message_params){
-//                        DBG(m_logger,100, "GNGServer::runSHListeningDaemon not found message" );
-//                        throw BasicException("GNGServer::runSHListeningDaemon not found message");
-//                    }
-//
-//                    //note - this is quite specific coding
-//                    double * examples = this->
-//                            getSHM()->get_named_segment("MessageBufor")->find<double>(message_params->pointer_reference_name.c_str()).first;
-//
-//                    if(!examples){
-//                        DBG(m_logger,100, "GNGServer::runSHListeningDaemon not found examples to add" );
-//                        throw BasicException("GNGServer::runSHListeningDaemon not found examples to add");
-//                    }
-//
-//                    _handle_AddExamples(examples, message_params->count);
-//
-//                    this-> getSHM()->get_named_segment("MessageBufor")->destroy_ptr(examples);
-//                    this-> getSHM()->get_named_segment("MessageBufor")->destroy_ptr(message_params);
-//
-//                }
-//
-//
-//                current_message->state = SHGNGMessage::Processed;
-//           }
-//
-//           message_bufor_mutex->unlock();
-//
-//           boost::this_thread::sleep(boost::posix_time::millisec(this->listening_daemon_sleep_time));
-//        }
-//    }
 	~GNGServer() {
 		DBG(m_logger,10, "GNGServer::destructor called");
 #ifdef RcppInterface
@@ -332,7 +330,6 @@ public:
 		}
 		//R Matrix will be deleted from R level
 #endif
-//        this->shm->get_named_segment("MessageBufor")->destroy_ptr(this->message_bufor_mutex);
 	}
 
 private:
@@ -415,8 +412,7 @@ private:
 		else
 			gngDataset->setExamples(examples, count, size);
 
-		int tmp = gngDataset->getSize();
-		DBG(m_logger,7, "GNGServer::Database size "+gmum::to_string(tmp));
+		DBG(m_logger,7, "GNGServer::Database size "+gmum::to_string(gngDataset->getSize()));
 
 		gngDataset->unlock();
 	}

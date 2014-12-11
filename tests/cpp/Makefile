@@ -1,75 +1,106 @@
-ifndef GTEST
-$(error GTEST is not set, add to your .bashrc GTEST env. variable pointing to gtest directory without slash at the end)
-else
-
-## Variables
-GMUM_SRC_DIR = ../../src
-
-## Separate include dirs for transparency
-GNG_INCLUDE  := -I ../../inst/include/gng -I ../../inst/include/tinythread
-ROOT_INCLUDE := -I ../../inst/include
-
-## Compiler flags, load Makevars
 include ../../src/Makevars
-CXX := $(CXX) -isystem $(GTEST)/include
-CXXFLAGS := $(PKG_CXXFLAGS) 
-CPPFLAGS := $(PKG_CPPFLAGS) $(GNG_INCLUDE) $(ROOT_INCLUDE)
-LDLIBS := $(PKG_LIBS)
 
-## Source dirs
-GNG_SOURCES := $(wildcard $(GMUM_SRC_DIR)/gng/*.cpp $(GMUM_SRC_DIR)/tinythread/*.cpp)
-OBJECTS := $(patsubst %.cpp, %.o, $(GNG_SOURCES))
+# Explicit Makevars inheritances adn overrides
+CXX := $(CXX)
+CPPFLAGS := $(PKG_CPPFLAGS)
+CXXFLAGS := $(PKG_CXXFLAGS) -O2 -g -s
+LDLIBS := $(PKG_LIBS) -lpthread -lgtest -lgtest_main
 
-## Object
-GNG_OBJS := $(wildcard $(GNG_SOURCES)/*.o)
+###
+# Compilation parameters
+###
 
-## Tests
-TESTS = basic_integration_tests parts_tests
-TEST_SOURCES = $(wildcard gng/*.cpp)
+# Output executable
+TEST_MAIN_BIN := run_tests
 
-## GTEST
-GTEST_HEADERS = $(GTEST)/include/gtest/*.h \
-				$(GTEST)/include/gtest/internal/*.h
-GTEST_SRCS_ = $(wildcard $(GTEST)/src/*.cc $(GTEST)/src/*.h $(GTEST_HEADERS))
+# Root paths
+ROOT_INCLUDE_PATH := ../../inst/include
+ROOT_SRC_PATH := ../../src
+ROOT_TEST_PATH := .
 
-## Targets
+# Branches that will be compiled
+GMUMR_BRANCHES := gng tinythread
+TEST_BRANCHES := gng
 
-all : $(TESTS)
+# Additional cleaning paths
+ADDITIONAL_CLEANING := *.graphml *.bin
 
-gtest-all.o : $(GTEST_SRCS_)
-	$(CXX) $(CPPFLAGS) -I$(GTEST) $(CXXFLAGS) -c \
-			$(GTEST)/src/gtest-all.cc
+# Generate helper scripts for extra tests (run_TESTTYPE_tests.sh)
+HELPER_SCRIPT_PATTERN_1 := run_
+HELPER_SCRIPT_PATTERN_2 := _tests.sh
+PRIMARY_TESTS_NAME := primary
+SECONDARY_TESTS_NAME := secondary
 
-gtest_main.o : $(GTEST_SRCS_)
-	$(CXX) $(CPPFLAGS) -I$(GTEST) $(CXXFLAGS) -c \
-			$(GTEST)/src/gtest_main.cc
+# GTest names patterns that should be separated from primary tests
+# See: `./run_tests -h | grep -- --gtest_filter`
+SECONDARY_TESTS_TYPES := *NumericTest*
 
-gtest.a : gtest-all.o
-	$(AR) $(ARFLAGS) $@ $^
+###
+# Generic variables
+###
 
-gtest_main.a : gtest-all.o gtest_main.o
-	$(AR) $(ARFLAGS) $@ $^
+# Compilation
+SOURCES_WILDCARD := $(patsubst %, $(ROOT_SRC_PATH)/%/*.cpp, $(GMUMR_BRANCHES))
+TEST_SOURCES_WILDCARD := $(patsubst %, $(ROOT_TEST_PATH)/%/*.cpp, $(TEST_BRANCHES))
 
-%.o : %.cpp %.h
-	$(CXX) $(LDLIBS) $(CPPFLAGS) $(CXXFLAGS) $^ -c
+SOURCES := $(wildcard $(SOURCES_WILDCARD))
+TEST_SOURCES := $(wildcard $(TEST_SOURCES_WILDCARD))
 
-$(TESTS): gtest_main.a 
-	$(CXX) gng/$@.cpp $(OBJECTS) $(LDLIBS) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@
+OBJECTS := $(patsubst %.cpp, %.o, $(SOURCES))
+TEST_OBJECTS := $(patsubst %.cpp, %.o, $(TEST_SOURCES))
 
-debug:
-	@echo $(CXX)
-	@echo $(CXXFLAGS)
-	@echo $(CPPFLAGS)
-	@echo $(LDLIBS)
-	@echo $(ARFLAGS)
-	@echo $(AR)
+# Helper scripts
+PRIMARY_TESTS_SCRIPT := $(patsubst %, $(HELPER_SCRIPT_PATTERN_1)%$(HELPER_SCRIPT_PATTERN_2), $(PRIMARY_TESTS_NAME))
+SECONDARY_TESTS_SCRIPT := $(patsubst %, $(HELPER_SCRIPT_PATTERN_1)%$(HELPER_SCRIPT_PATTERN_2), $(SECONDARY_TESTS_NAME))
 
-clean :
-	rm -f $(TESTS) gtest.a gtest_main.a *.o
+###
+# Includes
+###
 
+# Root directory (to allow explicit including f.e `#include "svm/svm_basic.h"`)
+ROOT_INCLUDE := -I $(ROOT_INCLUDE_PATH)
 
+# Generic branch includes
+BRANCH_INCLUDES := $(patsubst %, -I $(ROOT_INCLUDE_PATH)/%, $(GMUMR_BRANCHES))
 
-.PHONY : echo clean
+# Sum up
+INCLUDES := $(ROOT_INCLUDE) $(BRANCH_INCLUDES)
 
+###
+# Internally included libs
+###
+SVMLIGHT_INCLUDE := $(ROOT_INCLUDE_PATH)/svmlight
+SVMLIGHT_LIBS := $(SVMLIGHT_INCLUDE)/svm_learn.o $(SVMLIGHT_INCLUDE)/svm_common.o $(SVMLIGHT_INCLUDE)/svm_hideo.o
 
-endif
+CPPFLAGS := $(CPPFLAGS) $(INCLUDES)
+
+###
+# Compilation rules
+###
+
+all: $(TEST_MAIN_BIN) helper_scripts
+	@echo ... Done!
+	@echo See running options with ./run_tests -h
+	@echo or use helper scripts: $(PRIMARY_TESTS_SCRIPT) $(SECONDARY_TESTS_SCRIPT)
+
+clean:
+	rm -f $(TEST_MAIN_BIN) $(TEST_OBJECTS) $(PRIMARY_TESTS_SCRIPT) \
+	$(SECONDARY_TESTS_SCRIPT) $(ADDITIONAL_CLEANING)
+
+$(TEST_MAIN_BIN): $(TEST_OBJECTS) $(OBJECTS)
+	@echo Linking all tests...
+	$(CXX) $^ -lgtest_main -o $@ $(LDLIBS)
+
+%.o: %.cpp %.hpp
+	@echo Compiling $@ ...
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+
+helper_scripts:
+	@echo Making helper scripts...
+	make helper_script filename="$(PRIMARY_TESTS_SCRIPT)" pattern=-$(SECONDARY_TESTS_TYPES)
+	make helper_script filename="$(SECONDARY_TESTS_SCRIPT)" pattern=$(SECONDARY_TESTS_TYPES)
+
+helper_script:
+	$(shell printf "#!/usr/bin/env bash\n./run_tests --gtest_filter=$(pattern)\n" > $(filename))
+	$(shell chmod +x $(filename))
+
