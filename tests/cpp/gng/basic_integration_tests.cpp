@@ -82,11 +82,11 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
 
        REPORT_PRODUCTION(iteration);
        gmum::sleep(sleep_ms);
-       REPORT_PRODUCTION(s->getGraph().getNumberNodes());
+       REPORT_PRODUCTION(s->getGraph().get_number_nodes());
        vector<double> stats = s->getErrorStatistics();
        write_array(&stats[0], &stats[stats.size()-1]);
        REPORT_PRODUCTION(s->getAlgorithm().CalculateAccumulatedError()
-               /(s->getGraph().getNumberNodes()+0.));
+               /(s->getGraph().get_number_nodes()+0.));
        if(iteration >= ms_loop/sleep_ms) break;
     }
 
@@ -99,9 +99,9 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
 
     gmum::sleep(sleep_ms);
 
-    pair<double , double> t = pair<double, double>(s->getGraph().getNumberNodes(),
+    pair<double , double> t = pair<double, double>(s->getGraph().get_number_nodes(),
             s->getAlgorithm().CalculateAccumulatedError()
-               /(s->getGraph().getNumberNodes()+0.));
+               /(s->getGraph().get_number_nodes()+0.));
 
 
     if(save_filename!=""){
@@ -168,11 +168,11 @@ TEST(GNGNumericTest, Serialization){
        ++iteration;
        REPORT_PRODUCTION(iteration);
        gmum::sleep(sleep_ms);
-       REPORT_PRODUCTION(s->getGraph().getNumberNodes());
+       REPORT_PRODUCTION(s->getGraph().get_number_nodes());
        vector<double> stats = s->getErrorStatistics();
        write_array(&stats[0], &stats[stats.size()-1]);
        REPORT_PRODUCTION(s->getAlgorithm().CalculateAccumulatedError()
-               /(s->getGraph().getNumberNodes()+0.));
+               /(s->getGraph().get_number_nodes()+0.));
        if(iteration >= ms_loop/sleep_ms) break;
     }
 

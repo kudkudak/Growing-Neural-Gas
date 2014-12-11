@@ -31,7 +31,7 @@ TEST(GraphTests, BasicGraphTest) {
 			logger); //Logger
 
 	ASSERT_EQ(g.existsNode(0), false);
-	ASSERT_EQ(g.getNumberNodes(), 0);
+	ASSERT_EQ(g.get_number_nodes(), 0);
 
 	double x[6] = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6 };
 
@@ -56,17 +56,17 @@ TEST(GraphTests, BasicGraphTest) {
 
 	ASSERT_EQ(g[N_start - 2].nr, N_start - 2); //Check memory consistency
 	ASSERT_EQ(g.newNode(x), N_start);
-	ASSERT_EQ(g.getNumberNodes(), N_start + 1);
+	ASSERT_EQ(g.get_number_nodes(), N_start + 1);
 	ASSERT_EQ(g.newNode(x), N_start + 1);
-	ASSERT_EQ(g.getNumberNodes(), N_start + 2);
+	ASSERT_EQ(g.get_number_nodes(), N_start + 2);
 
-	ASSERT_EQ(g.getMaximumIndex(), N_start + 1);
+	ASSERT_EQ(g.get_maximum_index(), N_start + 1);
 
 	g.deleteNode(10);
 	g.deleteNode(15);
 	g.deleteNode(20);
 
-	ASSERT_EQ(g.getNumberNodes(), N_start - 1);
+	ASSERT_EQ(g.get_number_nodes(), N_start - 1);
 
 	/** WARNING: highly intrusive test ! Can change implementation*/
 	DBG(logger,10, "First free = "+gmum::to_string(g.firstFree));
@@ -95,7 +95,7 @@ TEST(GraphTests, BasicGraphTest) {
 
 	cerr << "Removing edge ok. Writing to graphml\n" << flush;
 
-	for (int i = 0; i < g.getMaximumIndex(); ++i) {
+	for (int i = 0; i < g.get_maximum_index(); ++i) {
 		if (g.existsNode(i))
 			ASSERT_EQ(g[i].position[1], 0.2);
 	}
