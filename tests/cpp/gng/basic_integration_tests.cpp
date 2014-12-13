@@ -85,7 +85,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
        REPORT_PRODUCTION(s->getGraph().get_number_nodes());
        vector<double> stats = s->getErrorStatistics();
        write_array(&stats[0], &stats[stats.size()-1]);
-       REPORT_PRODUCTION(s->getAlgorithm().CalculateAccumulatedError()
+       REPORT_PRODUCTION(s->getAlgorithm().calculateAccumulatedError()
                /(s->getGraph().get_number_nodes()+0.));
        if(iteration >= ms_loop/sleep_ms) break;
     }
@@ -100,7 +100,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     gmum::sleep(sleep_ms);
 
     pair<double , double> t = pair<double, double>(s->getGraph().get_number_nodes(),
-            s->getAlgorithm().CalculateAccumulatedError()
+            s->getAlgorithm().calculateAccumulatedError()
                /(s->getGraph().get_number_nodes()+0.));
 
 
@@ -171,7 +171,7 @@ TEST(GNGNumericTest, Serialization){
        REPORT_PRODUCTION(s->getGraph().get_number_nodes());
        vector<double> stats = s->getErrorStatistics();
        write_array(&stats[0], &stats[stats.size()-1]);
-       REPORT_PRODUCTION(s->getAlgorithm().CalculateAccumulatedError()
+       REPORT_PRODUCTION(s->getAlgorithm().calculateAccumulatedError()
                /(s->getGraph().get_number_nodes()+0.));
        if(iteration >= ms_loop/sleep_ms) break;
     }
@@ -293,4 +293,3 @@ TEST(GNGNumericTest, BasicConvergeLazyHeapUG){
     ASSERT_GE(results.first, 10.0);
     ASSERT_LE(results.second, 50.0);
 }
-

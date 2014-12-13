@@ -71,8 +71,8 @@ TEST(GraphTests, BasicGraphTest) {
 	/** WARNING: highly intrusive test ! Can change implementation*/
 	DBG(logger,10, "First free = "+gmum::to_string(g.firstFree));
 	DBG(logger,10, "First free = "+gmum::to_string(g.next_free[g.firstFree]));
-	ASSERT_EQ(g.firstFree, 20);
-	ASSERT_EQ(g.next_free[g.firstFree], 15); //might fail if not doubling
+	ASSERT_EQ(g.first_free, 20);
+	ASSERT_EQ(g.next_free[g.first_free], 15); //might fail if not doubling
 	ASSERT_EQ(g.next_free[15], 10);
 
 	DBG(logger,10, "Test OK");
@@ -300,5 +300,3 @@ TEST(DatabaseTestsSeq, BasicGraphTest){
 		ASSERT_LE(dataset2.getPosition(c)[0], 0.9);
     }
 }
-
-
