@@ -473,24 +473,6 @@ void GNGAlgorithm::adapt(const double * ex, const double * extra) {
 }
 
 double GNGAlgorithm::calculateAccumulatedError() {
-<<<<<<< HEAD
-	int maximumIndex = m_g.get_maximum_index();
-	m_accumulated_error = 0.0;
-
-	m_g.lock();
-	m_accumulated_error = 0.0;
-	REP(i, maximumIndex + 1)
-	{
-		if (m_g.existsNode(i)) {
-			m_accumulated_error += m_g[i].error;
-		}
-	}
-	m_g.unlock();
-	return m_accumulated_error;
-=======
-	//@note: this function can be called from outside so it has to synchronize
-
-	//TODO: Why does it lock?
 
 	int maximum_index = m_g.get_maximum_index();
 	m_accumulated_error = 0.0;
@@ -517,8 +499,6 @@ double GNGAlgorithm::calculateAccumulatedError() {
 		m_g.unlock();
 		return m_accumulated_error;
 	}
-
->>>>>>> 0995c9dea40ea32389c892d94ebe9b5300dc2a9d
 }
 
 void GNGAlgorithm::testAgeCorrectness() {

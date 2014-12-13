@@ -17,7 +17,6 @@ using namespace gmum;
  * Basic test
  */
 TEST(GraphTests, BasicGraphTest) {
-
 	boost::shared_ptr<Logger> logger = boost::shared_ptr<Logger>(new Logger(10));
 	cerr << "Testing GraphTest\n";
 
@@ -78,7 +77,8 @@ TEST(GraphTests, BasicGraphTest) {
 
 	DBG(logger,10, "Test OK");
 
-	cerr << "Getting size\n" << g[0].size() << " " << g[0].capacity() << endl << flush;
+	cerr << "Getting size\n" << g[0].size() << " " << g[0].capacity() << endl
+			<< flush;
 
 	g.addUDEdge(0, 1);
 	g.addUDEdge(0, 2);

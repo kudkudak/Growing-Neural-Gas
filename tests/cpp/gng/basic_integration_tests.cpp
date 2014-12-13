@@ -17,16 +17,10 @@ unsigned int sleep_ms = 200;
 /** Run GNGAlgorithm on a cube (3-dimensional) with given parameters
  * @returns pair<double, double> : nodes, mean_error
  */
-<<<<<<< HEAD
 pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database=1000,
         int ms_loop = 5000,  string save_filename="", double* extra_examples=0,
         int extra_samples_size=0, string load_filename = "") {
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
-=======
-pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database=1000, int ms_loop = 5000,  string save_filename="", double* extra_examples=0, int extra_samples_size=0) {
-
-	GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
->>>>>>> 0995c9dea40ea32389c892d94ebe9b5300dc2a9d
     config.uniformgrid_optimization = true;
 
     if(cnf) config=*cnf;
@@ -91,7 +85,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
        REPORT_PRODUCTION(s->getGraph().get_number_nodes());
        vector<double> stats = s->getErrorStatistics();
        write_array(&stats[0], &stats[stats.size()-1]);
-       REPORT_PRODUCTION(s->getAlgorithm().CalculateAccumulatedError()
+       REPORT_PRODUCTION(s->getAlgorithm().calculateAccumulatedError()
                /(s->getGraph().get_number_nodes()+0.));
        if(iteration >= ms_loop/sleep_ms) break;
     }
@@ -106,7 +100,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     gmum::sleep(sleep_ms);
 
     pair<double , double> t = pair<double, double>(s->getGraph().get_number_nodes(),
-            s->getAlgorithm().CalculateAccumulatedError()
+            s->getAlgorithm().calculateAccumulatedError()
                /(s->getGraph().get_number_nodes()+0.));
 
 
@@ -177,7 +171,7 @@ TEST(GNGNumericTest, Serialization){
        REPORT_PRODUCTION(s->getGraph().get_number_nodes());
        vector<double> stats = s->getErrorStatistics();
        write_array(&stats[0], &stats[stats.size()-1]);
-       REPORT_PRODUCTION(s->getAlgorithm().CalculateAccumulatedError()
+       REPORT_PRODUCTION(s->getAlgorithm().calculateAccumulatedError()
                /(s->getGraph().get_number_nodes()+0.));
        if(iteration >= ms_loop/sleep_ms) break;
     }

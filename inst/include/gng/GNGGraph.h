@@ -94,14 +94,9 @@ public:
 		return "";
 	}
 
-<<<<<<< HEAD
 	virtual void load(std::istream & in) = 0;
 	virtual void serialize(std::ostream & out) = 0;
-=======
-	virtual void load(std::string filename) = 0;
 
-	virtual void serialize(std::string filename) = 0;
->>>>>>> 0995c9dea40ea32389c892d94ebe9b5300dc2a9d
 
 };
 
@@ -413,15 +408,11 @@ public:
 		mutex->unlock();
 	}
 
+
 	/*
 	 * format is [N] [gng_dim] N* [0/1 + vertex] N*[ [l] l*[gng_idx]]
 	 */
-<<<<<<< HEAD
 	void serialize(std::ostream &  output) {
-=======
-	void serialize(std::string filename) {
-
->>>>>>> 0995c9dea40ea32389c892d94ebe9b5300dc2a9d
 		this->lock();
 
 
@@ -447,10 +438,7 @@ public:
 			} else {
 				S.push_back((double) 0);
 			}
-		}
-
-		DBG(m_logger,7, "GNGGraph::Serializing edges");
-
+		} DBG(m_logger,7, "GNGGraph::Serializing edges");
 		//Edges
 		for (int i = 0; i < g.size(); ++i) {
 			if (existsNode(i)) {
@@ -460,10 +448,7 @@ public:
 			} else {
 				S.push_back((double) 0);
 			}
-		}
-
-		DBG(m_logger,7, "GNGGraph::Serializing nextFree");
-
+		} DBG(m_logger,7, "GNGGraph::Serializing nextFree");
 		//NextFree
 		for (int i = 0; i < g.size(); ++i) {
 			S.push_back((double) next_free[i]);
@@ -473,22 +458,14 @@ public:
 
 
 		this->unlock();
-
 	}
-<<<<<<< HEAD
 	void load(std::istream &  input) {
-=======
-
-	void load(std::string filename) {
-
->>>>>>> 0995c9dea40ea32389c892d94ebe9b5300dc2a9d
 		this->lock();
 
 		DBG(m_logger,7, "GNGGraph:: loading ");
 
 		vector<double> S = _load_bin_vector(input);
 		vector<double>::iterator itr = S.begin();
-
 		//Header
 		unsigned int bufor_size = (int) *itr;
 		maximum_index = (int) *(++itr) - 1;
@@ -498,7 +475,7 @@ public:
 
 		DBG(m_logger,5, "Read in "+to_str(bufor_size) +" sized graph with "+
 				" max_index="+to_str(maximum_index)+" gng_dim="+to_str(gng_dim)+" "+
-				"first_free="+to_str(first_free)+" nodes="+to_str(nodes)
+				"firstFree="+to_str(firstFree)+" nodes="+to_str(nodes)
 		);
 
 		positions.clear();
@@ -537,8 +514,9 @@ public:
 		}
 
 		//Deserialize nextFree
-		for (int i = 0; i < g.size(); ++i)
+		for (int i = 0; i < g.size(); ++i) {
 			next_free[i] = (int) *(++itr);
+		}
 
 
 		this->unlock();
@@ -555,31 +533,33 @@ private:
 		positions.resize(2 * previous_size * gng_dim);
 
 		//Reassign memory pointers
-		for (int i = 0; i < previous_size; ++i)
+		for (int i = 0; i < previous_size; ++i) {
 			g[i].position = &positions[i * gng_dim];
+
+		}
 
 		g.resize(2 * previous_size);
 
-		for (int i = 0; i < previous_size; ++i)
+		for (int i = 0; i < previous_size; ++i) {
 			g[i].position = &positions[i * gng_dim];
+		}
 
 		occupied.resize(2 * previous_size);
-
-		for (int i = previous_size; i < 2 * previous_size; ++i)	//                        g[i].reset();
-			occupied[i] = false;								//                        g[i].reserve(gng_dim); //for speed purposes
-
+		for (int i = previous_size; i < 2 * previous_size; ++i) {
+			//                        g[i].reset();
+			//                        g[i].reserve(gng_dim); //for speed purposes
+			occupied[i] = false;
+		}
 
 		next_free.resize(2 * previous_size);
-
-		for (int i = previous_size - 1; i < 2 * previous_size - 1; ++i)
+		for (int i = previous_size - 1; i < 2 * previous_size - 1; ++i) {
 			next_free[i] = i + 1;
-
+		}
 		next_free[g.size() - 1] = -1;
 		first_free = previous_size;
 
-		DBG_2(m_logger,5, "GNGGraph::resizing done"); DBG(m_logger,5, to_str(first_free)); DBG(m_logger,5, to_str(next_free[previous_size]));
+		DBG_2(m_logger,5, "GNGGraph::resizing done"); DBG(m_logger,5, to_str(firstFree)); DBG(m_logger,5, to_str(next_free[previous_size]));
 		//DBG(m_logger,5, "GNGGraph::resizing graph from "+to_string(g.size())+" done");
-
 	}
 };
 
