@@ -142,9 +142,9 @@ public:
 		return m_iteration;
 	}
 
-	double CalculateAccumulatedError();
+	double calculateAccumulatedError();
 
-	void TestAgeCorrectness();
+	void testAgeCorrectness();
 
 	virtual ~GNGAlgorithm() {
 		delete[] m_betha_powers_to_n;
@@ -174,26 +174,27 @@ private:
 	 */
 	GNGNode ** TwoNearestNodes(const double * position);
 
-	void RandomInit();
+	void randomInit();
 
-	void AddNewNode();
+	void addNewNode();
 
-	void Adapt(const double * ex, const double * extra);
+	void adapt(const double * ex, const double * extra);
 
-	void ResizeUniformGrid();
+	void resizeUniformGrid();
 
 	bool stoppingCriterion() {
 		return m_g.get_number_nodes() > m_max_nodes;
 	}
 
-	void IncreaseErrorNew(GNGNode * node, double error) {
-		FixErrorNew(node);
+	void increaseErrorNew(GNGNode * node, double error) {
+		fixErrorNew(node);
 		assert(m_lambda - s <= m_betha_powers_size -1);
 		node->error += m_betha_powers[m_lambda - s] * error;
 		errorHeap.updateLazy(node->nr);
 	}
 
-	void FixErrorNew(GNGNode * node) {
+	void fixErrorNew(GNGNode * node) {
+
 		if (node->error_cycle == c)
 			return;
 
@@ -210,88 +211,83 @@ private:
 
 		node->error = m_betha_powers_to_n[c - node->error_cycle] * node->error;
 		node->error_cycle = c;
+
 	}
 
-	double GetMaximumError() const {
+	double getMaximumError() const {
 		double max_error = 0;
-		int maximumIndex = m_g.get_maximum_index();
-		REP(i,maximumIndex+1)
-		{
-			if (m_g.existsNode(i)) {
+		int maximum_index = m_g.get_maximum_index();
+		REP(i,maximum_index+1)
+			if (m_g.existsNode(i))
 				max_error = std::max(max_error, m_g[i].error);
-			}
-		}
 		return max_error;
 	}
 
-	void DecreaseAllErrorsNew() {
+	void decreaseAllErrorsNew() {
 		return;
 	}
 
-	void DecreaseErrorNew(GNGNode * node) {
-		FixErrorNew(node);
+	void decreaseErrorNew(GNGNode * node) {
+		fixErrorNew(node);
 		node->error = m_alpha * node->error;
 		errorHeap.updateLazy(node->nr);
 	}
 
-	void SetErrorNew(GNGNode * node, double error) {
+	void setErrorNew(GNGNode * node, double error) {
 		node->error = error;
 		node->error_cycle = c;
 		errorHeap.insertLazy(node->nr);
 	}
 
-	void IncreaseError(GNGNode * node, double error) {
+	void increaseError(GNGNode * node, double error) {
 		node->error += error;
 	}
 
-	void DecreaseAllErrors() {
-		int maximumIndex = m_g.get_maximum_index();
-		REP(i,maximumIndex+1)
-		{
-			if (m_g.existsNode(i)) {
+	void decreaseAllErrors() {
+		int maximum_index = m_g.get_maximum_index();
+		REP(i,maximum_index+1)
+			if (m_g.existsNode(i))
 				m_g[i].error = m_betha * m_g[i].error;
-			}
-		}
 	}
 
-	void DecreaseError(GNGNode * node) {
+	void decreaseError(GNGNode * node) {
 		node->error = m_alpha * node->error;
 	}
 
-	void SetError(GNGNode * node, double error) {
+	void setError(GNGNode * node, double error) {
 		node->error = error;
 	}
 
 	// Note: this code is not optimal and is inserted only for research purposes
 
-	double get_utility(int i) {
+	double getUtility(int i) {
 		return m_g[i].utility;
 	}
 
-	void set_utility(int i, double u) {
+	void setUtility(int i, double u) {
 		m_g[i].utility = u;
 	}
 
-	void utility_criterion_check() {
+	void utilityCriterionCheck() {
 
 		if (m_g.get_number_nodes() < 10)
 			return; //just in case
 
-		double max_error = this->GetMaximumError();
-		int maximumIndex = m_g.get_maximum_index();
+		double max_error = this->getMaximumError();
+		int maximum_index = m_g.get_maximum_index();
 
 		double min_utility = 100000000;
 		int min_utility_index = -1;
-		for (int i = 0; i <= maximumIndex; ++i) {
-			if (min_utility > get_utility(i)) {
-				min_utility = get_utility(i);
+
+		for (int i = 0; i <= maximum_index; ++i)
+			if (min_utility > getUtility(i)) {
+				min_utility = getUtility(i);
 				min_utility_index = i;
 			}
-		}
 
-		if (m_g.existsNode(min_utility_index)
-				&& max_error / get_utility(min_utility_index) > m_utility_k) {
-			DBG(m_logger,2, "GNGAlgorithm:: removing node with utility "+gmum::to_string(get_utility(min_utility_index)) + " max error "+gmum::to_string(max_error));
+		if (m_g.existsNode(min_utility_index) && max_error / getUtility(min_utility_index) > m_utility_k) {
+
+			DBG(m_logger,2, "GNGAlgorithm:: removing node with utility "+gmum::to_string(getUtility(min_utility_index)) + " max error "+gmum::to_string(max_error));
 
 			DBG(m_logger,2,gmum::to_string<double>(max_error));
 
@@ -302,18 +298,15 @@ private:
 			}
 
 			m_g.deleteNode(min_utility_index);
-			set_utility(min_utility_index, 0);
+			setUtility(min_utility_index, 0);
 		}
 
 	}
-	void decrease_all_utility() {
-		int maximumIndex = m_g.get_maximum_index();
-		for (int i = 0; i <= maximumIndex; ++i) {
-			if (m_g.existsNode(i)) {
-				set_utility(i, get_utility(i) * (m_betha));
-			}
-		}
-
+	void decreaseAllUtility() {
+		int maximum_index = m_g.get_maximum_index();
+		for (int i = 0; i <= maximum_index; ++i)
+			if (m_g.existsNode(i))
+				setUtility(i, getUtility(i) * (m_betha));
 	}
 };
 

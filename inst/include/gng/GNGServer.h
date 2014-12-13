@@ -154,7 +154,7 @@ public:
 	double getMeanError() const {
 		if (this->getNumberNodes() == 0)
 			return 0.0;
-		double error = this->gngAlgorithm->CalculateAccumulatedError();
+		double error = this->gngAlgorithm->calculateAccumulatedError();
 		return error / (0.0 + this->getNumberNodes());
 	}
 
@@ -293,7 +293,7 @@ public:
 
 	///Calculate error per node
 	double calculateAvgErrorNode() {
-		return this->getAlgorithm().CalculateAccumulatedError()
+		return this->getAlgorithm().calculateAccumulatedError()
 				/ (this->getGraph().get_number_nodes() + 0.0f);
 	}
 

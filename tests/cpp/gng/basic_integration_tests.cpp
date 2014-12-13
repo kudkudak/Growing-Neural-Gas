@@ -17,10 +17,16 @@ unsigned int sleep_ms = 200;
 /** Run GNGAlgorithm on a cube (3-dimensional) with given parameters
  * @returns pair<double, double> : nodes, mean_error
  */
+<<<<<<< HEAD
 pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database=1000,
         int ms_loop = 5000,  string save_filename="", double* extra_examples=0,
         int extra_samples_size=0, string load_filename = "") {
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
+=======
+pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database=1000, int ms_loop = 5000,  string save_filename="", double* extra_examples=0, int extra_samples_size=0) {
+
+	GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
+>>>>>>> 0995c9dea40ea32389c892d94ebe9b5300dc2a9d
     config.uniformgrid_optimization = true;
 
     if(cnf) config=*cnf;
@@ -293,4 +299,3 @@ TEST(GNGNumericTest, BasicConvergeLazyHeapUG){
     ASSERT_GE(results.first, 10.0);
     ASSERT_LE(results.second, 50.0);
 }
-
