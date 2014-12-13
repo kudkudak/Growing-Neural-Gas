@@ -47,7 +47,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
              if(j==0)
                  vect[j+(i)*(config.dim+1)] = 0.0;
              else if(j<config.dim)
-                 vect[j+(i)*(config.dim+1)] = __double_rnd(0, 1);
+                 vect[j+(i)*(config.dim+1)] = doubleRnd(0, 1);
              else
             	 vect[j+(i)*(config.dim+1)] = 0.5; // Sampling probability
     }
@@ -70,10 +70,10 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     for(int i=0;i<10;++i){
     	cerr<<"Exemplary sample (testing memory correctness):\n";
     	int ex = s->getDatabase().drawExample();
-    	write_array(s->getDatabase().getPosition(ex), s->getDatabase().getPosition(ex)+(config.dim+1));
+    	writeArray(s->getDatabase().getPosition(ex), s->getDatabase().getPosition(ex)+(config.dim+1));
     }
 
-    cerr<< "testNewInterface::Collecting results\n";
+    cerr << "testNewInterface::Collecting results\n";
 
     int iteration = 0;
 
@@ -84,9 +84,8 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
        gmum::sleep(sleep_ms);
        REPORT_PRODUCTION(s->getGraph().get_number_nodes());
        vector<double> stats = s->getErrorStatistics();
-       write_array(&stats[0], &stats[stats.size()-1]);
-       REPORT_PRODUCTION(s->getAlgorithm().calculateAccumulatedError()
-               /(s->getGraph().get_number_nodes()+0.));
+       writeArray(&stats[0], &stats[stats.size()-1]);
+       REPORT_PRODUCTION(s->getAlgorithm().calculateAccumulatedError()/(s->getGraph().get_number_nodes()+0.));
        if(iteration >= ms_loop/sleep_ms) break;
     }
 
@@ -99,9 +98,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
 
     gmum::sleep(sleep_ms);
 
-    pair<double , double> t = pair<double, double>(s->getGraph().get_number_nodes(),
-            s->getAlgorithm().calculateAccumulatedError()
-               /(s->getGraph().get_number_nodes()+0.));
+    pair<double , double> t = pair<double, double>(s->getGraph().get_number_nodes(), s->getAlgorithm().calculateAccumulatedError()/(s->getGraph().get_number_nodes()+0.));
 
 
     if(save_filename!=""){
@@ -144,7 +141,7 @@ TEST(GNGNumericTest, Serialization){
              if(j==0)
                  vect[j+(i)*(config.dim+1)] = 0.0;
              else if(j<config.dim)
-                 vect[j+(i)*(config.dim+1)] = __double_rnd(0, 1);
+                 vect[j+(i)*(config.dim+1)] = doubleRnd(0, 1);
              else
             	 vect[j+(i)*(config.dim+1)] = 0.5;
     }
@@ -157,7 +154,7 @@ TEST(GNGNumericTest, Serialization){
     for(int i=0;i<10;++i){
     	cerr<<"Exemplary sample (testing memory correctness):\n";
     	int ex = s->getDatabase().drawExample();
-    	write_array(s->getDatabase().getPosition(ex), s->getDatabase().getPosition(ex)+(config.dim+1));
+    	writeArray(s->getDatabase().getPosition(ex), s->getDatabase().getPosition(ex)+(config.dim+1));
     }
 
     cerr<< "testNewInterface::Collecting results\n";
@@ -170,9 +167,8 @@ TEST(GNGNumericTest, Serialization){
        gmum::sleep(sleep_ms);
        REPORT_PRODUCTION(s->getGraph().get_number_nodes());
        vector<double> stats = s->getErrorStatistics();
-       write_array(&stats[0], &stats[stats.size()-1]);
-       REPORT_PRODUCTION(s->getAlgorithm().calculateAccumulatedError()
-               /(s->getGraph().get_number_nodes()+0.));
+       writeArray(&stats[0], &stats[stats.size()-1]);
+       REPORT_PRODUCTION(s->getAlgorithm().calculateAccumulatedError()/(s->getGraph().get_number_nodes()+0.));
        if(iteration >= ms_loop/sleep_ms) break;
     }
 
@@ -191,8 +187,7 @@ TEST(GNGNumericTest, Serialization){
     delete s;
 
 
-	pair<double, double> results = test_convergence(&config, 1000, 1000, "" /*save filename*/,
-		0 /*extra examples*/, 0 /*extra_sample_size*/, "test_serialization.bin" /*load_filename*/);
+	pair<double, double> results = test_convergence(&config, 1000, 1000, "" /*save filename*/,0 /*extra examples*/, 0 /*extra_sample_size*/, "test_serialization.bin" /*load_filename*/);
 
 
 	ASSERT_GE(fabs(results.first), 550.0);
@@ -203,8 +198,7 @@ TEST(GNGNumericTest, Serialization){
 TEST(GNGNumericTest, BasicConvergence){
 
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
-    pair<double, double> results = test_convergence(&config, 1000, 6000,
-    		"basic_convergence.graphml");
+    pair<double, double> results = test_convergence(&config, 1000, 6000, "basic_convergence.graphml");
     ASSERT_GE(fabs(results.first), 60.0);
     ASSERT_LE(fabs(results.second), 50.0);
 }
@@ -225,11 +219,10 @@ TEST(GNGNumericTest, FewDimsSkewedUGConvergence){
     double * extra_examples = new double[num_extra*(config.dim+1)];
     for (int i = 0; i < num_extra; ++i) {
         for(int j=0;j<= config.dim;++j)
-             extra_examples[j+(i)*(config.dim+1)] = __double_rnd(0, 2)+(2.0);
+             extra_examples[j+(i)*(config.dim+1)] = doubleRnd(0, 2)+(2.0);
     }
 
-    pair<double, double> results = test_convergence(&config, 100000, 60000, "fewdims.graphml",
-    		extra_examples, num_extra*(config.dim+1));
+    pair<double, double> results = test_convergence(&config, 100000, 60000, "fewdims.graphml",extra_examples, num_extra*(config.dim+1));
 
     ASSERT_GE(results.first, 10.0);
     ASSERT_LE(results.second, 50.0);
@@ -287,7 +280,7 @@ TEST(GNGNumericTest, BasicConvergeLazyHeapUG){
     config.lazyheap_optimization = true;
     config.max_nodes = 2000;
     config.uniformgrid_optimization = true;
-    cerr<<"Checking correctness "+to_string(config.check_correctness())<<endl;
+    cerr << "Checking correctness " + toString(config.check_correctness())<<endl;
     config.check_correctness();
     pair<double, double> results = test_convergence(&config, 10000, 1000);
     ASSERT_GE(results.first, 10.0);

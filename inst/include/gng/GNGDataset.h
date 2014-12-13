@@ -269,7 +269,7 @@ public:
 
 		assert(sampling_ or prob_location_ == -1);
 
-		__init_rnd();
+		initRnd();
 	}
 
 	void lock() {
@@ -315,17 +315,17 @@ public:
 
 		if (sampling_) {
 			if (prob_location_ == -1) {
-				return __int_rnd(0, storage_.getSize() - 1);
+				return intRnd(0, storage_.getSize() - 1);
 			} else {
 				const double * ex;
 				unsigned int index;
 
 				//Sample
 				do {
-					index = __int_rnd(0, storage_.getSize() - 1);
+					index = intRnd(0, storage_.getSize() - 1);
 					ex = storage_.getData(index);
 				} while (ex[pos_dim_ + vertex_dim_ + prob_location_]
-						< __double_rnd(0, 1.0));
+						< doubleRnd(0, 1.0));
 
 				return index;
 			}

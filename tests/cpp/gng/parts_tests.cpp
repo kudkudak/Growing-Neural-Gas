@@ -77,8 +77,7 @@ TEST(GraphTests, BasicGraphTest) {
 
 	DBG(logger,10, "Test OK");
 
-	cerr << "Getting size\n" << g[0].size() << " " << g[0].capacity() << endl
-			<< flush;
+	cerr << "Getting size\n" << g[0].size() << " " << g[0].capacity() << endl << flush;
 
 	g.addUDEdge(0, 1);
 	g.addUDEdge(0, 2);
@@ -112,9 +111,9 @@ TEST(GraphTests, BasicGraphTest) {
 	//Check regrowing
 	for (int i = 0; i < 20 * N_start; ++i) {
 		int idx = g.newNode(x);
-		int cn = __int_rnd(0, i);
+		int cn = intRnd(0, i);
 		while (!g.existsNode(cn)) {
-			cn = __int_rnd(0, i);
+			cn = intRnd(0, i);
 		}
 		g.addUDEdge(idx, cn);
 	}
