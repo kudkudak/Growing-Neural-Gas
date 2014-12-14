@@ -34,7 +34,7 @@ typedef long long LL;
 #include <stdlib.h>
 #include <time.h>
 
-#include "Logger.h"
+#include <utils/logger.h>
 
 #ifdef DEBUG_GMUM_2
 #define DBG_2(logger, level, text) logger->log(level, text);

@@ -13,6 +13,7 @@
 using namespace Rcpp;
 #endif
 
+#include "utils/utils.h"
 #include <vector>
 
 

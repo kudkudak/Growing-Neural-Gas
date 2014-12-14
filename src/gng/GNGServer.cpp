@@ -6,13 +6,6 @@ GNGServer::GNGServer(GNGConfiguration configuration, std::istream * input_graph)
 
 void GNGServer::init(GNGConfiguration configuration, std::istream * input_graph){
 
-
-	error_statistics_end = 0;
-	error_statistics_start = 0;
-	error_statistics_delay_ms =1000;
-	error_statistics_size = 10000;
-	error_statistics = vector<double>(error_statistics_size, 0.0);
-	collect_statistics_thread = 0;
 	algorithm_thread = 0;
 	m_current_dataset_memory_was_set = false;
 	m_running_thread_created = false;

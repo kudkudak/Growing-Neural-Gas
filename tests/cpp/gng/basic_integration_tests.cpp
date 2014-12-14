@@ -1,6 +1,6 @@
 #include "gng/GNG.h" //TODO: path problems
 #include "gng/GNGServer.h"
-#include "gng/Utils.h"
+#include "utils/utils.h"
 
 #include "gtest/gtest.h"
 
@@ -12,7 +12,7 @@
 using namespace std;
 using namespace gmum;
 
-unsigned int sleep_ms = 200;
+unsigned int sleep_ms = 500;
 
 /** Run GNGAlgorithm on a cube (3-dimensional) with given parameters
  * @returns pair<double, double> : nodes, mean_error
@@ -80,29 +80,19 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     while(true){
        ++iteration;
 
-       REPORT_PRODUCTION(iteration);
+       REPORT_PRODUCTION(s->getCurrentIteration());
        gmum::sleep(sleep_ms);
        REPORT_PRODUCTION(s->getGraph().get_number_nodes());
-       vector<double> stats = s->getErrorStatistics();
-       write_array(&stats[0], &stats[stats.size()-1]);
-       REPORT_PRODUCTION(s->getAlgorithm().CalculateAccumulatedError()
-               /(s->getGraph().get_number_nodes()+0.));
+       REPORT_PRODUCTION(s->getMeanError());
        if(iteration >= ms_loop/sleep_ms) break;
     }
 
-
     s->terminate();
-
-    while(s->getAlgorithm().running == true){
-    	gmum::sleep(sleep_ms);
-    }
 
     gmum::sleep(sleep_ms);
 
     pair<double , double> t = pair<double, double>(s->getGraph().get_number_nodes(),
-            s->getAlgorithm().CalculateAccumulatedError()
-               /(s->getGraph().get_number_nodes()+0.));
-
+    		s->getMeanError());
 
     if(save_filename!=""){
         cerr<<"GNGNumericTest::Saving to GraphML\n";
@@ -115,18 +105,16 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
 
 
 TEST(GNGNumericTest, BasicConvergenceUtility){
-
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.experimental_utility_option = GNGConfiguration::UtilityBasicOn;
-
+    config.verbosity=3;
 
     pair<double, double> results = test_convergence(&config, 1000, 6000);
     ASSERT_GE(fabs(results.first), 60.0);
-    ASSERT_LE(fabs(results.second), 50.0);
+    ASSERT_LE(fabs(results.second), 1e-4);
 }
 
 TEST(GNGNumericTest, Serialization){
-
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.uniformgrid_optimization = true;
     config.datasetType = GNGConfiguration::DatasetSamplingProb;
@@ -166,51 +154,36 @@ TEST(GNGNumericTest, Serialization){
 
     while(true){
        ++iteration;
-       REPORT_PRODUCTION(iteration);
+       REPORT_PRODUCTION(s->getCurrentIteration());
        gmum::sleep(sleep_ms);
        REPORT_PRODUCTION(s->getGraph().get_number_nodes());
-       vector<double> stats = s->getErrorStatistics();
-       write_array(&stats[0], &stats[stats.size()-1]);
-       REPORT_PRODUCTION(s->getAlgorithm().CalculateAccumulatedError()
-               /(s->getGraph().get_number_nodes()+0.));
+       REPORT_PRODUCTION(s->getMeanError());
        if(iteration >= ms_loop/sleep_ms) break;
     }
 
-
     s->terminate();
-
-
-    int test;
-    while(s->getAlgorithm().running == true){
-    	gmum::sleep(sleep_ms);
-    }
-
     gmum::sleep(sleep_ms);
 
     s->save("test_serialization.bin");
     delete s;
 
-
 	pair<double, double> results = test_convergence(&config, 1000, 1000, "" /*save filename*/,
 		0 /*extra examples*/, 0 /*extra_sample_size*/, "test_serialization.bin" /*load_filename*/);
 
-
 	ASSERT_GE(fabs(results.first), 550.0);
-	ASSERT_LE(fabs(results.second), 10.0);
+    ASSERT_LE(fabs(results.second), 1e-2);
 }
 
 
 TEST(GNGNumericTest, BasicConvergence){
-
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
-    pair<double, double> results = test_convergence(&config, 1000, 6000,
+    pair<double, double> results = test_convergence(&config, 1000, 5000,
     		"basic_convergence.graphml");
     ASSERT_GE(fabs(results.first), 60.0);
-    ASSERT_LE(fabs(results.second), 50.0);
+    ASSERT_LE(fabs(results.second), 1e-4);
 }
 
 TEST(GNGNumericTest, FewDimsSkewedUGConvergence){
-
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.uniformgrid_optimization =  true;
     config.max_nodes = 1000;
@@ -232,11 +205,10 @@ TEST(GNGNumericTest, FewDimsSkewedUGConvergence){
     		extra_examples, num_extra*(config.dim+1));
 
     ASSERT_GE(results.first, 10.0);
-    ASSERT_LE(results.second, 50.0);
+    ASSERT_LE(fabs(results.second), 1e-1);
 }
 
 TEST(GNGNumericTest, FewDimsUGConvergence){
-
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.uniformgrid_optimization =  true;
     config.max_nodes = 2000;
@@ -245,15 +217,12 @@ TEST(GNGNumericTest, FewDimsUGConvergence){
     config.dim = 4;
     config.setBoundingBox(0.0, 1.0);
 
-
-
     pair<double, double> results = test_convergence(&config, 1000, 60000, "fewdimsugconvergence.graphml");
 
     ASSERT_GE(results.first, 10.0);
-    ASSERT_LE(results.second, 5.0);
+    ASSERT_LE(fabs(results.second), 1e-4);
 }
 TEST(GNGNumericTest, ManyDimsUGConvergence){
-
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.uniformgrid_optimization =  true;
     config.lazyheap_optimization =  true;
@@ -263,13 +232,11 @@ TEST(GNGNumericTest, ManyDimsUGConvergence){
     pair<double, double> results = test_convergence(&config, 100, 3000);
 
     ASSERT_GE(results.first, 10.0);
-    ASSERT_LE(results.second, 50.0);
+    ASSERT_LE(fabs(results.second), 1e-4);
 }
 
 
 TEST(GNGNumericTest, ManyDimsNoUG){
-    cerr<<"GNGNumericTest::ManyDimsNoUG"<<endl;
-
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.uniformgrid_optimization =  false;
     config.dim = 50;
@@ -278,11 +245,10 @@ TEST(GNGNumericTest, ManyDimsNoUG){
     pair<double, double> results = test_convergence(&config, 100, 50000);
 
     ASSERT_GE(fabs(results.first), 100.0);
-    ASSERT_LE(fabs(results.second), 2000.0);
+    ASSERT_LE(fabs(results.second), 1e-20);
 }
 
 TEST(GNGNumericTest, BasicConvergeLazyHeapUG){
-
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.lazyheap_optimization = true;
     config.max_nodes = 2000;
@@ -291,6 +257,6 @@ TEST(GNGNumericTest, BasicConvergeLazyHeapUG){
     config.check_correctness();
     pair<double, double> results = test_convergence(&config, 10000, 1000);
     ASSERT_GE(results.first, 10.0);
-    ASSERT_LE(results.second, 50.0);
+    ASSERT_LE(fabs(results.second), 1e-2);
 }
 

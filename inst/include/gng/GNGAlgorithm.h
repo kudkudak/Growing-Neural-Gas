@@ -5,15 +5,18 @@
  * Created on 11 sierpień 2012, 10:02
  */
 
+
 #ifndef GNGALGORITHM_H
 #define GNGALGORITHM_H
 
 #include <memory>
 
+#include "utils/threading.h"
+#include "utils/circular_buffer.h"
+
 #include "GNGGlobals.h"
 #include "GNGGraph.h"
 #include "GNGDataset.h"
-#include "Threading.h"
 #include "UniformGrid.h"
 #include "GNGLazyErrorHeap.h"
 #include <string>
@@ -25,14 +28,12 @@ namespace gmum {
  * The main class of the implementation dealing with computations.
  * It should be agnostic of inner working (memory management etc.) of the graph and database.
  * Also should not be concerned with locking logic.
- *
- * @note TODO: Implement GNG on GPU.
  */
 class GNGAlgorithm {
 public:
 	typedef std::list<int> Node;
 
-	double m_error; //error of the network
+	circular_buffer<double> m_mean_error; //error of the network
 	int m_lambda; //lambda parameter
 	double m_eps_w, m_eps_n; //epsilon of the winner and of the neighbour
 	int m_max_age;
@@ -43,6 +44,7 @@ public:
 
 	double m_utility_k;
 	int m_utility_option;
+
 
 	double m_alpha, m_betha;
 	double * m_betha_powers;
@@ -77,7 +79,12 @@ public:
 		None, BasicUtility
 	};
 
-	gmum::gmum_recursive_mutex status_change_mutex;
+
+	//For each iteration
+	gmum::fast_mutex m_statistics_mutex;
+
+
+	gmum::recursive_mutex status_change_mutex;
 	gmum::gmum_condition status_change_condition;
 
 	GngStatus gng_status() {
@@ -142,6 +149,28 @@ public:
 		return m_iteration;
 	}
 
+	double getMeanError() {
+		REPORT_PRODUCTION("get_mean_error");
+		gmum::scoped_lock<gmum::fast_mutex> alg_lock(m_statistics_mutex);
+		DBG(m_logger, 3, gmum::to_string(m_mean_error.size()));
+		if(m_mean_error.size() == 0){
+			REPORT_PRODUCTION("get_mean_errosr");
+			return std::numeric_limits<double>::max();
+		}else{
+			REPORT_PRODUCTION("get_mean_errsor");
+			return m_mean_error[m_mean_error.size()-1];
+		}
+	}
+
+	vector<double> getMeanErrorStatistics() {
+		gmum::scoped_lock<gmum::fast_mutex> alg_lock(m_statistics_mutex);
+		if(m_mean_error.size() == 0){
+			return vector<double>(1, std::numeric_limits<double>::max());
+		}else{
+			return vector<double>(m_mean_error.begin(), m_mean_error.end());
+		}
+	}
+
 	double CalculateAccumulatedError();
 
 	void TestAgeCorrectness();
@@ -168,17 +197,14 @@ private:
 
 	GNGNode ** LargestErrorNodes();
 
-	/**
-	 * @brief Return two closest nodes (neurons) to the given example
-	 * @param[in] position Vector of coordinates of the example
-	 */
 	GNGNode ** TwoNearestNodes(const double * position);
 
 	void RandomInit();
 
 	void AddNewNode();
 
-	void Adapt(const double * ex, const double * extra);
+	//Returns error of the drawn example
+	double Adapt(const double * ex, const double * extra);
 
 	void ResizeUniformGrid();
 
@@ -325,8 +351,6 @@ struct GNGGraphAccessHack {
 	}
 };
 
-//	typedef boost::posix_time::ptime Time;
-//	typedef boost::posix_time::time_duration TimeDuration;
 
 }
 

@@ -9,13 +9,13 @@
 #define SHGRAPHDEFS_H
 
 #include <iostream>
-#include "GNGGlobals.h"
 #include <cmath>
 #include <vector>
 #include <algorithm>
 #include <cstring>
 #include <iterator>
 
+#include "GNGGlobals.h"
 /**
  * Basic interface for Edge in GNGGraph.
  */

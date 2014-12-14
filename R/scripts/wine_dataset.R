@@ -105,24 +105,35 @@ GNG2 <- function(x=NULL,
         run(server)
       
         max_iter = training[2]
+        print(max_iter)
         min_relative_dif = training[3]
         iter = 0
         errors_calculated = 0
         while(iter < max_iter || errors_calculated == 0){
           Sys.sleep(0.1)
           iter = server$get_current_iteration()
-          print(iter)
-          if(length(server$get_error_statistics()) > 7){
+          
+          if(iter %% (max_iter/100) == 0){    
+            print(paste("Iteration", iter))
+          }
+          
+       
+          # TODO: Iter 5 = 5 times passed whole dataset. 
+          # Length 10 = collected 10 samples of error of whole network
+          # (5 first samples will be probably not accurate, as might incororate,
+          # many new nodes with zero error)
+          # It is pretty bug prone, might need to change later
+          if(length(server$get_error_statistics()) > 10 && iter > 5){
               errors_calculated = 1
               errors = server$get_error_statistics()
-              print(errors)
-              print(server$get_error_statistics())
               best_previously = min(errors[(length(errors)-5):length(errors)-1])
               current = errors[length(errors)]
-              change = 1.0 - current/best_previously
-              print(change)
-              if(change < min_relative_dif){
-                break
+              if(best_previously != 0){
+                change = 1.0 - current/best_previously
+                print(change)
+                if(change < min_relative_dif){
+                  break
+                }
               }
           }
         }
@@ -151,7 +162,7 @@ dferrors = apply(as.matrix(df), MARGIN = 2, FUN = function(X) (X - min(X))/diff(
 
 max(df)
 
-colMeans(df)  # faster version of apply(scaled.dat, 2, mean)
+colMeans(df )  # faster version of apply(scaled.dat, 2, mean)
 apply(df, 2, sd)
 apply(df, 2, mean)
 summary(df)

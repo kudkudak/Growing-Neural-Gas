@@ -12,9 +12,8 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 
-
-#include "Threading.h"
-#include "Utils.h"
+#include "utils/threading.h"
+#include "utils/utils.h"
 #include "GNGGlobals.h"
 #include "GNGConfiguration.h"
 
@@ -240,7 +239,7 @@ protected:
 	const unsigned int pos_dim_, meta_dim_, vertex_dim_;
 	const unsigned int prob_location_;
 
-	gmum::gmum_recursive_mutex * mutex_;
+	gmum::recursive_mutex * mutex_;
 	Storage storage_;
 	std::vector<int> data_layout_;
 
@@ -254,7 +253,7 @@ public:
 	 * @param prob_location If prob location is -1 (by default) means there
 	 * is no probability data in meta data. If there is then
 	 */
-	GNGDatasetSimple(gmum::gmum_recursive_mutex *mutex, unsigned int pos_dim,
+	GNGDatasetSimple(gmum::recursive_mutex *mutex, unsigned int pos_dim,
 			unsigned int vertex_dim, unsigned int meta_dim,
 			unsigned int prob_location = -1, bool sampling = true,
 			boost::shared_ptr<Logger> logger = boost::shared_ptr<Logger>()) :

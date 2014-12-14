@@ -7,11 +7,15 @@
 #ifndef GNGSERVER_H
 #define GNGSERVER_H
 
+
 #include <cstdlib>
 #include <cstddef>
 #include <map>
 #include <exception>
 #include <memory>
+
+#include "utils/threading.h"
+#include "utils/utils.h"
 
 #include "GNGDefines.h"
 #include "GNGConfiguration.h"
@@ -19,8 +23,6 @@
 #include "GNGGraph.h"
 #include "GNGDataset.h"
 #include "GNGAlgorithm.h"
-#include "Utils.h"
-#include "Threading.h"
 
 
 #ifdef RCPP_INTERFACE
@@ -36,15 +38,14 @@ class GNGServer {
 	bool m_current_dataset_memory_was_set;
 	bool m_running_thread_created;
 
-	gmum::gmum_thread * collect_statistics_thread;
 	gmum::gmum_thread * algorithm_thread;
 
 	/** Mutex used for synchronization of graph access*/
-	gmum::gmum_recursive_mutex grow_mutex;
+	gmum::recursive_mutex grow_mutex;
 	/** Mutex used for synchronization of graph access*/
-	gmum::gmum_recursive_mutex database_mutex;
+	gmum::recursive_mutex database_mutex;
 	/** Mutex used for synchronization of graph access*/
-	gmum::gmum_recursive_mutex stat_mutex;
+	gmum::recursive_mutex stat_mutex;
 
 	GNGConfiguration current_configuration;
 
@@ -80,8 +81,7 @@ public:
 			algorithm_thread = new gmum::gmum_thread(&GNGServer::_run,
 					(void*) this);
 			DBG(m_logger,10, "GNGServer::runing collect_statistics thread");
-			collect_statistics_thread = new gmum::gmum_thread(
-					&GNGServer::_collect_statics, (void*) this);
+
 
 			m_running_thread_created = true;
 		} else {
@@ -151,38 +151,12 @@ public:
 		return nr;
 	}
 
-	double getMeanError() const {
-		if (this->getNumberNodes() == 0)
-			return 0.0;
-		double error = this->gngAlgorithm->CalculateAccumulatedError();
-		return error / (0.0 + this->getNumberNodes());
+	double getMeanError(){
+		return gngAlgorithm->getMeanError();
 	}
 
-	//Error statistics cyclic queue
-
-	unsigned int error_statistics_size;
-	vector<double> error_statistics;
-	unsigned int error_statistics_end;
-	unsigned int error_statistics_start;
-	unsigned int error_statistics_delay_ms;
-
-	vector<double> getErrorStatistics() {
-		stat_mutex.lock();
-
-		vector<double> x;
-		x.reserve(error_statistics_size);
-
-		if (error_statistics_start != error_statistics_end) {
-			int idx = error_statistics_start;
-			while (idx != error_statistics_end) {
-				x.push_back(error_statistics[idx]);
-				idx = (idx + 1) % error_statistics_size;
-			}
-		}
-
-		stat_mutex.unlock();
-
-		return x;
+	vector<double> getMeanErrorStatistics() {
+		return gngAlgorithm->getMeanErrorStatistics();
 	}
 
 #ifdef RCPP_INTERFACE
@@ -229,7 +203,7 @@ public:
 	}
 
 	Rcpp::NumericVector RgetErrorStatistics() {
-		vector<double> x = getErrorStatistics();
+		vector<double> x = getMeanErrorStatistics();
 		return NumericVector(x.begin(), x.end());
 	}
 	void RinsertExamples(Rcpp::NumericMatrix & ex) {
@@ -309,8 +283,6 @@ public:
 		if (algorithm_thread)
 			algorithm_thread->join();
 		DBG(m_logger,20, "GNGServer::algorithm thread terminated, joining statistic thread");
-		if (collect_statistics_thread)
-			collect_statistics_thread->join();
 		gmum::sleep(100);
 	}
 
@@ -353,41 +325,6 @@ private:
 		}
 	}
 
-	//TODO: replace to shared_ptr
-	static void _collect_statics(void * server) {
-		GNGServer * gng_server = (GNGServer*) server;
-		try {
-			while (!gng_server->getAlgorithm().running)
-				gmum::sleep(10);
-
-			DBG(gng_server->m_logger,10, "GNGServer::run::proceeding to collect_statistics");
-			while (gng_server->getAlgorithm().gng_status()
-					!= GNGAlgorithm::GNG_TERMINATED) {
-				while (!gng_server->stat_mutex.try_lock()) { //just to ensure no livelocks
-					gmum::sleep(10);
-				}
-
-				unsigned int insert_place = (gng_server->error_statistics_end
-						+ 1) % gng_server->error_statistics_size;
-				gng_server->error_statistics[insert_place] =
-						gng_server->getMeanError();
-				gng_server->error_statistics_end = insert_place;
-				if (gng_server->error_statistics_end
-						== gng_server->error_statistics_start)
-					gng_server->error_statistics_start =
-							(gng_server->error_statistics_start + 1)
-									% gng_server->error_statistics_size;
-				gng_server->stat_mutex.unlock();
-
-				gmum::sleep(gng_server->error_statistics_delay_ms);
-			}
-		} catch (...) {
-			//interrupted probably
-			cerr << "GNGServer::stop collecting statistics\n";
-			DBG(gng_server->m_logger,10, "GNGServer::stop collecting statistics");
-		}
-
-	}
 
 	/**Section : protocol handling messages regardless of the source*/
 

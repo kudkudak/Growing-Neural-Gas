@@ -9,13 +9,15 @@
 #ifndef UNIFORM_GRID_H
 #define UNIFORM_GRID_H
 
-#include "Utils.h"
 #include <vector>
-#include "GNGGlobals.h"
 #include <iostream>
 #include <boost/shared_ptr.hpp>
 #include <cmath>
 #include <algorithm>
+
+#include "GNGGlobals.h"
+#include "utils/utils.h"
+
 using namespace std;
 
 namespace gmum {

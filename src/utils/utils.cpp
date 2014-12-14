@@ -1,4 +1,4 @@
-#include "Utils.h"
+#include "utils.h"
 
 void __init_rnd() {
 	srand(time(NULL));

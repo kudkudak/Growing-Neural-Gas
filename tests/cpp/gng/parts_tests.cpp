@@ -1,8 +1,8 @@
 #include "gng/GNG.h"
-#include "gng/Utils.h"
+#include "utils/utils.h"
 #include "gng/GNGGraph.h"
 #include "gng/GNGDataset.h"
-#include "gng/Threading.h"
+#include "utils/threading.h"
 
 #include <algorithm>
 #include <utility>
@@ -24,7 +24,7 @@ TEST(GraphTests, BasicGraphTest) {
 
 	unsigned int dim = 6;
 
-	gmum::gmum_recursive_mutex grow_mutex;
+	gmum::recursive_mutex grow_mutex;
 	RAMGNGGraph<GNGNode, GNGEdge> g(&grow_mutex, dim,
 			N_start, //Initial pool size
 			GNGGraph::Euclidean, //Used metric
@@ -189,7 +189,7 @@ TEST(DatabaseTests, BasicGraphTest){
 	int m_verbosity = 3;
 
     unsigned int dim = 6;
-    gmum::gmum_recursive_mutex phase_2_lock;
+    gmum::recursive_mutex phase_2_lock;
     unsigned int num_examples = 100, meta_data_dim = 10;
     //Probabilistic dataaset
     GNGDatasetSimple<GNGDatasetStorageRAM> dataset(
@@ -250,7 +250,7 @@ TEST(DatabaseTestsSeq, BasicGraphTest){
 	boost::shared_ptr<Logger> logger = boost::shared_ptr<Logger>(new Logger(10));
 
 	int m_verbosity = 3;
-	gmum::gmum_recursive_mutex phase_2_lock;
+	gmum::recursive_mutex phase_2_lock;
     unsigned int dim = 6;
     unsigned int num_examples = 100, meta_data_dim = 10;
     //Probabilistic dataaset

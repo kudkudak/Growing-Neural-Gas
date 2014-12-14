@@ -17,10 +17,11 @@
 #include <cassert>
 #include <boost/shared_ptr.hpp>
 
-#include "Utils.h"
+#include "utils/threading.h"
+#include "utils/utils.h"
+
 #include "GNGNode.h"
 #include "GNGGlobals.h"
-#include "Threading.h"
 
 using namespace std;
 
@@ -114,7 +115,7 @@ public:
  * TODO: change GNGEdge* to GNGEdge (problems with rev)
  * TODO: edges ~ gng_dim - maybe use this for better efficiency?
  */
-template<class Node, class Edge, class Mutex = gmum::gmum_recursive_mutex> class RAMGNGGraph: public GNGGraph {
+template<class Node, class Edge, class Mutex = gmum::recursive_mutex> class RAMGNGGraph: public GNGGraph {
 	/** Mutex provided externally for synchronization*/
 	Mutex * mutex;
 
