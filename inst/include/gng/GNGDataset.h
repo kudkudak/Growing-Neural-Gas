@@ -85,162 +85,26 @@ public:
 	GNGDataset() {
 	}
 
-private:
-
 };
 
-/*
- * Abstracts away storage from database double*
- * Possible storages:
- *
- * * arma matrix
- * * raw memory array
- * * bigmemory backed matrix
- * * csv file (!!)
- *
- * @note Not supposed to take care of synchronization problems
- */
-template<class BaseType, class StorageType>
-class GNGDatasetStorage {
-protected:
-	unsigned int m_dim;
 
-	boost::shared_ptr<Logger> m_logger;
-public:
-	typedef BaseType baseType;
-	typedef StorageType storageType;
 
-	GNGDatasetStorage(unsigned int dim, boost::shared_ptr<Logger> logger =
-			boost::shared_ptr<Logger>()) :
-			m_dim(dim), m_logger(logger) {
-	}
 
-	int dim() const {
-		return m_dim;
-	}
-
-	virtual unsigned int getStorageSize() const=0;
-
-	virtual const double * getMemoryPtr() const =0;
-
-	virtual const BaseType * getData(unsigned int) const=0;
-
-	virtual unsigned int getSize() const=0;
-	///Add examples to memory,
-	virtual void insertData(StorageType *, unsigned int, unsigned int) =0;
-
-	///Sets data @note Takes ownership of the memory for performance issues
-	virtual void setData(StorageType *, unsigned int, unsigned int) =0;
-
-	///Will take ownership of x, no copy involved
-	virtual void take(StorageType *, unsigned int) =0;
-
-	virtual ~GNGDatasetStorage() {
-
-	}
-};
-
-///Most basic RAM storage
-class GNGDatasetStorageRAM: public GNGDatasetStorage<double, double> {
-protected:
-	double * storage_;
-	unsigned int num_examples_;
-	bool init_;
-	unsigned int storage_size_;
-	bool ownership_memory_;
-public:
-	const double * getMemoryPtr() const {
-		return storage_;
-	}
-	///Note that dimensionality is not equal to dimensionality of position pointer
-	GNGDatasetStorageRAM(unsigned int dim, boost::shared_ptr<Logger> logger =
-			boost::shared_ptr<Logger>()) :
-			GNGDatasetStorage<double, double>(dim, logger), init_(false), num_examples_(
-					0) {
-		storage_size_ = m_dim * 10;
-		storage_ = new double[storage_size_];
-		ownership_memory_ = true;
-
-	}
-	virtual const double * getData(unsigned int idx) const {
-		if (idx * m_dim > storage_size_)
-			return 0;
-		return &storage_[idx * m_dim];
-	}
-	virtual void take(double * mem, unsigned int count) {
-		delete[] storage_; //no auto_ptr because assigment handling is not automatically deleting
-		storage_ = mem;
-		num_examples_ = count;
-		storage_size_ = count * m_dim;
-		ownership_memory_ = false;
-	}
-	virtual unsigned int getSize() const {
-		return num_examples_;
-	}
-
-	unsigned int getStorageSize() const {
-		return storage_size_ / m_dim;
-	}
-
-	virtual void setData(double * x, unsigned int count, unsigned int size) {
-		take(x, count);
-	}
-
-	virtual void insertData(double * x, unsigned int count, unsigned int size) {
-		assert(size == count * m_dim);
-
-		if ((count + num_examples_) * m_dim > storage_size_) {
-			if (storage_size_ < 2e6)
-				resize(max(2 * storage_size_, (count + num_examples_) * m_dim));
-			else
-				resize(
-						max((unsigned int) (1.2 * storage_size_),
-								(count + num_examples_) * m_dim));
-		}
-
-		//Copy to storage
-		memcpy(storage_ + num_examples_ * m_dim, x,
-				sizeof(double) * count * m_dim);
-
-		//delete[] x;
-
-		num_examples_ += count;
-	}
-
-	~GNGDatasetStorageRAM() {
-		if (ownership_memory_)
-			delete storage_;
-	}
-private:
-	void resize(unsigned int new_size) {
-		//realloc is bad practice in C++, but I want to keep it as double * array
-		//in case we want to use SHM for instance.
-
-		//storage_ = (double*) realloc(storage_, new_size*sizeof(double));
-
-		//TODO: why fails..
-		double * old_storage = storage_;
-		storage_ = new double[new_size];
-		memcpy(storage_, old_storage, num_examples_ * m_dim * sizeof(double));
-
-		if (ownership_memory_)
-			delete[] old_storage;
-
-		storage_size_ = new_size;
-
-		ownership_memory_ = true;
-	}
-};
 
 ///Storage :< GNGDatabaseStorage
-template<class Storage>
 class GNGDatasetSimple: public GNGDataset {
 protected:
-	const unsigned int pos_dim_, meta_dim_, vertex_dim_;
+	const unsigned int pos_dim_, extra_dim_;
 	const unsigned int prob_location_;
 
 	gmum::recursive_mutex * mutex_;
-	Storage storage_;
+
+
+	vector<double> storage;
+	vector<double> storage_extra;
+	vector<double> storage_probability;
+
+
 	std::vector<int> data_layout_;
 
 	bool sampling_;
@@ -251,13 +115,12 @@ public:
 
 	/*
 	 * @param prob_location If prob location is -1 (by default) means there
-	 * is no probability data in meta data. If there is then
+	 * is no probability data in meta data.
 	 */
 	GNGDatasetSimple(gmum::recursive_mutex *mutex, unsigned int pos_dim,
-			unsigned int vertex_dim, unsigned int meta_dim,
-			unsigned int prob_location = -1, bool sampling = true,
+			unsigned int extra_dim, bool sampling = true,
 			boost::shared_ptr<Logger> logger = boost::shared_ptr<Logger>()) :
-			storage_(pos_dim + vertex_dim + meta_dim, logger), mutex_(mutex), pos_dim_(
+			mutex_(mutex), pos_dim_(
 					pos_dim), vertex_dim_(vertex_dim), meta_dim_(meta_dim), prob_location_(
 					prob_location), sampling_(sampling), current_example_(0), m_logger(
 					logger) {

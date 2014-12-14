@@ -29,6 +29,35 @@ gng.plot.rgl3d <- 2
 gng.plot.2d.errors <- 3
 
 
+.gng.type.optimized = 0
+.gng.type.utility = 1
+.gng.type.default = 2
+.gng.train.online = 1
+.gng.train.offline = 0
+
+gng.type.default <- c(.gng.type.default)
+
+gng.type.optimized <- function(minimum=0, maximum=10){
+  c(.gng.type.optimized, minimum, maximum)
+}
+
+gng.type.utility<- function(k=1.3){
+  c(.gng.type.utility, k)
+}
+
+gng.train.online <- function(dim){
+  c(.gng.train.online,  dim)
+}
+
+
+
+gng.train.offline <- function(max_iter = 100, min_relative_dif = 1e-2){
+  if(max_iter<7){
+    gmum.error(ERROR, "Please pass at least 7 iterations")
+  }
+  c(.gng.train.offline, max_iter, min_relative_dif)
+}
+
 
 
 
@@ -73,32 +102,57 @@ gng.plot.2d.errors <- 3
 #' 
 plot.gng <- NULL
 
-#' Dump model to binary
+#' Save model to binary format
 #'
-#' @title dump_model
+#' @title save.gng
 #' 
-#' @description Writes graph to a disk space efficient binary format. It can be used in GNG constructor
-#' to reconstruct graph from file.
+#' @description Writes model to a disk space efficient binary format. 
 #' 
 #' @usage
-#' dump_model(gng)
+#' save.gng(gng)
 #' 
 #' @export
 #' 
 #' @param
 #' filename Dump destination
 #' 
-#' @rdname dump_model-methods
+#' @rdname save.gng-methods
 #' 
 #' @docType methods
 #'
 #' @examples
-#' dump_model(gng, 'graph.bin')
+#' save.gng(gng, 'graph.bin')
 #' 
-#' @aliases dump_model
+#' @aliases save.gng
 #'
-dump_model.gng <- NULL
+save.gng <- NULL
 
+
+
+#' Load model from binary format
+#'
+#' @title load.gng
+#' 
+#' @description Writes model to a disk space efficient binary format. 
+#' 
+#' @usage
+#' load.gng(gng)
+#' 
+#' @export
+#' 
+#' @param
+#' filename Dump location
+#' 
+#' @rdname load.gng-methods
+#' 
+#' @docType methods
+#'
+#' @examples
+#' load.gng('model.bin')
+#' 
+#' @aliases load.gng
+#'
+load.gng <- NULL
 
 #' Get centroids
 #'
@@ -378,99 +432,126 @@ loadModule('gng_module', TRUE)
 evalqOnLoad({
     
     
-    GNG <<- function(beta=0.99, 
-                        alpha=0.5, uniformgrid_optimization=FALSE, 
-                        lazyheap_optimization=FALSE, max_nodes=1000, eps_n=0.0006, 
-                        eps_w= 0.05, dim=-1, uniformgrid_boundingbox_sides=c(), uniformgrid_boundingbox_origin=c(),
-                        experimental_utility_option = gng.experimental.utility.option.off,
-                        experimental_utility_k = 1.5, max_edge_age = 200, experimental_vertex_extra_data=FALSE,
-                        lambda=200,
-                        load_model_filename = "", verbosity=0
-                        
-    ){
-      
-      gng.dist.cosine = 1
-      gng.dist.euclidean = 0
-      
-      
-      
-      if(!uniformgrid_optimization){
-        warning("Turned off optimization.")
-      }
-      
-      if(dim == -1){
-        stop("Please pass vertex dimensionality (dim argument)")
-      }
-      
-      if((length(uniformgrid_boundingbox_sides)==0 || length(uniformgrid_boundingbox_origin)==0) && uniformgrid_optimization==TRUE){
-        stop("Please define bounding box for your data if you are using uniform grid. uniformgrid.boundingbox.sides is a
-             dim sized vector defining lengths of the sides of the box, whereas uniformgrid.boundingbox.origin defines 
-             origin of the box. Note that uniform grid optimization will give significant speedup, but only for low-dim data.
-             ")  
-        
-      }
-      
-      
-      config <- new(GNGConfiguration)
+  
+  GNG <<- function(x=NULL, 
+                   beta=0.99, 
+                   alpha=0.5, 
+                   max_nodes=1000, 
+                   eps_n=0.0006, 
+                   eps_w= 0.05, 
+                   max_edge_age = 200, 
+                   type = gng.type.default,
+                   training = gng.train.offline(),
+                   lambda=200,
+                   verbosity=0
+                   
+  ){
+    
+    config <- new(GNGConfiguration)
+    
+    # Fill in configuration
+    if(training[1] == .gng.train.offline){
+      config$dim = ncol(x)
+    }else{
+	  
+       config$dim = training[2]
+		print(config$dim)    
+	}
 
-      # Fill in configuration
-      config$dataset_type=gng.dataset.sequential
-      config$beta = beta
-      config$max_edge_age = max_edge_age
-      config$alpha = alpha
-      config$uniformgrid_optimization = uniformgrid_optimization
-      config$lazyheap_optimization = lazyheap_optimization
-      config$max_nodes = max_nodes
-      config$eps_n = eps_n
-      config$eps_w = eps_w
-      config$dim = dim
-      config$lambda = lambda
-      config$verbosity = verbosity
+    
+    if(type[1] == .gng.type.optimized){
+      config$uniformgrid_optimization = TRUE
+      config$lazyheap_optimization = TRUE  
+      config$setBoundingBox(type[2], type[3])
       
-      if(experimental_vertex_extra_data == TRUE){
-        config$vertex_extra_data_dim = 1
+      if(training[1] == .gng.train.offline){
+        if(!max(df) <= type[3] && !min(df) >= type[2]){
+          gmum.error("Passed incorrect parameters. The dataset is not in the defined range")
+        }
       }
       
-      config$experimental_utility_k = experimental_utility_k
-      config$experimental_utility_option =experimental_utility_option
-      
-      config$load_graph_filename =load_model_filename
-      
-      if( (config$uniformgrid_optimization || config$lazyheap_optimization) &&
-            experimental_utility_option != gng.experimental.utility.option.off
-      ){
-        
-        stop("You have turned on experimental utility option. Unfortunately optimizations are not supported yet for this option.")
-      }  
-      
-      if(config$uniformgrid_optimization){
-        config$set_uniform_grid_axis(uniformgrid_boundingbox_sides)
-        config$set_uniform_grid_origin(uniformgrid_boundingbox_origin)
-      }
-      
-      if(config$uniformgrid_optimization &&
-           (length(uniformgrid_boundingbox_sides)!=length(uniformgrid_boundingbox_origin)
-            || length(uniformgrid_boundingbox_origin) != dim)){
-        
-        stop("Make sure that dimensions of bounding box and vertex position match")
-      }
-      
-      if(!config$check_correctness()){
-        stop("Passed incorrect parameters.")
-      }
-      
-      # Construct server
-      server = new(GNGServer, config)
-      server
+    }else{
+      config$uniformgrid_optimization = FALSE
+      config$lazyheap_optimization = FALSE
     }
+    
+    if(type[1] == .gng.type.utility){
+      config$experimental_utility_k = type[2]
+      config$experimental_utility_option = 1
+    }
+    else{
+      config$experimental_utility_option = 0
+    }
+    
+    config$dataset_type=gng.dataset.sequential
+    config$beta = beta
+    config$max_edge_age = max_edge_age
+    config$alpha = alpha  
+    config$max_nodes = max_nodes
+    config$eps_n = eps_n
+    config$eps_w = eps_w
+    
+    config$lambda = lambda
+    config$verbosity = verbosity
+    
+    if(!config$check_correctness()){
+      gmum.error(ERROR_BAD_PARAMS, "Passed incorrect parameters.")
+    }
+    
+    # Construct server
+    server = new(GNGServer, config)
+    
+    # Perform training on passed dataset
+    if(training[1] == .gng.train.offline){
+      print("Training offline")
+      if(is.null(x)){
+        gmum.error(ERROR, "Passed null data and requested training offline")
+      }else{
+        insert_examples(server, x)
+        run(server)
+        
+        max_iter = training[2]
+        print(max_iter)
+        min_relative_dif = training[3]
+        iter = 0
+        errors_calculated = 0
+        while(iter < max_iter || errors_calculated == 0){
+          Sys.sleep(0.1)
+          iter = server$get_current_iteration()
+          
+          if(iter %% (max_iter/100) == 0){    
+            print(paste("Iteration", iter))
+          }
+          
+          # Iter 5 = 5 times passed whole dataset. 
+          if(iter > 5){
+            errors_calculated = 1
+            errors = server$get_error_statistics()
+            best_previously = min(errors[(length(errors)-5):length(errors)-1])
+            current = errors[length(errors)]
+            if(best_previously != 0){
+              change = 1.0 - current/best_previously
+              if(change < min_relative_dif){
+                break
+              }
+            }
+          }
+        }
+        
+        terminate(server)
+        
+      }
+    }
+    
+    
+    
+    server
+  }
     
 
      setGeneric("node", 
                 function(x, gng_id, ...) standardGeneric("node"))
-     
-     setGeneric("dump_model", 
-                function(object, filename, ...) standardGeneric("dump_model"))  
-     
+ 
      setGeneric("convert_igraph", 
                 function(object, ...) standardGeneric("convert_igraph"))
      
@@ -492,6 +573,7 @@ evalqOnLoad({
      
      setGeneric("centroids", 
                 function(object, ...) standardGeneric("centroids"))  
+
      
      setGeneric("error_statistics", 
                 function(object, ...) standardGeneric("error_statistics"))
@@ -539,7 +621,7 @@ evalqOnLoad({
     print(object$get_error_statistics())
   }
   
-  
+
   setMethod("plot",  "Rcpp_GNGServer", plot.gng)
   setMethod("print",  "Rcpp_GNGServer", print.gng)
   setMethod("summary", "Rcpp_GNGServer", summary.gng)
@@ -568,12 +650,14 @@ evalqOnLoad({
     object$get_error_statistics()
   }  
   
-  dump_model.gng <<- function(object, filename){
-    object$dump_graph(filename)
+  save.gng <<- function(object, filename){
+    object$save(filename)
   }
   
-  setMethod("dump_model", signature("Rcpp_GNGServer","character"), dump_model.gng)
-  
+  load.gng <<- function(filename){
+    new(GNGServer, filename)
+  }
+ 
   
   centroids.gng <<- function(object){
     ig <- convert_igraph(object)
