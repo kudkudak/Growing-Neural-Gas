@@ -214,7 +214,7 @@ public:
 		arma::Row<double> min_colwise = arma::min(*points, 0 /*dim*/);
 		arma::Row<double> diff = max_colwise - min_colwise;
 		float max = arma::max(diff), min = arma::min(diff);
-		if(abs(max - min) > 1.0){
+		if(abs(max - min) > 2.0){
 			cerr<<"Warning: it is advised to scale data to a constant range for optimal algorithm behavior \n";
 		}
 

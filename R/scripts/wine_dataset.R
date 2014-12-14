@@ -3,10 +3,13 @@ devtools::install(".")
 devtools::load_all(".")
 
 
-.gng.type.optimized = "gng.type.optimized"
-.gng.type.utility = "gng.type.utility"
+.gng.type.optimized = 0
+.gng.type.utility = 1
+.gng.type.default = 2
+.gng.train.online = 1
+.gng.train.offline = 0
 
-gng.type.default <- c("gng.type.default")
+gng.type.default <- c(.gng.type.default)
 
 gng.type.optimized <- function(minimum=0, maximum=10){
   c(.gng.type.optimized, minimum, maximum)
@@ -16,9 +19,9 @@ gng.type.utility<- function(k=1.3){
   c(.gng.type.utility, k)
 }
 
-gng.train.online <- c("gng.train.online")
+gng.train.online <- c(.gng.train.online)
 
-.gng.train.offline = "gng.train.offline"
+
 
 gng.train.offline <- function(max_iter = 100, min_relative_dif = 1e-2){
   if(max_iter<7){
@@ -27,8 +30,8 @@ gng.train.offline <- function(max_iter = 100, min_relative_dif = 1e-2){
   c(.gng.train.offline, max_iter, min_relative_dif)
 }
 
-x<- c(1,2,3)
-x[1]
+x<- list(1,"2",3)
+x[1]/2
 
 GNG2 <- function(x=NULL, 
                  beta=0.99, 
@@ -112,25 +115,19 @@ GNG2 <- function(x=NULL,
         while(iter < max_iter || errors_calculated == 0){
           Sys.sleep(0.1)
           iter = server$get_current_iteration()
-          
+
           if(iter %% (max_iter/100) == 0){    
             print(paste("Iteration", iter))
           }
-          
-       
-          # TODO: Iter 5 = 5 times passed whole dataset. 
-          # Length 10 = collected 10 samples of error of whole network
-          # (5 first samples will be probably not accurate, as might incororate,
-          # many new nodes with zero error)
-          # It is pretty bug prone, might need to change later
-          if(length(server$get_error_statistics()) > 10 && iter > 5){
+
+          # Iter 5 = 5 times passed whole dataset. 
+          if(iter > 5){
               errors_calculated = 1
               errors = server$get_error_statistics()
               best_previously = min(errors[(length(errors)-5):length(errors)-1])
               current = errors[length(errors)]
               if(best_previously != 0){
                 change = 1.0 - current/best_previously
-                print(change)
                 if(change < min_relative_dif){
                   break
                 }

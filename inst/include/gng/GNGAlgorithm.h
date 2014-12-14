@@ -150,14 +150,14 @@ public:
 	}
 
 	double getMeanError() {
-		REPORT_PRODUCTION("get_mean_error");
+
 		gmum::scoped_lock<gmum::fast_mutex> alg_lock(m_statistics_mutex);
 		DBG(m_logger, 3, gmum::to_string(m_mean_error.size()));
 		if(m_mean_error.size() == 0){
-			REPORT_PRODUCTION("get_mean_errosr");
+
 			return std::numeric_limits<double>::max();
 		}else{
-			REPORT_PRODUCTION("get_mean_errsor");
+
 			return m_mean_error[m_mean_error.size()-1];
 		}
 	}
