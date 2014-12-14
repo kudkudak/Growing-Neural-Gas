@@ -99,6 +99,12 @@ public:
 	}
 
 	void save(std::string filename){
+		if(current_configuration.experimental_utility_option == GNGConfiguration::UtilityBasicOn){
+			cerr<<"Saving is not supported for gng.type.utility\n";
+			return;
+		}
+
+
 		std::ofstream output;
 		output.open(filename.c_str(), ios::out | ios::binary);
 
@@ -267,7 +273,7 @@ public:
 
 	///Calculate error per node
 	double calculateAvgErrorNode() {
-		return this->getAlgorithm().CalculateAccumulatedError()
+		return this->getAlgorithm().calculateAccumulatedError()
 				/ (this->getGraph().get_number_nodes() + 0.0f);
 	}
 

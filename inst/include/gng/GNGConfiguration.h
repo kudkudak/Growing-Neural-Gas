@@ -33,7 +33,7 @@ using namespace Rcpp;
 
 
 		enum DatasetType{
-			NoneDatasetType,
+			NoneDatasetTypeinit,
 			DatasetSeq,
 			DatasetSampling,
 			DatasetSamplingProb

@@ -93,7 +93,6 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
 
     pair<double , double> t = pair<double, double>(s->getGraph().get_number_nodes(),
     		s->getMeanError());
-
     if(save_filename!=""){
         cerr<<"GNGNumericTest::Saving to GraphML\n";
         writeToGraphML(s->getGraph(), save_filename);
@@ -259,4 +258,3 @@ TEST(GNGNumericTest, BasicConvergeLazyHeapUG){
     ASSERT_GE(results.first, 10.0);
     ASSERT_LE(fabs(results.second), 1e-2);
 }
-
