@@ -474,7 +474,7 @@ public:
 
 		DBG(m_logger,5, "Read in "+to_str(bufor_size) +" sized graph with "+
 				" max_index="+to_str(maximum_index)+" gng_dim="+to_str(gng_dim)+" "+
-				"firstFree="+to_str(firstFree)+" nodes="+to_str(nodes)
+				"first_free="+to_str(first_free)+" nodes="+to_str(nodes)
 		);
 
 		positions.clear();
@@ -557,31 +557,11 @@ private:
 		next_free[g.size() - 1] = -1;
 		first_free = previous_size;
 
-		DBG_2(m_logger,5, "GNGGraph::resizing done"); DBG(m_logger,5, to_str(firstFree)); DBG(m_logger,5, to_str(next_free[previous_size]));
+		DBG_2(m_logger,5, "GNGGraph::resizing done"); DBG(m_logger,5, to_str(first_free)); DBG(m_logger,5, to_str(next_free[previous_size]));
 		//DBG(m_logger,5, "GNGGraph::resizing graph from "+to_string(g.size())+" done");
 	}
 };
 
-//	using namespace boost;
-//	using namespace std;
-//
-//	struct boost_vertex_desc
-//	{
-//		int index;
-//		double error;
-//
-//		double extra_data;
-//
-//		/* GraphML doesn't allow for array types*/
-//		double v0, v1, v2;
-//
-//		double utility;
-////		std::string position_dump;
-//	};
-//
-//	struct boost_edge_desc{
-//		double dist;
-//	};
 
 std::string writeToGraphML(GNGGraph &g, string filename = "");
 

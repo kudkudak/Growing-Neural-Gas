@@ -129,23 +129,23 @@ GNGAlgorithm::GNGAlgorithm(GNGGraph * g, GNGDataset* db,
 
 void GNGAlgorithm::randomInit() {
 
-	DBG(m_logger, 3, "RandomInit::Drawing examples");
+	DBG(m_logger, 3, "randomInit::Drawing examples");
 
 	int ex1 = g_db->drawExample();
 	int ex2 = g_db->drawExample();
 
-	DBG(m_logger, 3, "RandomInit::Drawn 2");
+	DBG(m_logger, 3, "randomInit::Drawn 2");
 	int index = 0;
 	while (ex2 == ex1 && index < 100) {
 		++index;
 		ex2 = g_db->drawExample();
 	}
-	DBG(m_logger, 3, "RandomInit::database_size = "+to_string(g_db->getSize()));DBG(m_logger, 3, "RandomInit::drawn "+to_string(ex1)+" "+to_string(ex2));
+	DBG(m_logger, 3, "randomInit::database_size = "+to_string(g_db->size()));DBG(m_logger, 3, "randomInit::drawn "+to_string(ex1)+" "+to_string(ex2));
 
 	const double * ex1_ptr = g_db->getPosition(ex1);
-	const double * ex1_extra_ptr = g_db->getVertexData(ex1);
+	const double * ex1_extra_ptr = g_db->getExtraData(ex1);
 	const double * ex2_ptr = g_db->getPosition(ex2);
-	const double * ex2_extra_ptr = g_db->getVertexData(ex2);
+	const double * ex2_extra_ptr = g_db->getExtraData(ex2);
 
 	m_g.newNode(ex1_ptr);
 	m_g.newNode(ex2_ptr);
@@ -155,7 +155,7 @@ void GNGAlgorithm::randomInit() {
 	if (ex2_extra_ptr)
 		m_g[1].extra_data = ex2_extra_ptr[0];
 
-	DBG(m_logger, 3, "RandomInit::created nodes graph size="+to_string(m_g.get_number_nodes()));
+	DBG(m_logger, 3, "randomInit::created nodes graph size="+to_string(m_g.get_number_nodes()));
 
 #ifdef GMUM_DEBUG_2
 	assert(m_g.get_number_nodes()==2);
@@ -628,7 +628,7 @@ GNGNode ** GNGAlgorithm::TwoNearestNodes(const double * position) { //to the exa
 
 void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that computes)
 	this->running = true;
-	int size = g_db->getSize();
+	int size = g_db->size();
 
 	DBG_2(m_logger, 3, "GNGAlgorithm::runAlgorithm()");
 
@@ -638,7 +638,7 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 
 	DBG_2(m_logger, 3, "GNGAlgorithm::check size of the db " + to_string(size));
 
-	while (g_db->getSize() < 2) {
+	while (g_db->size() < 2) {
 		while (this->m_gng_status != GNG_RUNNING) {
 			DBG(m_logger, 1, "GNGAlgorithm::status in database loop = "+to_string(this->m_gng_status));
 			if (this->m_gng_status == GNG_TERMINATED)
@@ -683,7 +683,7 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 				gmum::scoped_lock<GNGDataset> db_lock(*g_db);
 				unsigned int ex = g_db->drawExample();
 				position = g_db->getPosition(ex);
-				vertex_data = g_db->getVertexData(ex);
+				vertex_data = g_db->getExtraData(ex);
 				DBG(m_logger, 0, "GNGAlgorithm::draw example");
 			}
 
@@ -705,13 +705,13 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 
 
 		if(accumulated_error_count > 10000 ||
-				accumulated_error_count > g_db->getSize()
+				accumulated_error_count > g_db->size()
 		){
 			gmum::scoped_lock<gmum::fast_mutex> stat_lock(m_statistics_mutex);
 			m_mean_error.push_back(accumulated_error/(float)accumulated_error_count);
 			accumulated_error_count_last = accumulated_error_count;
 
-			if(accumulated_error_count > g_db->getSize()){
+			if(accumulated_error_count > g_db->size()){
 				accumulated_error = 0.0;
 				accumulated_error_count = 0;
 			}

@@ -24,7 +24,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
     config.uniformgrid_optimization = true;
 
     if(cnf) config=*cnf;
-    config.datasetType = GNGConfiguration::DatasetSamplingProb;
+    config.datasetType = GNGConfiguration::DatasetSeq;
 
 
     GNGServer * s;
@@ -40,31 +40,27 @@ pair<double, double> test_convergence(GNGConfiguration * cnf=0, int num_database
 
     s->run();
 
-    cerr<<"Allocating "<<(config.dim+1)*num_database<<endl<<flush;
-    double * vect = new double[(config.dim+1)*num_database];
+    cerr<<"Allocating "<<(config.dim)*num_database<<endl<<flush;
+    double * vect = new double[(config.dim)*num_database];
     for (int i = 0; i < num_database; ++i) {
         for(int j=0;j<= config.dim;++j)
              if(j==0)
-                 vect[j+(i)*(config.dim+1)] = 0.0;
+                 vect[j+(i)*(config.dim)] = 0.0;
              else if(j<config.dim)
-                 vect[j+(i)*(config.dim+1)] = __double_rnd(0, 1);
-             else
-            	 vect[j+(i)*(config.dim+1)] = 0.5; // Sampling probability
+                 vect[j+(i)*(config.dim)] = __double_rnd(0, 1);
     }
-
 
     cerr<<"Allocated examples\n";
 
     if(extra_examples){
-        cerr<<"Adding extra examples\n";
-        s->insertExamples(&extra_examples[0],
-        		extra_samples_size/(config.dim+1), extra_samples_size);
-        cerr<<"Database size="<<s->getDatabase().getSize()<<endl;
+    	  cerr<<"Adding extra examples\n";
+    	  s->insertExamples(extra_examples, 0, 0,
+        		extra_samples_size/(config.dim), config.dim);
     }
 
     cerr<<"Adding main examples\n";
-    s->insertExamples(&vect[0], num_database, num_database*(config.dim+1));
-    cerr<<"Database size="<<s->getDatabase().getSize()<<endl;
+    s->insertExamples(vect, 0, 0, num_database, config.dim);
+
     cerr<<"Dimensionality of example is "<<s->getDatabase().getDataDim()<<endl;
 
     for(int i=0;i<10;++i){
@@ -116,7 +112,6 @@ TEST(GNGNumericTest, BasicConvergenceUtility){
 TEST(GNGNumericTest, Serialization){
     GNGConfiguration config = GNGConfiguration::getDefaultConfiguration();
     config.uniformgrid_optimization = true;
-    config.datasetType = GNGConfiguration::DatasetSamplingProb;
     int num_database = 4000;
     int ms_loop = 10000;
 
@@ -124,22 +119,19 @@ TEST(GNGNumericTest, Serialization){
 
     s->run();
 
-    cerr<<"Allocating "<<(config.dim+1)*num_database<<endl<<flush;
-    double * vect = new double[(config.dim+1)*num_database];
+    cerr<<"Allocating "<<(config.dim)*num_database<<endl<<flush;
+    double * vect = new double[(config.dim)*num_database];
     for (int i = 0; i < num_database; ++i) {
         for(int j=0;j<= config.dim;++j)
              if(j==0)
-                 vect[j+(i)*(config.dim+1)] = 0.0;
+                 vect[j+(i)*(config.dim)] = 0.0;
              else if(j<config.dim)
-                 vect[j+(i)*(config.dim+1)] = __double_rnd(0, 1);
-             else
-            	 vect[j+(i)*(config.dim+1)] = 0.5;
+                 vect[j+(i)*(config.dim)] = __double_rnd(0, 1);
+
     }
 
-
     cerr<<"Adding main examples\n";
-    s->insertExamples(&vect[0], num_database, num_database*(config.dim+1));
-    cerr<<"Database size="<<s->getDatabase().getSize()<<endl;
+    s->insertExamples(&vect[0], 0, 0, num_database, config.dim);
     cerr<<"Dimensionality of example is "<<s->getDatabase().getDataDim()<<endl;
     for(int i=0;i<10;++i){
     	cerr<<"Exemplary sample (testing memory correctness):\n";

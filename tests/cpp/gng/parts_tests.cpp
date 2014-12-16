@@ -181,122 +181,122 @@ TEST(GraphTests, BasicGraphTest) {
 }
 using namespace std;
 
-/*
- * Basic test
- */
-TEST(DatabaseTests, BasicGraphTest){
-	boost::shared_ptr<Logger> logger = boost::shared_ptr<Logger>(new Logger(10));
-	int m_verbosity = 3;
-
-    unsigned int dim = 6;
-    gmum::recursive_mutex phase_2_lock;
-    unsigned int num_examples = 100, meta_data_dim = 10;
-    //Probabilistic dataaset
-    GNGDatasetSimple<GNGDatasetStorageRAM> dataset(
-    		&phase_2_lock,dim, meta_data_dim, 0, -1,
-			true, //Sampling
-			logger); //Logger
-
-
-
-    double * x = new double[num_examples*(meta_data_dim+dim)];
-
-    dataset.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim));
-
-
-    GNGDatasetSimple<GNGDatasetStorageRAM> dataset2(
-    		&phase_2_lock, dim, meta_data_dim, 1, 0,
-			true, //Sampling
-			logger); //Logger
-
-
-
-    x = new double[num_examples*(meta_data_dim+dim+1)];
-    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
-    	x[i] = 0.2;
-    }
-
-    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
-
-    x = new double[num_examples*(meta_data_dim+dim+1)];
-    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
-    	x[i] = 0.6;
-    }
-    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
-
-    num_examples*=2;
-    x = new double[num_examples*(meta_data_dim+dim+1)];
-    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
-    	x[i] = 0.8;
-    }
-    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
-
-
-    for(int i=0;i<100000;++i){
-		unsigned int a = dataset2.drawExample();
-		unsigned int b = dataset2.drawExample();
-		unsigned int c = dataset2.drawExample();
-
-
-		ASSERT_LE(dataset2.getPosition(a)[0], 0.9);
-		ASSERT_LE(dataset2.getPosition(b)[0], 0.9);
-		ASSERT_LE(dataset2.getPosition(c)[0], 0.9);
-    }
-}
-
-
-
-TEST(DatabaseTestsSeq, BasicGraphTest){
-	boost::shared_ptr<Logger> logger = boost::shared_ptr<Logger>(new Logger(10));
-
-	int m_verbosity = 3;
-	gmum::recursive_mutex phase_2_lock;
-    unsigned int dim = 6;
-    unsigned int num_examples = 100, meta_data_dim = 10;
-    //Probabilistic dataaset
-    GNGDatasetSimple<GNGDatasetStorageRAM> dataset(
-    		&phase_2_lock, dim, meta_data_dim, 0, -1, false, logger);
-
-    double * x = new double[num_examples*(meta_data_dim+dim)];
-
-    dataset.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim));
-
-
-    GNGDatasetSimple<GNGDatasetStorageRAM> dataset2(
-    		&phase_2_lock, dim, meta_data_dim, 1, 0,
-			true, //Sampling
-			logger); //Logger
-
-
-    x = new double[num_examples*(meta_data_dim+dim+1)];
-    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
-    	x[i] = 0.2;
-    }
-
-    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
-
-    x = new double[num_examples*(meta_data_dim+dim+1)];
-    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
-    	x[i] = 0.6;
-    }
-    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
-
-    num_examples*=2;
-    x = new double[num_examples*(meta_data_dim+dim+1)];
-    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
-    	x[i] = 0.8;
-    }
-    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
-
-
-    for(int i=0;i<100000;++i){
-		unsigned int a = dataset2.drawExample();
-		unsigned int b = dataset2.drawExample();
-		unsigned int c = dataset2.drawExample();
-
-
-		ASSERT_LE(dataset2.getPosition(a)[0], 0.9);
-		ASSERT_LE(dataset2.getPosition(b)[0], 0.9);
-		ASSERT_LE(dataset2.getPosition(c)[0], 0.9);
-    }
-}
+///*
+// * Basic test
+// */
+//TEST(DatabaseTests, BasicGraphTest){
+//	boost::shared_ptr<Logger> logger = boost::shared_ptr<Logger>(new Logger(10));
+//	int m_verbosity = 3;
+//
+//    unsigned int dim = 6;
+//    gmum::recursive_mutex phase_2_lock;
+//    unsigned int num_examples = 100, meta_data_dim = 10;
+//    //Probabilistic dataaset
+//    GNGDatasetSimple<double> dataset(
+//    		&phase_2_lock,dim, meta_data_dim, 0, -1,
+//			true, //Sampling
+//			logger); //Logger
+//
+//
+//
+//    double * x = new double[num_examples*(meta_data_dim+dim)];
+//
+//    dataset.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim));
+//
+//
+//    GNGDatasetSimple<GNGDatasetStorageRAM> dataset2(
+//    		&phase_2_lock, dim, meta_data_dim, 1, 0,
+//			true, //Sampling
+//			logger); //Logger
+//
+//
+//
+//    x = new double[num_examples*(meta_data_dim+dim+1)];
+//    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
+//    	x[i] = 0.2;
+//    }
+//
+//    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
+//
+//    x = new double[num_examples*(meta_data_dim+dim+1)];
+//    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
+//    	x[i] = 0.6;
+//    }
+//    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
+//
+//    num_examples*=2;
+//    x = new double[num_examples*(meta_data_dim+dim+1)];
+//    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
+//    	x[i] = 0.8;
+//    }
+//    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
+//
+//
+//    for(int i=0;i<100000;++i){
+//		unsigned int a = dataset2.drawExample();
+//		unsigned int b = dataset2.drawExample();
+//		unsigned int c = dataset2.drawExample();
+//
+//
+//		ASSERT_LE(dataset2.getPosition(a)[0], 0.9);
+//		ASSERT_LE(dataset2.getPosition(b)[0], 0.9);
+//		ASSERT_LE(dataset2.getPosition(c)[0], 0.9);
+//    }
+//}
+//
+//
+//
+//TEST(DatabaseTestsSeq, BasicGraphTest){
+//	boost::shared_ptr<Logger> logger = boost::shared_ptr<Logger>(new Logger(10));
+//
+//	int m_verbosity = 3;
+//	gmum::recursive_mutex phase_2_lock;
+//    unsigned int dim = 6;
+//    unsigned int num_examples = 100, meta_data_dim = 10;
+//    //Probabilistic dataaset
+//    GNGDatasetSimple<GNGDatasetStorageRAM> dataset(
+//    		&phase_2_lock, dim, meta_data_dim, 0, -1, false, logger);
+//
+//    double * x = new double[num_examples*(meta_data_dim+dim)];
+//
+//    dataset.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim));
+//
+//
+//    GNGDatasetSimple<GNGDatasetStorageRAM> dataset2(
+//    		&phase_2_lock, dim, meta_data_dim, 1, 0,
+//			true, //Sampling
+//			logger); //Logger
+//
+//
+//    x = new double[num_examples*(meta_data_dim+dim+1)];
+//    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
+//    	x[i] = 0.2;
+//    }
+//
+//    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
+//
+//    x = new double[num_examples*(meta_data_dim+dim+1)];
+//    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
+//    	x[i] = 0.6;
+//    }
+//    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
+//
+//    num_examples*=2;
+//    x = new double[num_examples*(meta_data_dim+dim+1)];
+//    for(int i=0;i<num_examples*(meta_data_dim+dim+1);++i){
+//    	x[i] = 0.8;
+//    }
+//    dataset2.insertExamples(x, num_examples, num_examples*(meta_data_dim+dim+1));
+//
+//
+//    for(int i=0;i<100000;++i){
+//		unsigned int a = dataset2.drawExample();
+//		unsigned int b = dataset2.drawExample();
+//		unsigned int c = dataset2.drawExample();
+//
+//
+//		ASSERT_LE(dataset2.getPosition(a)[0], 0.9);
+//		ASSERT_LE(dataset2.getPosition(b)[0], 0.9);
+//		ASSERT_LE(dataset2.getPosition(c)[0], 0.9);
+//    }
+//}

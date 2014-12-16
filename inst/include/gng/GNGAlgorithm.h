@@ -20,6 +20,7 @@
 #include "UniformGrid.h"
 #include "GNGLazyErrorHeap.h"
 #include <string>
+#include <limits>
 using namespace std;
 
 namespace gmum {
@@ -223,7 +224,7 @@ private:
 		if (node->error_cycle == c)
 			return;
 
-		if(c - node->error_cycle >= m_betha_powers_to_n_length){
+		while(c - node->error_cycle > m_betha_powers_to_n_length - 1){
 			DBG_2(m_logger, 5, "Recreating m_betha_powers_to_n");
 			delete[] m_betha_powers_to_n;
 			m_betha_powers_to_n_length *= 2;

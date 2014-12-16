@@ -20,13 +20,17 @@ namespace gmum{
 
 	template<class Mutex>
 	class scoped_lock{
-		Mutex & m_mutex;
+		Mutex * m_mutex;
 	public:
-		scoped_lock(Mutex & mutex): m_mutex(mutex){
-			m_mutex.lock();
+		scoped_lock(Mutex & mutex): m_mutex(&mutex){
+			m_mutex->lock();
+		}
+
+		scoped_lock(Mutex * mutex): m_mutex(mutex){
+			m_mutex->lock();
 		}
 		~scoped_lock(){
-			m_mutex.unlock();
+			m_mutex->unlock();
 		}
 	};
 

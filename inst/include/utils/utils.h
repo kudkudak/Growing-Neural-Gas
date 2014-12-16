@@ -49,11 +49,11 @@ typedef long long LL;
 #ifdef DEBUG_GMUM
 #define DBG(logger, level, text) logger->log(level, text);
 #define REPORT_PRODUCTION(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
-#define REPORT(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
+#define REPORT(x) cout<<#x<<"="<<(x)<<endl<<std::flush;
 #else
 #define DBG(verbosity, level, text)
 #define REPORT(x)
-#define REPORT_PRODUCTION(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
+#define REPORT_PRODUCTION(x) cout<<#x<<"="<<(x)<<endl<<std::flush;
 #endif
 
 void __init_rnd();

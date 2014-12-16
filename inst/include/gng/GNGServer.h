@@ -147,9 +147,25 @@ public:
 	}
 
 	///Insert examples
-	void insertExamples(double * examples, unsigned int count,
-			unsigned int size) {
-		this->_handle_addExamples(examples, count, size);
+	void insertExamples(double * positions, double * extra, double * probability,
+			unsigned int count, unsigned int dim) {
+		gmum::scoped_lock<GNGDataset> lock(gngDataset.get());
+
+
+		if (dim != current_configuration.dim) {
+			DBG(m_logger,10, "Wrong dimensionality is "+gmum::to_string(count*dim)+" expected "+
+					gmum::to_string(count*gngDataset->getDataDim()) + \
+					" data dim " + gmum::to_string(gngDataset->size()));
+			throw BasicException("Wrong dimensionality. "
+					"Check if you have added all field to "
+					"position (for instance probability)");
+		}
+
+
+
+		gngDataset->insertExamples(positions, extra, probability, count);
+		DBG(m_logger,7, "GNGServer::Database size "+gmum::to_string(gngDataset->size()));
+
 	}
 
 	unsigned int getNumberNodes() const {
@@ -203,17 +219,17 @@ public:
 		return ret;
 	}
 
-	int Rpredict(Rcpp::NumericVector & ex) {
-		std::vector<double> x(ex.begin(), ex.end());
-		return gngAlgorithm->predict(x);
+	int Rpredict(Rcpp::NumericVector & r_ex) {
+		return gngAlgorithm->predict(std::vector<double>(r_ex.begin(), r_ex.end()) );
 	}
 
 	Rcpp::NumericVector RgetErrorStatistics() {
 		vector<double> x = getMeanErrorStatistics();
 		return NumericVector(x.begin(), x.end());
 	}
-	void RinsertExamples(Rcpp::NumericMatrix & ex) {
-		arma::mat * points = new arma::mat(ex.begin(), ex.nrow(), ex.ncol(), false);
+	void RinsertExamples(Rcpp::NumericMatrix & r_points, Rcpp::NumericVector & r_extra) {
+		std::vector<double> extra(r_extra.begin(), r_extra.end());
+		arma::mat * points = new arma::mat(r_points.begin(), r_points.nrow(), r_points.ncol(), false);
 
 		//Check if normalised
 		arma::Row<double> max_colwise = arma::max(*points, 0 /*dim*/);
@@ -237,45 +253,21 @@ public:
 
 
 		arma::inplace_trans( *points, "lowmem");
-		this->_handle_addExamples(points->memptr(),(unsigned int)points->n_cols,
-				(unsigned int)points->n_rows*points->n_cols);
+
+		if(extra.size()){
+			insertExamples(points->memptr(), &extra[0], 0 /*probabilty vector*/,
+					(unsigned int)points->n_cols, (unsigned int)points->n_rows);
+		}else{
+			insertExamples(points->memptr(), 0 /* extra vector */, 0 /*probabilty vector*/,
+					(unsigned int)points->n_cols, (unsigned int)points->n_rows);
+		}
+
 		arma::inplace_trans( *points, "lowmem");
 	}
-	//Not used in API but left for reference
-	void RsetExamples(Rcpp::NumericMatrix & ex) {
-		throw 1;
 
-		//Release previous if was present
-		if(m_current_dataset_memory_was_set) {
-			throw "You cannot set example memory pool more than once!";
-		}
-		m_current_dataset_memory = wrap(ex);
-		//We have to fix the object
-		R_PreserveObject(wrap(ex));
 
-		arma::mat * points = new arma::mat(ex.begin(), ex.nrow(), ex.ncol(), false);
-		arma::inplace_trans( *points, "lowmem");
-		this->_handle_addExamples(points->memptr(),(unsigned int)points->n_cols,
-				(unsigned int)points->n_rows*points->n_cols, true);
-		//Doesn't set the back
-	}
-
-	void dumpMemory() {
-		gngDataset->lock();
-		for(int i=0; i<gngDataset->getSize()*gngDataset->getDataDim();++i) {
-			cout<<gngDataset->getMemoryPtr()[i]<<" ";
-		}
-		cout<<endl;
-		gngDataset->unlock();
-	}
 
 #endif
-
-	///Calculate error per node
-	double calculateAvgErrorNode() {
-		return this->getAlgorithm().calculateAccumulatedError()
-				/ (this->getGraph().get_number_nodes() + 0.0f);
-	}
 
 	///Pause algorithm
 	void pause() {
@@ -329,39 +321,6 @@ private:
 			cerr << "GNGServer::failed _run with " << e.what() << endl;
 			DBG(gng_server->m_logger,10, e.what());
 		}
-	}
-
-
-	/**Section : protocol handling messages regardless of the source*/
-
-	vector<double> _handle_getNode(int index) {
-		return vector<double>();
-	}
-
-	void _handle_addExamples(double * examples, unsigned int count,
-			unsigned int size, bool set = false) {
-		gngDataset->lock();
-
-		DBG(m_logger,5, "GNGServer::Adding examples with "+gmum::to_string(gngDataset->getDataDim())+" dimensionality");
-
-		if (count * gngDataset->getDataDim() != size) {
-			DBG(m_logger,10, "Wrong dimensionality is "+gmum::to_string(size)+" expected "+
-					gmum::to_string(count*gngDataset->getDataDim()) + " data dim " + gmum::to_string(gngDataset->getDataDim()));
-			throw BasicException("Wrong dimensionality. "
-					"Check if you have added all field to "
-					"position (for instance probability)");
-		}
-
-		//Handle coding
-		DBG(m_logger,1, "GNGServer::_handle_AddExamples adding examples");
-		if (!set)
-			gngDataset->insertExamples(examples, count, size);
-		else
-			gngDataset->setExamples(examples, count, size);
-
-		DBG(m_logger,7, "GNGServer::Database size "+gmum::to_string(gngDataset->getSize()));
-
-		gngDataset->unlock();
 	}
 
 };
