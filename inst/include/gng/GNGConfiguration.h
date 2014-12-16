@@ -13,6 +13,7 @@
 using namespace Rcpp;
 #endif
 
+#include "utils/utils.h"
 #include <vector>
 
 
@@ -32,7 +33,7 @@ using namespace Rcpp;
 
 
 		enum DatasetType{
-			NoneDatasetType,
+			NoneDatasetTypeinit,
 			DatasetSeq,
 			DatasetSampling,
 			DatasetSamplingProb

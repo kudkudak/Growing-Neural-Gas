@@ -19,7 +19,7 @@ ROOT_SRC_PATH := ../../src
 ROOT_TEST_PATH := .
 
 # Branches that will be compiled
-GMUMR_BRANCHES := gng tinythread
+GMUMR_BRANCHES := gng utils
 TEST_BRANCHES := gng
 
 # Additional cleaning paths

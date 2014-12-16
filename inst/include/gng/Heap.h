@@ -8,8 +8,8 @@
 #ifndef HEAP_H
 #define	HEAP_H
 
+#include "utils/utils.h"
 #include <list>
-#include "Utils.h"
 
 namespace gmum {
 

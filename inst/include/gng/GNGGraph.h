@@ -17,10 +17,11 @@
 #include <cassert>
 #include <boost/shared_ptr.hpp>
 
-#include "Utils.h"
+#include "utils/threading.h"
+#include "utils/utils.h"
+
 #include "GNGNode.h"
 #include "GNGGlobals.h"
-#include "Threading.h"
 
 using namespace std;
 
@@ -114,9 +115,7 @@ public:
  * TODO: change GNGEdge* to GNGEdge (problems with rev)
  * TODO: edges ~ gng_dim - maybe use this for better efficiency?
  */
-
-template<class Node, class Edge, class Mutex = gmum::gmum_recursive_mutex> class RAMGNGGraph: public GNGGraph {
-
+template<class Node, class Edge, class Mutex = gmum::recursive_mutex> class RAMGNGGraph: public GNGGraph {
 	/** Mutex provided externally for synchronization*/
 	Mutex * mutex;
 
@@ -473,7 +472,7 @@ public:
 
 		DBG(m_logger,5, "Read in "+to_str(bufor_size) +" sized graph with "+
 				" max_index="+to_str(maximum_index)+" gng_dim="+to_str(gng_dim)+" "+
-				"firstFree="+to_str(firstFree)+" nodes="+to_str(nodes)
+				"first_free="+to_str(first_free)+" nodes="+to_str(nodes)
 		);
 
 		positions.clear();
@@ -556,31 +555,11 @@ private:
 		next_free[g.size() - 1] = -1;
 		first_free = previous_size;
 
-		DBG_2(m_logger,5, "GNGGraph::resizing done"); DBG(m_logger,5, to_str(firstFree)); DBG(m_logger,5, to_str(next_free[previous_size]));
+		DBG_2(m_logger,5, "GNGGraph::resizing done"); DBG(m_logger,5, to_str(first_free)); DBG(m_logger,5, to_str(next_free[previous_size]));
 		//DBG(m_logger,5, "GNGGraph::resizing graph from "+to_string(g.size())+" done");
 	}
 };
 
-//	using namespace boost;
-//	using namespace std;
-//
-//	struct boost_vertex_desc
-//	{
-//		int index;
-//		double error;
-//
-//		double extra_data;
-//
-//		/* GraphML doesn't allow for array types*/
-//		double v0, v1, v2;
-//
-//		double utility;
-////		std::string position_dump;
-//	};
-//
-//	struct boost_edge_desc{
-//		double dist;
-//	};
 
 std::string writeToGraphML(GNGGraph &g, string filename = "");
 

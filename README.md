@@ -21,7 +21,7 @@ sampling). In the near future it will be possible to stream dataset from csv fil
 improvements suggested by D. Fiser, J. Faigl, M. Kulich </small>
 <center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/plot_speed.png" width="50%"></img></center>
 
-Daniel Fiser, Jan Faigl, Miroslav Kulich optimization paper [FGNG: A fast multi-dimensional growing neural gas implementation](http://www.sciencedirect.com/science/article/pii/S0925231213009259)
+Daniel Fiser, Jan Faigl, Miroslav Kulich optimization paper [Growing neural gas efficiently](http://www.sciencedirect.com/science/article/pii/S0925231212008351)
 
 ##Examples
 -----
@@ -57,7 +57,9 @@ For more detailed usage see code in demo folder, or in tests/testthat folder.
 You can also refer to R package documentation (pdf version 
 [gng.pdf](https://github.com/kudkudak/Growing-Neural-Gas/blob/master/doc/gng.pdf)).
 
-### Adding sphere data and clustering
+### Cluster wine dataset
+
+In this example we will construct a clustering using offline GNG.
 
 ```Matlab
 library("GrowingNeuralGas")
@@ -66,11 +68,11 @@ max_nodes <- 600
 
 # Create main GNG object (without optimization) with dataset sampling according
 #to probability passed as last coordinate
-gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3)
+gng <- GNG(max_nodes=max_nodes, dim=3)
 
 # Add examples (note: you can avoid here copy using gng$insert_examples or set_memory_move_examples)
 # Note: we are adding preset dataset with all sampling probabilities set to 80%
-insert_examples(gng, preset=gng.preset.sphere, N=10000, prob=0.8)
+
 
 # Run algorithm in parallel
 run(gng)

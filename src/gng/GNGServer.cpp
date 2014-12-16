@@ -6,13 +6,6 @@ GNGServer::GNGServer(GNGConfiguration configuration, std::istream * input_graph)
 
 void GNGServer::init(GNGConfiguration configuration, std::istream * input_graph){
 
-
-	error_statistics_end = 0;
-	error_statistics_start = 0;
-	error_statistics_delay_ms =1000;
-	error_statistics_size = 10000;
-	error_statistics = vector<double>(error_statistics_size, 0.0);
-	collect_statistics_thread = 0;
 	algorithm_thread = 0;
 	m_current_dataset_memory_was_set = false;
 	m_running_thread_created = false;
@@ -37,29 +30,26 @@ void GNGServer::init(GNGConfiguration configuration, std::istream * input_graph)
 			== GNGConfiguration::DatasetSampling) {
 		DBG(m_logger,11, "GNGServer::Constructing Normal Sampling Prob Dataset");
 		this->gngDataset = std::auto_ptr<GNGDataset>(
-				new GNGDatasetSimple<GNGDatasetStorageRAM>(&database_mutex,
+				new GNGDatasetSimple<double>(&database_mutex,
 						current_configuration.dim,
-						0 /* extra dim */, 0, //Dimensionality of info dim
-						true, //Sampling
+						true /* store_extra */, GNGDatasetSimple<double>::Sampling,
 						m_logger));
 	} else if (current_configuration.datasetType
 			== GNGConfiguration::DatasetSamplingProb) {
 		//Add probability to layout
 		DBG(m_logger,11, "GNGServer::Constructing Sampling Prob Dataset");
 		this->gngDataset = std::auto_ptr<GNGDataset>(
-				new GNGDatasetSimple<GNGDatasetStorageRAM>(&database_mutex,
+				new GNGDatasetSimple<double>(&database_mutex,
 						current_configuration.dim,
-						0 /* extra dim */, 1/*probability dim*/, 0,
-						true, //Sampling
+						true /* store_extra */, GNGDatasetSimple<double>::SamplingProbability,
 						m_logger));
 	} else if (current_configuration.datasetType
 			== GNGConfiguration::DatasetSeq) {
 		DBG(m_logger,11, "GNGServer::Constructing Normal Seq Dataset");
 		this->gngDataset = std::auto_ptr<GNGDataset>(
-				new GNGDatasetSimple<GNGDatasetStorageRAM>(&database_mutex,
+				new GNGDatasetSimple<double>(&database_mutex,
 						current_configuration.dim,
-						0 /* extra dim */, 0 /*probability dim*/, -1,
-						false, //Sampling
+						true /* store_extra */, GNGDatasetSimple<double>::Sequential,
 						m_logger));
 	} else {
 		cerr << "Passed dataset type " << current_configuration.datasetType

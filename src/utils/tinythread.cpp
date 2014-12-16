@@ -22,7 +22,7 @@ freely, subject to the following restrictions:
 */
 
 #include <exception>
-#include "../../inst/include/tinythread/tinythread.h" //TODO: path problem
+#include "tinythread.h"
 
 #if defined(_TTHREAD_POSIX_)
   #include <unistd.h>

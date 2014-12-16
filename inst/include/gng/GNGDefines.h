@@ -9,6 +9,7 @@
 #define	GNGDEFINES_H
 
 #include "GNGGraph.h"
+
 #include <string>
 
 namespace gmum {
