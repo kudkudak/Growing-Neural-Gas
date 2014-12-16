@@ -3,7 +3,7 @@ library(igraph)
   tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
   if(file.exists(tmp_name))
       file.remove(tmp_name)
-  object$export_to_graphml(tmp_name)
+  object$exportToGraphML(tmp_name)
   constructed_graph <- .readFromGraphML(tmp_name)
   file.remove(tmp_name)
   constructed_graph

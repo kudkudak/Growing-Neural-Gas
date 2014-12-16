@@ -13,7 +13,7 @@ for(k in 1:2){
   
   # Construct examples, here we will use a sphere
   ex <- gng.preset.sphere(N=90000)
-  insert_examples(gng, ex)
+  insertExamples(gng, ex)
   
   # Run algorithm in parallel
   run(gng)
@@ -21,7 +21,7 @@ for(k in 1:2){
   # Wait for the graph to converge
   n <- 0
   print("Waiting to converge")
-  while(number_nodes(gng) != gng$get_configuration()$max_nodes && n < 100) {
+  while(numberNodes(gng) != gng$getConfiguration()$max_nodes && n < 100) {
     Sys.sleep(1.0)
     n <- n + 1
   }
@@ -35,7 +35,7 @@ for(k in 1:2){
   predict(gng, c(1,1,1))
   
   # # Get igraph
-  ig <- convert_igraph(gng)
+  ig <- convertToGraph(gng)
   
   # # Running testthat unit tests (almost)
   test_that("GNG has not isolated vertexes", {
@@ -44,7 +44,7 @@ for(k in 1:2){
   print("Test::No isolated vertexes")
   
   test_that("GNG has converged", {
-    error_before = mean_error(gng)
+    error_before = meanError(gng)
     expect_that(error_before  < 50.0/max_nodes, is_true() )
   })
   print("Test::Convergence test")

@@ -202,7 +202,7 @@ public:
 		List ret;
 		ret["pos"] = pos;
 		ret["error"] = n.error;
-		ret["extra_data"] = n.extra_data;
+		ret["label"] = n.extra_data;
 
 		vector<unsigned int> neigh(n.size());
 		GNGNode::EdgeIterator edg = n.begin();
@@ -227,21 +227,23 @@ public:
 		vector<double> x = getMeanErrorStatistics();
 		return NumericVector(x.begin(), x.end());
 	}
-	void RinsertExamples(Rcpp::NumericMatrix & r_points, Rcpp::NumericVector & r_extra) {
+	void RinsertExamples(Rcpp::NumericMatrix & r_points,
+			Rcpp::NumericVector  r_extra =  Rcpp::NumericVector()) {
 		std::vector<double> extra(r_extra.begin(), r_extra.end());
 		arma::mat * points = new arma::mat(r_points.begin(), r_points.nrow(), r_points.ncol(), false);
 
 		//Check if normalised
-		arma::Row<double> max_colwise = arma::max(*points, 0 /*dim*/);
-		arma::Row<double> min_colwise = arma::min(*points, 0 /*dim*/);
-		arma::Row<double> diff = max_colwise - min_colwise;
-		float max = arma::max(diff), min = arma::min(diff);
-		if(abs(max - min) > 2.0){
-			cerr<<"Warning: it is advised to scale data to a constant range for optimal algorithm behavior \n";
-		}
+//		if(abs(max - min) > 2.0){
+//			cerr<<"Warning: it is advised to scale data to a constant range for optimal algorithm behavior \n";
+//		}
 
 		//Check if data fits in bounding box
 		if(current_configuration.uniformgrid_optimization){
+			arma::Row<double> max_colwise = arma::max(*points, 0 /*dim*/);
+			arma::Row<double> min_colwise = arma::min(*points, 0 /*dim*/);
+			arma::Row<double> diff = max_colwise - min_colwise;
+			float max = arma::max(diff), min = arma::min(diff);
+
 			for(int i=0;i<current_configuration.dim; ++i){
 				if(current_configuration.orig[i] > min_colwise[i] || current_configuration.orig[i]+current_configuration.axis[i] < max_colwise[i]){
 					cerr<<"Error: please scale your data to match range passed to gng.optimized\n";

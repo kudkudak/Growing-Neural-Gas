@@ -80,41 +80,41 @@ library(igraph)
     		warning("Please install rgl package to plot 3d graph")
     	}
   }
-.gng.plot2d.errors<-function(gngServer, vertex.color, layout, start_s=2){
+.gng.plot2d.errors<-function(gngServer, vertex.color, layout){
   tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
-  gngServer$export_to_graphml(tmp_name)
+  gngServer$exportToGraphML(tmp_name)
   ig = .readFromGraphML(tmp_name )
   
   if(length(V(ig))==0) return
   
-  if(vertex.color == 'extra'){
+  if(vertex.color == 'label'){
     vertex.color = c(1:length(V(ig)))
     max_col = 0
-    for(extra_data in V(ig)$extra_data)
-        max_col = max(max_col, round(extra_data))
+    for(label in V(ig)$label)
+        max_col = max(max_col, round(label))
     cols = rainbow(max_col+1)
-    vertex.color = cols[as.double(lapply(V(ig)$extra_data, round))]
+    vertex.color = cols[as.double(lapply(V(ig)$label, round))]
   }
   
-  .visualizeIGraph2dWithErrors(ig, vertex.color, layout, start_s, gngServer)
+  .visualizeIGraph2dWithErrors(ig, vertex.color, layout, gngServer)
   
   file.remove(tmp_name)
 }
 
 .gng.plot2d<-function(gngServer, vertex.color, layout){
   tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
-  gngServer$export_to_graphml(tmp_name)
+  gngServer$exportToGraphML(tmp_name)
   ig = .readFromGraphML(tmp_name )
   
   if(length(V(ig))==0) return
 
-  if(vertex.color == 'extra'){
+  if(vertex.color == 'label'){
     vertex.color = c(1:length(V(ig)))
     max_col = 0
-    for(extra_data in V(ig)$extra_data)
-      max_col = max(max_col, round(extra_data))
+    for(label in V(ig)$label)
+      max_col = max(max_col, round(label))
     cols = rainbow(max_col+1)
-    vertex.color = cols[as.double(lapply(V(ig)$extra_data, round))]
+    vertex.color = cols[as.double(lapply(V(ig)$label, round))]
   }
   
   .visualizeIGraph2d(ig, vertex.color, layout)
@@ -148,13 +148,13 @@ library(igraph)
   plot.igraph(g,vertex.size=3.0,vertex.label=NA,vertex.color=vertex.color,layout=L)
 }
 
-.visualizeIGraph2dWithErrors<-function(ig, vertex.color, layout_2d, start_s=2, gng){
+.visualizeIGraph2dWithErrors<-function(ig, vertex.color, layout_2d, gng){
   plot.new()
   par(mfrow=c(1,2))
   .visualizeIGraph2d(ig, vertex.color, layout_2d)
   title("Graph visualization")
-  errors_raw = gng$get_error_statistics()
-  errors = log((errors_raw+1)/min(errors_raw+1))[start_s:length(errors_raw)]
+  errors_raw = gng$getErrorStatistics()
+  errors = log((errors_raw+1)/min(errors_raw+1))
   plot(errors, type="l", lty=2, lwd=2, xlab="Time  [s]", ylab="Mean error (log)", frame.plot=F)
   title("Mean error (log)")
 }

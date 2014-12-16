@@ -15,7 +15,7 @@ void writeToGraphML(GNGGraph &g, std::ostream & out) {
 	out << "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">\n";
 	out << "<key id=\"key0\" for=\"edge\" attr.name=\"dist\" attr.type=\"double\" />\n";
 	out << "<key id=\"key1\" for=\"node\" attr.name=\"error\" attr.type=\"double\" />\n";
-	out << "<key id=\"key2\" for=\"node\" attr.name=\"extra_data\" attr.type=\"double\" />\n";
+	out << "<key id=\"key2\" for=\"node\" attr.name=\"label\" attr.type=\"double\" />\n";
 	out << "<key id=\"key3\" for=\"node\" attr.name=\"gng_index\" attr.type=\"int\" />\n";
 	out << "<key id=\"key4\" for=\"node\" attr.name=\"utility\" attr.type=\"double\" />\n";
 	out << "<key id=\"key5\" for=\"node\" attr.name=\"v0\" attr.type=\"double\" />\n";

@@ -1,18 +1,18 @@
-
-devtools::install(".")
-devtools::load_all(".")
-
-
-library("Growing-Neural-Gas")
+library(GrowingNeuralGas)
+require(c("igraph", "rattle"))
 data(wine, package="rattle")
-head(wine)
-df <- scale(wine[-1])
-df <- apply(as.matrix(df), MARGIN = 2, FUN = function(X) (X - min(X))/diff(range(X)))
+scaled_wine <- scale(wine[-1])
 
-g <- GNG(as.matrix(df), max_nodes=20)
+# Train in an offline manner
+gng <- GNG(scaled_wine, labels=wine$Type, max_nodes=20)
 
-number_nodes(g)
-error_statistics(g)
+# Print number of nodes
+nodes <- numberNodes(gng)
 
+# Print mean degree of the network
+ig = convertToGraph(gng)
+mean(degree(ig))
 
-plot(g, mode = gng.plot.2d, vertex.color=gng.plot.color.cluster, layout=igraph::layout.fruchterman.reingold)
+# Plot using igraph layout
+plot(gng, mode = gng.plot.2d, 
+     vertex.color=gng.plot.color.label, layout=igraph::layout.fruchterman.reingold)
