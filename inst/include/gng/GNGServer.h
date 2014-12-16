@@ -76,17 +76,12 @@ public:
 
 
 	void run() {
-		if (!m_running_thread_created) {
-			DBG(m_logger,10, "GNGServer::runing algorithm thread");
-			algorithm_thread = new gmum::gmum_thread(&GNGServer::_run,
-					(void*) this);
-			DBG(m_logger,10, "GNGServer::runing collect_statistics thread");
+		DBG(m_logger,10, "GNGServer::runing algorithm thread");
+		algorithm_thread = new gmum::gmum_thread(&GNGServer::_run,
+				(void*) this);
+		DBG(m_logger,10, "GNGServer::runing collect_statistics thread");
 
-
-			m_running_thread_created = true;
-		} else {
-			gngAlgorithm->run();
-		}
+		m_running_thread_created = true;
 	}
 
 
@@ -273,7 +268,7 @@ public:
 
 	///Pause algorithm
 	void pause() {
-		getAlgorithm().pause();
+		gngAlgorithm->pause();
 	}
 
 	///Terminate algorithm

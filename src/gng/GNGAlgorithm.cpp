@@ -642,7 +642,7 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 		while (this->m_gng_status != GNG_RUNNING) {
 			DBG(m_logger, 1, "GNGAlgorithm::status in database loop = "+to_string(this->m_gng_status));
 			if (this->m_gng_status == GNG_TERMINATED)
-				break;
+				return;
 			this->status_change_condition.wait(this->status_change_mutex);
 		}
 	}
@@ -704,11 +704,15 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 
 
 
+
 		if(accumulated_error_count > 10000 ||
 				accumulated_error_count > g_db->size()
 		){
 			gmum::scoped_lock<gmum::fast_mutex> stat_lock(m_statistics_mutex);
+
+			//This is tricky. If we have batch smaller than size of the dataset we will
 			m_mean_error.push_back(accumulated_error/(float)accumulated_error_count);
+
 			accumulated_error_count_last = accumulated_error_count;
 
 			if(accumulated_error_count > g_db->size()){

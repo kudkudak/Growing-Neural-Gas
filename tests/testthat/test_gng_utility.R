@@ -1,6 +1,4 @@
-devtools::install(".")
-
-library("GrowingNeuralGas")
+library(GrowingNeuralGas)
 library(igraph)
 library(testthat)
 
