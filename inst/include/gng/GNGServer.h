@@ -230,10 +230,11 @@ public:
 
 
 		arma::Row<double> mean_colwise = arma::mean(*points, 0 /*dim*/);
-		arma::Row<double> std_colwise = arma::std(*points, 0 /*dim*/);
+		arma::Row<double> std_colwise = arma::stddev(*points, 0 /*dim*/);
 		arma::Row<double> diff_std = arma::abs(std_colwise - 1.0);
 		float max_diff_std = arma::max(diff_std), max_mean = arma::max(mean_colwise);
 		if(max_diff_std > 0.1 || max_mean > 0.1){
+			cerr<<max_diff_std<<" "<<max_mean<<endl;
 			cerr<<"Warning: it is advised to scale data for optimal algorithm behavior to mean=1 std=0 \n";
 		}
 

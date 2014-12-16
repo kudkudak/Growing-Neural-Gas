@@ -11,7 +11,7 @@ gng.experimental.utility.option.off <- 0
 gng.experimental.utility.option.basic <- 1
 
 gng.plot.color.label <- 'label'
-gng.plot.color.fast_cluster <- 'fast_cluster'
+gng.plot.color.fast.cluster <- 'fast.cluster'
 gng.plot.color.cluster <- 'cluster'
 gng.plot.color.none <- 'none'
 
@@ -51,11 +51,8 @@ gng.train.online <- function(dim){
 
 
 
-gng.train.offline <- function(max_iter = 100, min_relative_dif = 1e-2){
-  if(max_iter<7){
-    gmum.error(ERROR, "Please pass at least 7 iterations")
-  }
-  c(.gng.train.offline, max_iter, min_relative_dif)
+gng.train.offline <- function(max.iter = 100, min.improvement = 1e-2){
+  c(.gng.train.offline, max.iter , min.improvement)
 }
 
 
@@ -318,11 +315,11 @@ errorStatistics.gng <- NULL
 #' 
 #' @param max.nodes Maximum number of nodes (after reaching this size it will continue running, but won't add new nodes)
 #' 
-#' @param eps_n Default 0.0006. How strongly adapt neighbour node
+#' @param eps.n Default 0.0006. How strongly adapt neighbour node
 #' 
-#' @param eps_w Default 0.05. How strongly adapt winning node
+#' @param eps.w Default 0.05. How strongly adapt winning node
 #' 
-#' @param training Can be either gng.train.offline(max_iter, patience), or gng.train.online()
+#' @param training Can be either gng.train.offline(max.iter, min.improvement), or gng.train.online()
 #' 
 #' @param type We have 3 basic types: 
 #' 		gng.type.default()
@@ -334,12 +331,12 @@ errorStatistics.gng <- NULL
 #' library(GrowingNeuralGas)
 #' require(c("igraph", "rattle"))
 #' data(wine, package="rattle")
-#' scaled_wine <- scale(wine[-1])
+#' scaled.wine <- scale(wine[-1])
 #' # Train in an offline manner
-#' gng <- GNG(scaled_wine, labels=wine$Type, max_nodes=20)
+#' gng <- GNG(scaled.wine, labels=wine$Type, max.nodes=20)
 #'
 #' # Train in an online manner optimized version
-#' gng <- GNG(training = gng.train.online(), type=gng.type.optimized(min=-4, max=4), max_nodes=20)
+#' gng <- GNG(training = gng.train.online(), type=gng.type.optimized(min=-4, max=4), max.nodes=20)
 #' insertExamples(gng, scaled_wine)
 #' run(gng)
 #' insertExamples(gng, scaled_wine)
@@ -411,10 +408,10 @@ evalqOnLoad({
   GNG <<- function(x=NULL, labels=c(),
                    beta=0.99, 
                    alpha=0.5, 
-                   max_nodes=1000, 
-                   eps_n=0.0006, 
-                   eps_w= 0.05, 
-                   max_edge_age = 200, 
+                   max.nodes=1000, 
+                   eps.n=0.0006, 
+                   eps.w= 0.05, 
+                   max.edge.age = 200, 
                    type = gng.type.default,
                    training = gng.train.offline(),
                    lambda=200,
@@ -460,11 +457,11 @@ evalqOnLoad({
     
     config$dataset_type=gng.dataset.sequential
     config$beta = beta
-    config$max_edge_age = max_edge_age
+    config$max_edge_age = max.edge.age
     config$alpha = alpha  
-    config$max_nodes = max_nodes
-    config$eps_n = eps_n
-    config$eps_w = eps_w
+    config$max_nodes = max.nodes
+    config$eps_n = eps.n
+    config$eps_w = eps.w
     
     config$lambda = lambda
     config$verbosity = verbosity
