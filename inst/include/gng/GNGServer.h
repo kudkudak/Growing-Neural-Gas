@@ -227,10 +227,15 @@ public:
 		std::vector<double> extra(r_extra.begin(), r_extra.end());
 		arma::mat * points = new arma::mat(r_points.begin(), r_points.nrow(), r_points.ncol(), false);
 
-		//Check if normalised
-//		if(abs(max - min) > 2.0){
-//			cerr<<"Warning: it is advised to scale data to a constant range for optimal algorithm behavior \n";
-//		}
+
+
+		arma::Row<double> mean_colwise = arma::mean(*points, 0 /*dim*/);
+		arma::Row<double> std_colwise = arma::std(*points, 0 /*dim*/);
+		arma::Row<double> diff_std = arma::abs(std_colwise - 1.0);
+		float max_diff_std = arma::max(diff_std), max_mean = arma::max(mean_colwise);
+		if(max_diff_std > 0.1 || max_mean > 0.1){
+			cerr<<"Warning: it is advised to scale data for optimal algorithm behavior to mean=1 std=0 \n";
+		}
 
 		//Check if data fits in bounding box
 		if(current_configuration.uniformgrid_optimization){
@@ -241,7 +246,7 @@ public:
 
 			for(int i=0;i<current_configuration.dim; ++i){
 				if(current_configuration.orig[i] > min_colwise[i] || current_configuration.orig[i]+current_configuration.axis[i] < max_colwise[i]){
-					cerr<<"Error: please scale your data to match range passed to gng.optimized\n";
+					cerr<<"Error: each feature has to be in range <min, max> passed to gng.type.optimized \n";
 					cerr<<"Error: returning, did not insert examples\n";
 					return;
 				}

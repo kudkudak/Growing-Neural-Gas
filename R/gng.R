@@ -87,8 +87,7 @@ gng.train.offline <- function(max_iter = 100, min_relative_dif = 1e-2){
 #' gng.plot.color.label(rounds to integer label if present), gng.plot.color.none(every node is white),
 #' 
 #' @note If you want to "power-use" plotting and plot for instance a subgraph, you might be interested in
-#' exporting igraph with convertToGraph function and plotting it using/reusing function from this package:
-#' .visualizeIGraph2d
+#' exporting igraph with convertToGraph function 
 #' 
 #' @examples
 #' 
@@ -305,7 +304,7 @@ meanError.gng <- NULL
 #'
 errorStatistics.gng <- NULL
 
-#' @title Constructor of GrowingNeuralGas object
+#' @title Constructor of GrowingNeuralGas object. Can be used to train offline, or online.
 #' 
 #' @export 
 #' 
@@ -315,10 +314,6 @@ errorStatistics.gng <- NULL
 #' 
 #' @param alpha Alpha coefficient. Decrease the error variables of the nodes neighboring to the newly inserted node by this fraction. Default 0.5
 #' 
-#' @param uniformgrid.optimization TRUE/FALSE. You cannot use utility option with this, so please pass FALSE here then.
-#' 
-#' @param lazyheap.optimization TRUE/FALSE. You cannot use utility option with this, so please pass FALSE here then.
-#' 
 #' @param lambda Every lambda iteration is added new vertex. Default 200
 #' 
 #' @param max.nodes Maximum number of nodes (after reaching this size it will continue running, but won't add new nodes)
@@ -327,28 +322,29 @@ errorStatistics.gng <- NULL
 #' 
 #' @param eps_w Default 0.05. How strongly adapt winning node
 #' 
-#' @param dataset.type Dataset type. Possibilities gng.dataset.bagging, gng.dataset.bagging.prob, gng.dataset.sequential
+#' @param training Can be either gng.train.offline(max_iter, patience), or gng.train.online()
 #' 
-#' @param experimental_utility_option EXPERIMENTAL Utility option gng.experimental.utility.option.off / gng.experimental.utility.option.basic
-#'
-#' @param experimental_utility_k EXPERIMENTAL Utility option constant
-#' 
-#' @param load_model_filename Set to path to file from which load serialized model
-#'
-#' 
+#' @param type We have 3 basic types: 
+#' 		gng.type.default()
+#'		gng.type.utility(k=1.3) - k is constant described for instance in http://sund.de/netze/applets/gng/full/tex/DemoGNG/node20.html
+#'		gng.type.optimized(min=0, max=1) - each column should have values in the range [min,max]
 #'
 #' @examples
 #' 
-#' # Default GNG instance, without optimitzations and vertex dimensionality 3
-#' 
-#' gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3)
-#' 
-#' # Construct GNG loaded from file with uniform grid
-#' 
-#' gng <- GNG(dataset_type=gng.dataset.bagging.prob, max_nodes=max_nodes, dim=3,
-#' uniformgrid_optimization=TRUE,  lazyheap_optimization=FALSE,
-#' uniformgrid_boundingbox_sides=c(3,3,3), uniformgrid_boundingbox_origin=c(-0.5,-0.5,-0.5), 
-#' load_model_filename="sphere_simple.bin")
+#' library(GrowingNeuralGas)
+#' require(c("igraph", "rattle"))
+#' data(wine, package="rattle")
+#' scaled_wine <- scale(wine[-1])
+#' # Train in an offline manner
+#' gng <- GNG(scaled_wine, labels=wine$Type, max_nodes=20)
+#'
+#' # Train in an online manner optimized version
+#' gng <- GNG(training = gng.train.online(), type=gng.type.optimized(min=-4, max=4), max_nodes=20)
+#' insertExamples(gng, scaled_wine)
+#' run(gng)
+#' insertExamples(gng, scaled_wine)
+#' Sys.sleep(10)
+#' pause(gng)
 GNG <- NULL
 
 print.gng <- NULL
