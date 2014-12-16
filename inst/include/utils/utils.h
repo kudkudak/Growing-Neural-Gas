@@ -38,23 +38,21 @@ typedef long long LL;
 
 #ifdef DEBUG_GMUM_2
 #define DBG_2(logger, level, text) logger->log(level, text);
-#define REPORT_PRODUCTION_2(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
 #define REPORT_2(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
 #else
 #define DBG_2(verbosity, level, text)
 #define REPORT_2(x)
-#define REPORT_PRODUCTION_2(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
 #endif
 
 #ifdef DEBUG_GMUM
 #define DBG(logger, level, text) logger->log(level, text);
-#define REPORT_PRODUCTION(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
 #define REPORT(x) cout<<#x<<"="<<(x)<<endl<<std::flush;
 #else
 #define DBG(verbosity, level, text)
 #define REPORT(x)
-#define REPORT_PRODUCTION(x) cout<<#x<<"="<<(x)<<endl<<std::flush;
 #endif
+
+#define REPORT_PRODUCTION(x) cout<<#x<<"="<<(x)<<endl<<std::flush;
 
 void __init_rnd();
 int __rnd(int min, int max);
