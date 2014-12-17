@@ -49,8 +49,6 @@ I recommend using RStudio, especially for plotting.
 See **Known issues** if your installation fails. There are few problems with
 R/igraph that are platform dependent.
 
-
-
 ##Usage
 
 For more detailed usage see code in demo folder, or in tests/testthat folder.
@@ -59,41 +57,28 @@ You can also refer to R package documentation (pdf version
 
 ### Cluster wine dataset
 
-In this example we will construct a clustering using offline GNG.
+In this example we will construct a clustering of UCI wine dataset using offline GNG.
 
 ```Matlab
 library("GrowingNeuralGas")
 
-max_nodes <- 600
+# Load data
+require(c("igraph", "rattle"))
+data(wine, package="rattle")
+scaled_wine <- scale(wine[-1])
 
-# Create main GNG object (without optimization) with dataset sampling according
-#to probability passed as last coordinate
-gng <- GNG(max_nodes=max_nodes, dim=3)
-
-# Add examples (note: you can avoid here copy using gng$insert_examples or set_memory_move_examples)
-# Note: we are adding preset dataset with all sampling probabilities set to 80%
-
-
-# Run algorithm in parallel
-run(gng)
-
-# Wait for the graph to converge
-print("Waiting to converge")
-while(number_nodes(gng) != max_nodes) 
-  Sys.sleep(1.0)
+# Train in an offline manner (we will add label to each node)
+gng <- GNG(scaled_wine, labels=wine$Type, max_nodes=20)
 
 # Find closest node to vector [1,1,1]
 predict(gng, c(1,1,1))
 
 # Find mean error
-mean_error(gng)
+meanError(gng)
 
-# Plot with first 2 coordinates
+# Plot with first 2 coordinates as position
 plot(gng, mode=gng.plot.2d.errors, vertex.color=gng.plot.color.cluster, 
      layout=gng.plot.layout.v2d)
-
-# Terminate GNG, to free memory you should call rm(gng)
-terminate(gng)
 ```
 
 

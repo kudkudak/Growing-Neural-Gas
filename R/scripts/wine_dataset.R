@@ -1,13 +1,21 @@
-library(GrowingNeuralGas)
+devtools::install(".")
+devtools::load_all(".")
+
+library("GrowingNeuralGas")
+
 require(c("igraph", "rattle"))
 data(wine, package="rattle")
-scaled_wine <- scale(wine[-1])
+scaled.wine <- scale(wine[-1])
+
+
+#TODO: not 200 but 126
 
 # Train in an offline manner
-gng <- GNG(scaled_wine, labels=wine$Type, max_nodes=20)
+gng <- GNG(scaled.wine, labels=wine$Type, max.nodes=200, 
+           training=gng.train.offline(max.iter=1000, min.improvement=0))
 
 # Print number of nodes
-nodes <- numberNodes(gng)
+numberNodes(gng)
 
 # Print mean degree of the network
 ig = convertToGraph(gng)
