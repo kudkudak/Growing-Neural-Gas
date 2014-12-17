@@ -9,8 +9,8 @@ Part of gmum.R project. See gmum research group page [here](http://gmum.ii.uj.ed
 
 This package contains **fast** C++ implementation 
 of **online** clustering algorithm Growing Neural Gas wrapped as R package using Rcpp.
-It produces topological graph, that you can easily convert to igraph, or you can
-dump your model to optimized binary file and load it later on.
+It produces topological graph, that you can easily **convert to igraph**, or save to 
+efficient binary file.
 
 This algorithms is widely used for dynamic clustering problem. Package is designed with
 focus on **big datasets**. It is already possible to cluster dataset without making its
@@ -67,6 +67,10 @@ gng <- GNG(scaled_wine, labels=wine$Type, max_nodes=20)
 
 # Find closest node to vector [1,1,1]
 predict(gng, c(1,1,1))
+
+# Convert to igraph and print mean degree of the network
+ig = convertToGraph(gng)
+mean(degree(ig))
 
 # Find mean error
 meanError(gng)
