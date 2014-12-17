@@ -36,7 +36,7 @@ Daniel Fiser, Jan Faigl, Miroslav Kulich optimization paper [Growing neural gas 
 
 You can install it as an R package, it is easiest to do it using devtools (make sure you download devtools and RCurl packages in the first place).
 
-```Matlab
+```R
 devtools::install_github("kudkudak/Growing-Neural-Gas")
 ```
 
@@ -55,7 +55,7 @@ You can also refer to R package documentation (pdf version
 
 In this example we will construct a clustering of UCI wine dataset using offline GNG.
 
-```Matlab
+```R
 library("GrowingNeuralGas")
 
 # Load data
