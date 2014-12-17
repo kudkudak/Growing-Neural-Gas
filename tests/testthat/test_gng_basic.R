@@ -1,7 +1,3 @@
-devtools::install(".")
-devtools::load_all(".")
-
-
 library(testthat)
 library("GrowingNeuralGas")
 library(igraph)

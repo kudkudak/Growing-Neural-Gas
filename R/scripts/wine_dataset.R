@@ -1,6 +1,3 @@
-devtools::install(".")
-devtools::load_all(".")
-
 library("GrowingNeuralGas")
 data(wine, package="rattle")
 scaled.wine <- scale(wine[-1])
@@ -10,6 +7,8 @@ scaled.wine <- scale(wine[-1])
 # Train in an offline manner
 gng <- GNG(scaled.wine, labels=wine$Type, max.nodes=200, 
            training=gng.train.offline(max.iter=1000, min.improvement=0))
+devtools::install(".")
+devtools::load_all(".")
 
 # Print number of nodes
 numberNodes(gng)

@@ -510,7 +510,7 @@ evalqOnLoad({
       config$experimental_utility_option = 0
     }
     
-    config$dataset_type=.gng.dataset.sequential
+    config$dataset_type=.gng.dataset.bagging
     config$beta = beta
     config$max_edge_age = max.edge.age
     config$alpha = alpha  
