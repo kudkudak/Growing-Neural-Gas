@@ -3,12 +3,6 @@
 library(igraph)
 library(methods)
 
-gng.dataset.bagging.prob <- 3
-gng.dataset.bagging <- 2
-gng.dataset.sequential <-1
-
-gng.experimental.utility.option.off <- 0
-gng.experimental.utility.option.basic <- 1
 
 gng.plot.color.label <- 'label'
 gng.plot.color.fast.cluster <- 'fast.cluster'
@@ -35,7 +29,9 @@ gng.plot.2d.errors <- 3
 .gng.train.online = 1
 .gng.train.offline = 0
 
-gng.type.default <- c(.gng.type.default)
+gng.type.default <- function(){
+	c(.gng.type.default)
+}
 
 gng.type.optimized <- function(minimum=0, maximum=10){
   c(.gng.type.optimized, minimum, maximum)
@@ -49,13 +45,16 @@ gng.train.online <- function(dim){
   c(.gng.train.online,  dim)
 }
 
-
+.gng.dataset.bagging.prob <- 3
+.gng.dataset.bagging <- 2
+.gng.dataset.sequential <-1
 
 gng.train.offline <- function(max.iter = 100, min.improvement = 1e-2){
   c(.gng.train.offline, max.iter , min.improvement)
 }
 
 
+.GNG <- NULL
 
 
 
@@ -195,7 +194,7 @@ centroids.gng <- NULL
 #' 
 #' @aliases node
 #' 
-node.gng <- NULL
+# node.gng <- NULL
 
 
 #' @title run
@@ -281,6 +280,62 @@ terminate.gng <- NULL
 #'
 meanError.gng <- NULL
 
+
+#' @title errorStatistics
+#' 
+#' @description Gets vector with errors for every second of execution
+#' 
+#' @usage
+#' errorStatistics(gng)
+#' 
+#' @export
+#' 
+#' @rdname errorStatistics-methods
+#' 
+#' @docType methods
+#'
+#' @examples
+#' errorStatistics(gng)
+#' 
+#' @aliases errorStatistics
+#'
+errorStatistics.gng <- NULL
+
+
+#' @title Constructor of Optimized GrowingNeuralGas object. 
+#' 
+#' @export 
+#' 
+#' @description Construct simplified and optimized GNG object. Can be used to train offline, or online. Data dimensionality shouldn't be too big, if
+#' it is consider using dimensionality reduction (for instance PCA). Cannot use utility.
+#'
+#' @param beta coefficient. Decrease the error variables of all node nodes by this fraction. Forgetting rate. Default 0.99
+#' 
+#' @param alpha Alpha coefficient. Decrease the error variables of the nodes neighboring to the newly inserted node by this fraction. Default 0.5
+#' 
+#' @param lambda Every lambda iteration is added new vertex. Default 200
+#' 
+#' @param max.nodes Maximum number of nodes (after reaching this size it will continue running, but won't add new nodes)
+#' 
+#' @param eps.n Default 0.0006. How strongly adapt neighbour node
+#' 
+#' @param eps.w Default 0.05. How strongly adapt winning node
+#' 
+#' @param training Can be either gng.train.offline(max.iter, min.improvement), or gng.train.online()
+#' 
+#' @param value.range Default [0,1]. All example features should be in this range
+#' @examples
+#' 
+#' # Train online optimizedGNG. All values in this dataset are in the range (-4.3, 4.3)
+#' data(wine, package="rattle")
+#' gng <- OptimizedGNG(training = gng.train.online(), value.range=c(min(scale(wine[-1])),max(scale(wine[-1]))), max.nodes=20)
+#' insertExamples(gng, scale(wine[-1]))
+#' run(gng)
+#' Sys.sleep(10)
+#' pause(gng)
+OptimizedGNG <- NULL
+
+
 #' @title errorStatistics
 #' 
 #' @description Gets vector with errors for every second of execution
@@ -321,27 +376,27 @@ errorStatistics.gng <- NULL
 #' 
 #' @param training Can be either gng.train.offline(max.iter, min.improvement), or gng.train.online()
 #' 
-#' @param type We have 3 basic types: 
-#' 		gng.type.default()
-#'		gng.type.utility(k=1.3) - k is constant described for instance in http://sund.de/netze/applets/gng/full/tex/DemoGNG/node20.html
-#'		gng.type.optimized(min=0, max=1) - each column should have values in the range [min,max]
+#' @param k Utility constant, by default turned off. Good value is 1.3. Constant controlling speed of erasing obsolete nodes, see http://sund.de/netze/applets/gng/full/tex/DemoGNG/node20.html
+#' 
 #'
 #' @examples
 #' 
-#' library(GrowingNeuralGas)
-#' require(c("igraph", "rattle"))
 #' data(wine, package="rattle")
 #' scaled.wine <- scale(wine[-1])
 #' # Train in an offline manner
 #' gng <- GNG(scaled.wine, labels=wine$Type, max.nodes=20)
+#' # Plot
+#' plot(gng, mode=gng.plot.2d.cluster)
 #'
-#' # Train in an online manner optimized version
-#' gng <- GNG(training = gng.train.online(), type=gng.type.optimized(min=-4, max=4), max.nodes=20)
-#' insertExamples(gng, scaled_wine)
+#' # Train in an online manner with utility (erasing obsolete nodes)
+#' gng <- GNG(scaled.wine, labels=wine$Type, max.nodes=20, training=gng.train.online(), k=1.3)
+#' insertExamples(gng, scale(wine[-1])
 #' run(gng)
-#' insertExamples(gng, scaled_wine)
 #' Sys.sleep(10)
-#' pause(gng)
+#' terminate(gng)
+#' # Plot
+#' plot(gng, mode=gng.plot.2d.cluster)
+#'
 GNG <- NULL
 
 print.gng <- NULL
@@ -405,14 +460,14 @@ evalqOnLoad({
     
     
   
-  GNG <<- function(x=NULL, labels=c(),
+  .GNG <<- function(x=NULL, labels=c(),
                    beta=0.99, 
                    alpha=0.5, 
                    max.nodes=1000, 
                    eps.n=0.0006, 
                    eps.w= 0.05, 
                    max.edge.age = 200, 
-                   type = gng.type.default,
+                   type = gng.type.default(),
                    training = gng.train.offline(),
                    lambda=200,
                    verbosity=0
@@ -434,7 +489,7 @@ evalqOnLoad({
     if(type[1] == .gng.type.optimized){
       config$uniformgrid_optimization = TRUE
       config$lazyheap_optimization = TRUE  
-      config$setBoundingBox(type[2], type[3])
+      config$set_bounding_box(type[2], type[3])
       
       if(training[1] == .gng.train.offline){
         if(!max(df) <= type[3] && !min(df) >= type[2]){
@@ -455,7 +510,7 @@ evalqOnLoad({
       config$experimental_utility_option = 0
     }
     
-    config$dataset_type=gng.dataset.sequential
+    config$dataset_type=.gng.dataset.sequential
     config$beta = beta
     config$max_edge_age = max.edge.age
     config$alpha = alpha  
@@ -504,7 +559,10 @@ evalqOnLoad({
             if(best_previously != 0){
               change = 1.0 - current/best_previously
               if(change < min_relative_dif){
-                break
+				print(best_previously)
+				print(errors[(length(errors)-5):length(errors)-1])
+                print("Patience bailed out")
+				break
               }
             }
           }
@@ -519,7 +577,49 @@ evalqOnLoad({
     
     server
   }
-    
+	
+
+   GNG <<- function(x=NULL, labels=c(),
+                   beta=0.99, 
+                   alpha=0.5, 
+                   max.nodes=1000, 
+                   eps.n=0.0006, 
+                   eps.w= 0.05, 
+                   max.edge.age = 200,
+                   training = gng.train.offline(),
+                   lambda=200,
+                   verbosity=0,
+					k=NULL
+                  ){
+		if(is.null(k)){
+					.GNG(x=x, labels=labels, beta=beta, alpha=alpha, max.nodes=max.nodes, 
+			eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.default(), training=training, lambda=lambda, verbosity=verbosity)
+		}else{
+				.GNG(x=x, labels=labels, beta=beta, alpha=alpha, max.nodes=max.nodes, 
+			eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.utility(k=k), training=training, lambda=lambda, verbosity=verbosity)		
+		}
+	}
+
+   OptimizedGNG <<- function(x=NULL, labels=c(),
+                   beta=0.99, 
+                   alpha=0.5, 
+                   max.nodes=1000, 
+                   eps.n=0.0006, 
+                   eps.w= 0.05, 
+                   max.edge.age = 200,
+                   training = gng.train.offline(),
+                   lambda=200,
+                   verbosity=0,
+					value.range=c(0,1)
+                  ){
+		if(value.range[1] >= value.range[2]){
+			gmum.error(ERROR, "Incorrect range")
+			return		
+		}
+		.GNG(x=x, labels=labels, beta=beta, alpha=alpha, max.nodes=max.nodes, 
+eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min=value.range[1]*1.1, max=value.range[2]*1.1), training=training, lambda=lambda, verbosity=verbosity)
+
+	}    
 
      setGeneric("node", 
                 function(x, gng_id, ...) standardGeneric("node"))
@@ -598,9 +698,9 @@ evalqOnLoad({
   setMethod("print",  "Rcpp_GNGServer", print.gng)
   setMethod("summary", "Rcpp_GNGServer", summary.gng)
   
-  node.gng <<- function(x, gng_id){
-    x$getNode(gng_id)
-  }
+#  node.gng <<- function(x, gng_id){
+#    x$getNode(gng_id)
+#  }
   
   run.gng <<- function(object){
     object$run()
@@ -643,7 +743,7 @@ evalqOnLoad({
   }
   setMethod("centroids", signature("Rcpp_GNGServer"), centroids.gng)
   
-  setMethod("node", signature("Rcpp_GNGServer","numeric"), node.gng)
+  #setMethod("node", signature("Rcpp_GNGServer","numeric"), node.gng)
   setMethod("run", "Rcpp_GNGServer", run.gng)
   setMethod("pause", "Rcpp_GNGServer", pause.gng)
   setMethod("terminate", "Rcpp_GNGServer", terminate.gng)

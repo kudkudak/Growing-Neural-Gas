@@ -266,8 +266,11 @@ using namespace Rcpp;
 			}
 			if(! (dim < 20 || ! uniformgrid_optimization)){
 
-				cerr<<"ERROR: Too big dimensionality for uniformgrid_optimization\n";
-				return false;
+				cerr<<"WARNING: It might be too big dimensionality for OptimizedGNG."
+						"OptimizedGNG works best for smaller dimensionality dataset"
+						"Consider using PCA or other dim. reduction technique"
+						"\n";
+
 			}
 			if(! (distance_function==gmum::GNGGraph::Euclidean || ! uniformgrid_optimization)){
 

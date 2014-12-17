@@ -2,11 +2,8 @@ devtools::install(".")
 devtools::load_all(".")
 
 library("GrowingNeuralGas")
-
-require(c("igraph", "rattle"))
 data(wine, package="rattle")
 scaled.wine <- scale(wine[-1])
-
 
 #TODO: not 200 but 126
 
