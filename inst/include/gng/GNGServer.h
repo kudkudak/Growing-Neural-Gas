@@ -183,7 +183,9 @@ public:
 	}
 	SEXP m_current_dataset_memory; //will be deleted in ~delete
 	///Moderately slow function returning node descriptors
-	Rcpp::List getNode(unsigned int gng_index) {
+	Rcpp::List getNode(unsigned int index) {
+		unsigned int gng_index = index - 1; //1 based
+
 		gngGraph->lock();
 
 		if(!gngGraph->existsNode(gng_index)) {
@@ -203,7 +205,7 @@ public:
 		GNGNode::EdgeIterator edg = n.begin();
 		unsigned i = 0;
 		while(edg!=n.end()) {
-			neigh[i++] = (*edg)->nr;
+			neigh[i++] = (*edg)->nr + 1;
 			++edg;
 		}
 

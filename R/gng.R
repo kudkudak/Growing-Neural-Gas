@@ -194,7 +194,7 @@ centroids.gng <- NULL
 #' 
 #' @aliases node
 #' 
-# node.gng <- NULL
+node.gng <- NULL
 
 
 #' @title run
@@ -698,9 +698,9 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
   setMethod("print",  "Rcpp_GNGServer", print.gng)
   setMethod("summary", "Rcpp_GNGServer", summary.gng)
   
-#  node.gng <<- function(x, gng_id){
-#    x$getNode(gng_id)
-#  }
+  node.gng <<- function(x, gng_id){
+    x$getNode(gng_id)
+  }
   
   run.gng <<- function(object){
     object$run()
@@ -743,7 +743,7 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
   }
   setMethod("centroids", signature("Rcpp_GNGServer"), centroids.gng)
   
-  #setMethod("node", signature("Rcpp_GNGServer","numeric"), node.gng)
+  setMethod("node", signature("Rcpp_GNGServer","numeric"), node.gng)
   setMethod("run", "Rcpp_GNGServer", run.gng)
   setMethod("pause", "Rcpp_GNGServer", pause.gng)
   setMethod("terminate", "Rcpp_GNGServer", terminate.gng)
