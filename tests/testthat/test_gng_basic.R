@@ -7,7 +7,7 @@ for(k in 1:2){
   max_nodes <- 600
   
   # Construct gng object
-  gng <- GNG(max_nodes=max_nodes, training=gng.train.online(dim=3), verbosity=10)
+  gng <- GNG(max.nodes=max_nodes, training=gng.train.online(dim=3), verbosity=10)
   
   # Construct examples, here we will use a sphere
   ex <- gng.preset.sphere(N=90000)
