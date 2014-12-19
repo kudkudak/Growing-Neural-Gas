@@ -710,7 +710,6 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 		){
 			gmum::scoped_lock<gmum::fast_mutex> stat_lock(m_statistics_mutex);
 
-			//This is tricky. If we have batch smaller than size of the dataset we will
 			m_mean_error.push_back(accumulated_error/(float)accumulated_error_count);
 
 			accumulated_error_count_last = accumulated_error_count;
