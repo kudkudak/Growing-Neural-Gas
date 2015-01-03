@@ -510,6 +510,7 @@ evalqOnLoad({
       config$experimental_utility_option = 0
     }
     
+    
     config$dataset_type=.gng.dataset.bagging
     config$beta = beta
     config$max_edge_age = max.edge.age
@@ -530,6 +531,7 @@ evalqOnLoad({
     
     # Perform training on passed dataset
     if(training[1] == .gng.train.offline){
+      
       print("Training offline")
       if(is.null(x)){
         gmum.error(ERROR, "Passed null data and requested training offline")
