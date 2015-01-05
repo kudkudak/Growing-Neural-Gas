@@ -1,5 +1,4 @@
 library(testthat)
-library("GrowingNeuralGas")
 library(igraph)
 
 for(k in 1:3){

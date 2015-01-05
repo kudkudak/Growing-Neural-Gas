@@ -1,4 +1,3 @@
-library(GrowingNeuralGas)
 library(igraph)
 library(testthat)
 
