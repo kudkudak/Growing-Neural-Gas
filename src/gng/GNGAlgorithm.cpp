@@ -705,7 +705,8 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 
 
 
-		if(accumulated_error_count > 10000 ||
+		//Calculate mini-batch error
+		if(accumulated_error_count > 40000 ||
 				accumulated_error_count > g_db->size()
 		){
 			gmum::scoped_lock<gmum::fast_mutex> stat_lock(m_statistics_mutex);
@@ -714,10 +715,10 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 
 			accumulated_error_count_last = accumulated_error_count;
 
-			if(accumulated_error_count > g_db->size()){
+//			if(accumulated_error_count > g_db->size()){
 				accumulated_error = 0.0;
 				accumulated_error_count = 0;
-			}
+//			}
 		}
 
 		DBG_2(m_logger, 4, "GNGAlgorithm::add new node");

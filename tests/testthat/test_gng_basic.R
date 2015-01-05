@@ -3,35 +3,46 @@ library("GrowingNeuralGas")
 library(igraph)
 
 
-for(k in 1:2){
+for(k in 1:3){
+  print(k)
   max_nodes <- 600
-  
-  if(k %% 2 == 0){
+  ex <- gng.preset.sphere(N=90000)
+  if(k == 1){
     # Construct gng object
     gng <- GNG(max.nodes=max_nodes, training=gng.train.online(dim=3), verbosity=10)
+    insertExamples(gng, ex)
+    # Run algorithm in parallel
+    run(gng)
+  }
+  else if(k == 2){
+    # Construct gng object
+    gng <- GNG(ex, max.nodes=max_nodes, training=gng.train.offline(max.iter=1000), verbosity=10)
   }
   else{
     # Construct gng object
     gng <- OptimizedGNG(max.nodes=max_nodes, training=gng.train.online(dim=3), verbosity=10, value.range=c(-2,2))    
+    insertExamples(gng, ex)
+    
+    # Run algorithm in parallel
+    run(gng)
   }
   # Construct examples, here we will use a sphere
-  ex <- gng.preset.sphere(N=90000)
-  insertExamples(gng, ex)
   
-  # Run algorithm in parallel
-  run(gng)
-  
-  # Wait for the graph to converge
-  n <- 0
-  print("Waiting to converge")
-  while(numberNodes(gng) != gng$getConfiguration()$max_nodes && n < 100) {
-    Sys.sleep(1.0)
-    n <- n + 1
+
+  if(k!=2){
+    # Wait for the graph to converge
+    n <- 0
+    print("Waiting to converge")
+    while(numberNodes(gng) != gng$getConfiguration()$max_nodes && n < 100) {
+      Sys.sleep(1.0)
+      n <- n + 1
+    }
+    test_that("GNG has reached expected number of vertexes", {
+      expect_that(n < 100, is_true() )
+    })
   }
   
-  test_that("GNG has reached expected number of vertexes", {
-    expect_that(n < 100, is_true() )
-  })
+
   print("Test::Completness test")
   
   # Find closest node

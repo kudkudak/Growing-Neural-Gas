@@ -24,7 +24,7 @@ meanError(gng)
 Sys.sleep(20.0)
 print("Adding jumped distribution")
 pause(gng)
-plot(gng, mode=gng.plot.2d.errors) #0.003 without utility
+plot(gng, mode=gng.plot.2d.errors) #0.068 without utility , 10 times less with
 
 ex2 <- gng.preset.box(N=90000, r=1.0, center=c(3.0,3.0,3.0), prob=-1)
 insertExamples(gng, ex2, labels)

@@ -510,6 +510,7 @@ evalqOnLoad({
       config$experimental_utility_option = 0
     }
     
+    
     config$dataset_type=.gng.dataset.bagging
     config$beta = beta
     config$max_edge_age = max.edge.age
@@ -530,6 +531,7 @@ evalqOnLoad({
     
     # Perform training on passed dataset
     if(training[1] == .gng.train.offline){
+      
       print("Training offline")
       if(is.null(x)){
         gmum.error(ERROR, "Passed null data and requested training offline")
@@ -542,6 +544,10 @@ evalqOnLoad({
         min_relative_dif = training[3]
         iter = 0
         errors_calculated = 0
+        best_so_far = 1e10
+        initial_patience = 3
+        patience = initial_patience
+        
         while(iter < max_iter || errors_calculated == 0){
           Sys.sleep(0.1)
           iter = server$getCurrentIteration()
@@ -551,20 +557,25 @@ evalqOnLoad({
           }
           
           # Iter 5 = 5 times passed whole dataset. 
-          if(iter > 5){
-            errors_calculated = 1
+          if(length(server$getErrorStatistics()) > 5){
             errors = server$getErrorStatistics()
-            best_previously = min(errors[(length(errors)-5):length(errors)-1])
-            current = errors[length(errors)]
-            if(best_previously != 0){
-              change = 1.0 - current/best_previously
-              if(change < min_relative_dif){
-				print(best_previously)
-				print(errors[(length(errors)-5):length(errors)-1])
-                print("Patience bailed out")
-				break
+
+            best_previously = min(errors[(length(errors)-5):length(errors)])
+            
+            #this is same as (best_so_far-best_previously)/best_so_far < min_relative_di
+            if((best_so_far - best_previously) < best_so_far*min_relative_dif){
+              patience = patience - 1
+              if(patience == 0){
+                print(sprintf("Best error in 5 previous iterations %f", best_previously))
+        				print(errors[(length(errors)-5):length(errors)])
+                print("Patience elapsed, bailing out")
+        				break
               }
+            }else{
+              patience = initial_patience
             }
+            
+            best_so_far = min(best_previously, best_so_far)
           }
         }
         
@@ -689,8 +700,14 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
   summary.gng <<- function(object){
     print(sprintf("Growing Neural Gas, nodes %d with mean error %f", 
                   object$getNumberNodes(), object$getMeanError()))
+    print(sprintf("Trained %d iterations", object$getCurrentIteration()))
     print("Mean errors[s]: ")
-    print(object$getErrorStatistics())
+    errors = object$getErrorStatistics()
+    if(length(errors) > 10){
+      errors = errors[(length(errors)-10):length(errors)]
+    }
+    
+    print(errors)
   }
   
 

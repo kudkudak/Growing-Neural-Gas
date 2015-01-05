@@ -154,7 +154,9 @@ library(igraph)
   .visualizeIGraph2d(ig, vertex.color, layout_2d)
   title("Graph visualization")
   errors_raw = gng$getErrorStatistics()
-  errors = log((errors_raw+1)/min(errors_raw+1))
-  plot(errors, type="l", lty=2, lwd=2, xlab="Time  [s]", ylab="Mean error (log)", frame.plot=F)
+  errors_raw = errors_raw[5:length(errors_raw)]
+  errors = errors_raw
+  #errors = log((errors_raw)/min(errors_raw+1e-4))
+  plot(errors, type="l", lty=2, lwd=2, xlab="Batch", ylab="Mean batch error", frame.plot=F)
   title("Mean error (log)")
 }
