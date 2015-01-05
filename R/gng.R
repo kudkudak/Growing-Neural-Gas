@@ -777,7 +777,38 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
   
   
   convertToGraph.gng <- function(object){
-    .gng.construct_igraph(object)
+    object$pause()
+    
+    if(object$getConfiguration()$max_nodes > 0){
+      adjlist<-list()
+      for(i in (1:object$getConfiguration()$max_nodes)){
+        node <- node(object, i - 1)
+        if(length(node) != 0){
+          node <- node(object, i - 1)
+          adjlist[[i]] <- node$neighbours + 1
+        } else
+          adjlist[[i]] <- list()
+      }
+    }
+    g <- graph.adjlist(adjlist, mode = "all")
+    for(i in (1:object$getConfiguration()$max_nodes)){
+      node <- node(object, i - 1)
+      if(length(node) != 0){
+        V(g)[i]$pos_x <- node$pos[1]
+        V(g)[i]$pos_y <- node$pos[2]
+        V(g)[i]$pos_z <- node$pos[3]
+        V(g)[i]$label <- node$label
+        V(g)[i]$error <- node$error
+      } else {
+        V(g)[i]$pos_x <- 0
+        V(g)[i]$pos_y <- 0
+        V(g)[i]$pos_z <- 0
+        V(g)[i]$label <- 0
+        V(g)[i]$error <- 0  
+      }
+    }
+    gng$run()
+    g
   }
   
   

@@ -99,9 +99,9 @@ TEST(GraphTests, BasicGraphTest) {
 	//Check regrowing
 	for (int i = 0; i < 20 * N_start; ++i) {
 		int idx = g.newNode(x);
-		int cn = intRnd(0, i);
+		int cn = __int_rnd(0, i);
 		while (!g.existsNode(cn)) {
-			cn = intRnd(0, i);
+			cn = __int_rnd(0, i);
 		}
 		g.addUDEdge(idx, cn);
 	}
@@ -209,4 +209,3 @@ TEST(DatabaseTests, BasicDatasetTest) {
 		ASSERT_LE(dataset2.getPosition(c)[0], 0.9);
 	}
 }
-

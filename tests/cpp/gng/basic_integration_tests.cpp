@@ -17,7 +17,6 @@ unsigned int sleep_ms = 500;
 /** Run GNGAlgorithm on a cube (3-dimensional) with given parameters
  * @returns pair<double, double> : nodes, mean_error
  */
-
 pair<double, double> test_convergence(GNGConfiguration * cnf = 0,
 		int num_database = 1000, int ms_loop = 5000, string save_filename = "",
 		double* extra_examples = 0, int extra_samples_size = 0,

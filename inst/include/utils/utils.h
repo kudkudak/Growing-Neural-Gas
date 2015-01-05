@@ -60,30 +60,33 @@ int __int_rnd(int min, int max);
 double __double_rnd(double min, double max);
 
 template<class T>
-void writeArray(T* begin, T*end) {
-	for (; begin != end; ++begin)
+void write_array(T* begin, T*end) {
+	for (; begin != end; ++begin) {
 		std::cerr << *begin << ",";
+	}
 	std::cerr << endl;
 }
 
 template<class T>
-void writeCnt(T begin, T end) {
-	for (; begin != end; ++begin)
+void write_cnt(T begin, T end) {
+	for (; begin != end; ++begin) {
 		std::cerr << *begin << ",";
+	}
 	std::cerr << endl;
 }
 
 template<class T>
-std::string writeCntStr(T begin, T end) {
+std::string write_cnt_str(T begin, T end) {
 	std::stringstream ss;
-	for (; begin != end; ++begin)
-		ss << *begin << ",";
 
+	for (; begin != end; ++begin) {
+		ss << *begin << ",";
+	}
 	return ss.str();
 }
 
 template<class T>
-std::string toStr(const T& x) {
+std::string to_str(const T& x) {
 	stringstream ss;
 	ss << x;
 	return ss.str();
@@ -104,7 +107,7 @@ struct BasicException: public std::exception {
 //conflicting with boost namespace
 namespace gmum {
 template<class T>
-std::string toString(const T& x) {
+std::string to_string(const T& x) {
 	stringstream ss;
 	ss << x;
 	return ss.str();
@@ -121,12 +124,12 @@ const int __one__ = 1;
 const bool isCpuLittleEndian = 1 == *(char*) (&__one__); // CPU endianness
 const bool isFileLittleEndian = false;  // output endianness - you choose :)
 
-void writeBin(ostream & out, double v);
+void _write_bin(ostream & out, double v);
 
-void writeBinVect(ostream & out, vector<double> & v);
+void _write_bin_vect(ostream & out, vector<double> & v);
 
-double loadBin(istream & in);
+double _load_bin(istream & in);
 
-vector<double> loadBinVector(istream & in);
+vector<double> _load_bin_vector(istream & in);
 
 #endif	/* UTILS_H */

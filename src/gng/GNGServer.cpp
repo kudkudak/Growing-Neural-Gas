@@ -57,7 +57,9 @@ void GNGServer::init(GNGConfiguration configuration, std::istream * input_graph)
 		cerr << GNGConfiguration::DatasetSampling << endl;
 		cerr << GNGConfiguration::DatasetSamplingProb << endl;
 		DBG(m_logger,11, "GNGServer::Not recognized dataset");
-		throw BasicException("Database type not supported " + toString(current_configuration.datasetType));
+		throw BasicException(
+				"Database type not supported "
+						+ to_string(current_configuration.datasetType));
 	}
 
 	DBG(m_logger,10, "GNGServer()::gngDatabase constructed");
@@ -107,5 +109,3 @@ void GNGServer::init(GNGConfiguration configuration, std::istream * input_graph)
 	DBG(m_logger,10, "GNGServer()::constructed algorithm object");
 
 }
-
-

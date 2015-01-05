@@ -372,9 +372,11 @@ public:
 		for (unsigned int i = 0; i < g.size(); ++i) {
 			string tmp = "";
 			if (occupied[i]) {
-				tmp = tmp + toStr(g[i]) + ":";
-				FOREACH(it2, g[i]){
-					tmp += toStr((*it2)->nr) + "[" + toStr((((*it2)->rev))->nr) + "],";
+				tmp = tmp + to_str(g[i]) + ":";
+				FOREACH(it2, g[i])
+				{
+					tmp += to_str((*it2)->nr) + "["
+							+ to_str((((*it2)->rev))->nr) + "],";
 				}
 				tmp = tmp + "\n";
 			}
@@ -451,7 +453,7 @@ public:
 			S.push_back((double) next_free[i]);
 		} DBG(m_logger,7, "GNGGraph::Serialize;:writing out");
 
-		writeBinVect(output, S);
+		_write_bin_vect(output, S);
 
 
 		this->unlock();
@@ -461,7 +463,7 @@ public:
 
 		DBG(m_logger,7, "GNGGraph:: loading ");
 
-		vector<double> S = loadBinVector(input);
+		vector<double> S = _load_bin_vector(input);
 		vector<double>::iterator itr = S.begin();
 		//Header
 		unsigned int bufor_size = (int) *itr;

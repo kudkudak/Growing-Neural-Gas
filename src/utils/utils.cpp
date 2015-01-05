@@ -1,21 +1,21 @@
 #include "utils.h"
 
-void initRnd() {
+void __init_rnd() {
 	srand(time(NULL));
 }
 
-int rnd(int min, int max) {
+int __rnd(int min, int max) {
 	return (rand() % (max - min + 1) + min);
 }
 
-int intRnd(int min, int max) {
+int __int_rnd(int min, int max) {
 	return (rand() % (max - min + 1) + min);
 }
 
-double doubleRnd(double min, double max) {
+double __double_rnd(double min, double max) {
 	return min + (max - min) * ((double) rand()) / RAND_MAX;
 }
-void writeBin(ostream & out, double v) {
+void _write_bin(ostream & out, double v) {
 	if (isCpuLittleEndian ^ isFileLittleEndian) {
 		// Switch between the two
 		char data[8], *pDouble = (char*) (double*) (&v);
@@ -27,13 +27,13 @@ void writeBin(ostream & out, double v) {
 		out.write((char*) (&v), 8);
 }
 
-void writeBinVect(ostream & out, vector<double> & v) {
-	writeBin(out, (double) v.size());
+void _write_bin_vect(ostream & out, vector<double> & v) {
+	_write_bin(out, (double) v.size());
 	for (int i = 0; i < v.size(); ++i) {
-		writeBin(out, v[i]);
+		_write_bin(out, v[i]);
 	}
 }
-double loadBin(istream & in) {
+double _load_bin(istream & in) {
 	char data[8];
 	double res;
 	in.read(data, 8);
@@ -50,13 +50,13 @@ double loadBin(istream & in) {
 	return res;
 }
 
-vector<double> loadBinVector(istream & in) {
-	int N = (int) loadBin(in);
+vector<double> _load_bin_vector(istream & in) {
+	int N = (int) _load_bin(in);
 	vector<double> x;
 	x.reserve(N);
 	REPORT(N);
 	for (int i = 0; i < N; ++i) {
-		x.push_back(loadBin(in));
+		x.push_back(_load_bin(in));
 	}
 	return x;
 }
