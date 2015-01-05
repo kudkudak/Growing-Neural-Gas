@@ -2,7 +2,6 @@ library(testthat)
 library("GrowingNeuralGas")
 library(igraph)
 
-
 for(k in 1:3){
   print(k)
   max_nodes <- 600

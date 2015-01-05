@@ -89,6 +89,14 @@ public:
 		return current_configuration;
 	}
 
+	double nodeDistance(unsigned int id1, unsigned int id2) const{
+		if(gngAlgorithm->isRunning()){
+			cerr<<"Please pause algorithm before calling nodeDistance function\n";
+			return -1.0;
+		}
+		return gngGraph->get_dist(id1, id2);
+	}
+
 	static GNGServer * constructTestServer(GNGConfiguration config) {
 		return new GNGServer(config, 0 /*input_graph*/);
 	}
@@ -122,6 +130,13 @@ public:
 
 	unsigned int getCurrentIteration() const{
 		return gngAlgorithm->getIteration();
+	}
+
+	//This is tricky - used only by convertToIGraph in R, because
+	//it might happen that we delete nodes and have bigger index of the last node
+	//than actual nodes (especially in the case of utility version of GNG)
+	unsigned int _getLastNodeIndex() const{
+		return gngGraph->get_maximum_index() + 1;
 	}
 
 	///Exports GNG state to file
@@ -183,8 +198,14 @@ public:
 	}
 	SEXP m_current_dataset_memory; //will be deleted in ~delete
 	///Moderately slow function returning node descriptors
-	Rcpp::List getNode(unsigned int index) {
-		unsigned int gng_index = index - 1; //1 based
+	Rcpp::List getNode(int index) {
+		int gng_index = index - 1; //1 based
+
+		if(index <= 0){
+			cerr<<"Indexing of nodes starts from 1 (R convention)\n";
+			List ret;
+			return ret;
+		}
 
 		gngGraph->lock();
 
@@ -200,6 +221,10 @@ public:
 		ret["pos"] = pos;
 		ret["error"] = n.error;
 		ret["label"] = n.extra_data;
+
+		if(getConfiguration().experimental_utility_option != GNGConfiguration::UtilityOff){
+			ret["utility"] = n.utility;
+		}
 
 		vector<unsigned int> neigh(n.size());
 		GNGNode::EdgeIterator edg = n.begin();

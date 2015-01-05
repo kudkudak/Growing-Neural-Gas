@@ -61,13 +61,15 @@ RCPP_MODULE(gng_module){
 			.method("pause", &GNGServer::pause)
 			.method("terminate", &GNGServer::terminate)
 			.method("getMeanError", &GNGServer::getMeanError)
+			.method("nodeDistance", &GNGServer::nodeDistance)
 			.method("getConfiguration", &GNGServer::getConfiguration)
 			.method("getNumberNodes", &GNGServer::getNumberNodes)
 			.method("exportToGraphML", &GNGServer::exportToGraphML)
 			.method("getNode", &GNGServer::getNode)
 			.method("insertExamples", &GNGServer::RinsertExamples)
 			.method("getErrorStatistics", &GNGServer::RgetErrorStatistics)
-			.method("predict", &GNGServer::Rpredict);
+			.method("predict", &GNGServer::Rpredict)
+			.method("getLastNodeIndex", &GNGServer::_getLastNodeIndex);
 }
 
 #include <RcppArmadillo.h>

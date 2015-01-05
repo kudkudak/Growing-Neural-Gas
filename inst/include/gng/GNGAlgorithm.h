@@ -130,6 +130,10 @@ public:
 		this->status_change_condition.notify_all();
 	}
 
+	bool isRunning() const{
+		return this->m_gng_status == GNG_RUNNING;
+	}
+
 	/** Pause algorithm loop */
 	void pause() {
 		this->m_gng_status = GNG_PAUSED;
