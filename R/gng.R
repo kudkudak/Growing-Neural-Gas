@@ -728,6 +728,7 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
   setMethod("plot",  "Rcpp_GNGServer", plot.gng)
   setMethod("print",  "Rcpp_GNGServer", print.gng)
   setMethod("summary", "Rcpp_GNGServer", summary.gng)
+  setMethod("show", "Rcpp_GNGServer", summary.gng)
   
   node.gng <<- function(x, gng_id){
     x$getNode(gng_id)
