@@ -2,7 +2,7 @@ library(igraph)
 
   .gng.plot3d<-function(gngServer){
 	if("rgl" %in% rownames(installed.packages()) == TRUE){
-	    g <- .gng.construct_igraph(gngServer)
+	    g <- convertToGraph(gngServer)
 	    .visualizeIGraphRGL(g)
 	}else{
 	    warning("Please install rgl package to plot 3d graphs")
@@ -82,8 +82,7 @@ library(igraph)
   }
 .gng.plot2d.errors<-function(gngServer, vertex.color, layout){
   tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
-  gngServer$exportToGraphML(tmp_name)
-  ig = .readFromGraphML(tmp_name )
+  ig = convertToGraph(gngServer)
   
   if(length(V(ig))==0) return
   

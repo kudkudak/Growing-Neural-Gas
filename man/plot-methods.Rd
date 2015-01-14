@@ -8,7 +8,7 @@ plot(gng)
 }
 \arguments{
 \item{vertex.color}{how to color vertexes. Possible values: gng.plot.color.cluster(vertex color is set to fastgreedy.community clustering),
-gng.plot.color.extra(rounds to integer extra dim if present), gng.plot.color.none(every node is white),}
+gng.plot.color.label(rounds to integer label if present), gng.plot.color.none(every node is white),}
 
 \item{layout}{layout to be used when plotting. Possible values: gng.plot.layour.igraph.v2d (first two dimensions),
 gng.plot.layout.igraph.auto (auto layout from igraph) gng.plot.layout.igraph.fruchterman.fast (fast fruchterman reingold layout),or any function accepting igraph graph and returning layout}
@@ -24,8 +24,7 @@ Plot GNG
 }
 \note{
 If you want to "power-use" plotting and plot for instance a subgraph, you might be interested in
-exporting igraph with convert_igraph function and plotting it using/reusing function from this package:
-.visualizeIGraph2d
+exporting igraph with convertToGraph function
 }
 \examples{
 # Plots igraph using first 2 coordinates and colors according to clusters
