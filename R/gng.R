@@ -3,13 +3,6 @@
 library(igraph)
 library(methods)
 
-# This hides all methods and fields preceding with a dot
-library(Rcpp)
-envir = asNamespace("Rcpp")
-.DollarNames.Rcpp = envir$`.DollarNames.C++Object`
-".DollarNames.C++Object" <- function( x, pattern ){
-  .DollarNames.Rcpp(x, pattern)[! (substr(.DollarNames.Rcpp(x, pattern),1,1)==".")]
-}
 
 gng.plot.color.label <- 'label'
 gng.plot.color.fast.cluster <- 'fast.cluster'
@@ -343,6 +336,26 @@ errorStatistics.gng <- NULL
 OptimizedGNG <- NULL
 
 
+#' @title clustering
+#' 
+#' @description Gets vector with node indexes assigned to examples in the dataset
+#' 
+#' @usage
+#' clustering(gng)
+#' 
+#' @export
+#' 
+#' @rdname clustering-methods
+#' 
+#' @docType methods
+#'
+#' @examples
+#' clustering(gng)
+#' 
+#' @aliases clustering
+#'
+clustering.gng <- NULL
+
 #' @title errorStatistics
 #' 
 #' @description Gets vector with errors for every second of execution
@@ -486,6 +499,8 @@ evalqOnLoad({
                    
   ){
     
+
+    
     config <- new(GNGConfiguration)
     
     # Fill in configuration
@@ -614,13 +629,17 @@ evalqOnLoad({
                    verbosity=0,
 					k=NULL
                   ){
+    gng <- NULL
+    call <- match.call(expand.dots = TRUE)
 		if(is.null(k)){
-					.GNG(x=x, labels=labels, beta=beta, alpha=alpha, max.nodes=max.nodes, 
+					gng <- .GNG(x=x, labels=labels, beta=beta, alpha=alpha, max.nodes=max.nodes, 
 			eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.default(), training=training, lambda=lambda, verbosity=verbosity)
 		}else{
-				.GNG(x=x, labels=labels, beta=beta, alpha=alpha, max.nodes=max.nodes, 
+				gng <- .GNG(x=x, labels=labels, beta=beta, alpha=alpha, max.nodes=max.nodes, 
 			eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.utility(k=k), training=training, lambda=lambda, verbosity=verbosity)		
 		}
+		assign("call", call, gng)
+		gng
 	}
 
    OptimizedGNG <<- function(x=NULL, labels=c(),
@@ -639,14 +658,20 @@ evalqOnLoad({
 			gmum.error(ERROR, "Incorrect range")
 			return		
 		}
-		.GNG(x=x, labels=labels, beta=beta, alpha=alpha, max.nodes=max.nodes, 
+		call <- match.call(expand.dots = TRUE)
+		gng <- .GNG(x=x, labels=labels, beta=beta, alpha=alpha, max.nodes=max.nodes, 
 eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min=value.range[1]*1.1, max=value.range[2]*1.1), training=training, lambda=lambda, verbosity=verbosity)
-
+    assign("call", call, gng)
+    gng
 	}    
 
      setGeneric("node", 
                 function(x, gng_id, ...) standardGeneric("node"))
- 
+
+    setGeneric("clustering", 
+           function(object) standardGeneric("clustering"))
+
+
      setGeneric("convertToGraph", 
                 function(object, ...) standardGeneric("convertToGraph"))
 
@@ -723,7 +748,17 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
     
     print(errors)
   }
-  
+    
+
+  # Autocompletion fix
+  setMethod( ".DollarNames", "C++Object", 
+             function( x, pattern ){
+                envir = asNamespace("Rcpp")
+                DollarNames.Rcpp = envir$`.DollarNames.C++Object`
+                DollarNames.Rcpp(x, pattern)[! (substr(.DollarNames.Rcpp(x, pattern),1,1)==".")]
+             } , where=.GlobalEnv)
+
+
 
   setMethod("plot",  "Rcpp_GNGServer", plot.gng)
   setMethod("print",  "Rcpp_GNGServer", print.gng)
@@ -753,7 +788,11 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
   errorStatistics.gng <<- function(object){
     object$getErrorStatistics()
   }  
-  
+ 
+  clustering.gng <<- function(object){
+    object$clustering()
+  }  
+
   save.gng <<- function(object, filename){
     object$save(filename)
   }
@@ -782,7 +821,7 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
   setMethod("meanError", "Rcpp_GNGServer", meanError.gng) 
   setMethod("errorStatistics", "Rcpp_GNGServer", errorStatistics.gng) 
   
-  #' Get number of nodes
+  #'Get number of nodes
   setMethod("numberNodes" ,
             "Rcpp_GNGServer",
             function(object){
@@ -802,11 +841,11 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
     #due to a hole in memory representation of GNG graph (i.e.
     #indexing in gng can be non-continuous)
     indexesGNGToIGraph <- 1:object$.getLastNodeIndex()
-    indexesIGraphToGNG <- 1:object$.getNumberNodes()
+    indexesIGraphToGNG <- 1:object$getNumberNodes()
     
-    if(object$getLastNodeIndex() != object$getNumberNodes()){
+    if(object$.getLastNodeIndex() != object$getNumberNodes()){
       igraph_index = 1
-      for(i in (1:object$getLastNodeIndex())){
+      for(i in (1:object$.getLastNodeIndex())){
         node <- node(object, i)
         if(length(node) != 0){
           indexesGNGToIGraph[i] = igraph_index
@@ -817,7 +856,7 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
     }
     
     adjlist<-list()
-    for(i in 1:object$getLastNodeIndex()){
+    for(i in 1:object$.getLastNodeIndex()){
       node <- node(object, i)
       if(length(node) != 0){
         igraph_index = indexesGNGToIGraph[i]
@@ -827,7 +866,7 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
     
     
     g <- graph.adjlist(adjlist, mode = "all")
-    for(i in 1:object$getLastNodeIndex()){
+    for(i in 1:object$.getLastNodeIndex()){
       node <- node(object, i)
       if(length(node) != 0){
         igraph_index = indexesGNGToIGraph[i]
@@ -859,7 +898,9 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
             "Rcpp_GNGServer",
             convertToGraph.gng)
   
-
+  setMethod("clustering" ,
+            "Rcpp_GNGServer",
+            clustering.gng)
 
   setMethod("predict" ,
             "Rcpp_GNGServer",

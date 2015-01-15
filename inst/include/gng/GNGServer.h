@@ -245,6 +245,11 @@ public:
 		return gngAlgorithm->predict(std::vector<double>(r_ex.begin(), r_ex.end()) );
 	}
 
+	Rcpp::NumericVector RgetClustering() {
+		const vector<int> & x = gngAlgorithm->get_clustering();
+		return NumericVector(x.begin(), x.end());
+	}
+
 	Rcpp::NumericVector RgetErrorStatistics() {
 		vector<double> x = getMeanErrorStatistics();
 		return NumericVector(x.begin(), x.end());

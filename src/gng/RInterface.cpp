@@ -62,6 +62,7 @@ RCPP_MODULE(gng_module){
 			.method("terminate", &GNGServer::terminate)
 			.method("getMeanError", &GNGServer::getMeanError)
 			.method("nodeDistance", &GNGServer::nodeDistance)
+			.method("clustering", &GNGServer::RgetClustering)
 			.method("getConfiguration", &GNGServer::getConfiguration)
 			.method("getNumberNodes", &GNGServer::getNumberNodes)
 			.method(".exportToGraphML", &GNGServer::exportToGraphML)

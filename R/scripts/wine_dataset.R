@@ -1,12 +1,11 @@
 library("GrowingNeuralGas")
+
 data(wine, package="rattle")
 scaled.wine <- scale(wine[-1])
-
 
 # Train in an offline manner
 gng <- GNG(scaled.wine, labels=wine$Type, max.nodes=20, 
            training=gng.train.offline(max.iter=10000, min.improvement=1e-1))
-
 
 # Print number of nodes
 numberNodes(gng)
