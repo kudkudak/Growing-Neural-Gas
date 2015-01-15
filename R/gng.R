@@ -912,7 +912,14 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
   setMethod("predict" ,
             "Rcpp_GNGServer",
             function(object, x){
-              object$predict(x)
+              if(is(x, "vector")){
+                object$predict(x)
+              }
+              if(is(x, "matrix")){
+                for(i in 1:nrow(x)){
+                  object$predict(x[i,]) 
+                }
+              }
             })
   
   
