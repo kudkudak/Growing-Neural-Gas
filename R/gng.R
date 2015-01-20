@@ -909,20 +909,13 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
             "Rcpp_GNGServer",
             clustering.gng)
 
-  setMethod("predict" ,
-            "Rcpp_GNGServer",
-            function(object, x){
-              if(is(x, "vector")){
-                object$predict(x)
-              }
-              if(is(x, "matrix")){
-                for(i in 1:nrow(x)){
-                  object$predict(x[i,]) 
-                }
-              }
-            })
-  
-  
+setMethod("predict" ,
+          "Rcpp_GNGServer",
+          function(object, x){
+            object$predict(x)
+          })
+
+
   insertExamples.gng <<- function(object, examples, labels=c()){   
 	  if(length(labels) == 0){
       	object$insertExamples(examples, vector(mode="numeric", length=0))
