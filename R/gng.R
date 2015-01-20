@@ -909,11 +909,11 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
             "Rcpp_GNGServer",
             clustering.gng)
 
-setMethod("predict" ,
-          "Rcpp_GNGServer",
-          function(object, x){
-            object$predict(x)
-          })
+  setMethod("predict" ,
+            "Rcpp_GNGServer",
+            function(object, x){
+              object$predict(x)
+            })
 
 
   insertExamples.gng <<- function(object, examples, labels=c()){   
