@@ -81,8 +81,7 @@ library(igraph)
     	}
   }
 .gng.plot2d.errors<-function(gngServer, vertex.color, layout){
-  tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
-  ig = convertToGraph(gngServer)
+  ig <- convertToGraph(gngServer)
   
   if(length(V(ig))==0) return
   
@@ -96,14 +95,12 @@ library(igraph)
   }
   
   .visualizeIGraph2dWithErrors(ig, vertex.color, layout, gngServer)
-  
-  file.remove(tmp_name)
 }
 
 .gng.plot2d<-function(gngServer, vertex.color, layout){
   tmp_name <- paste("tmp",sample(1:1000, 1),".graphml", sep="")
-  gngServer$exportToGraphML(tmp_name)
-  ig = .readFromGraphML(tmp_name )
+
+  ig <- convertToGraph(gngServer)
   
   if(length(V(ig))==0) return
 
@@ -117,7 +114,6 @@ library(igraph)
   }
   
   .visualizeIGraph2d(ig, vertex.color, layout)
-  file.remove(tmp_name)
 }
 
 #' Visualize igraph using igraph plot

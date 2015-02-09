@@ -1,5 +1,3 @@
-
-
 library(igraph)
 library(methods)
 
@@ -748,16 +746,19 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
     
     print(errors)
   }
-    
+
 
   # Autocompletion fix
-  setMethod( ".DollarNames", "C++Object", 
-             function( x, pattern ){
-                envir = asNamespace("Rcpp")
-                DollarNames.Rcpp = envir$`.DollarNames.C++Object`
-                DollarNames.Rcpp(x, pattern)[! (substr(.DollarNames.Rcpp(x, pattern),1,1)==".")]
-             } , where=.GlobalEnv)
 
+  .GlobalEnv$`.DollarNames.C++Object` <- function( x, pattern ){
+    grep(pattern, asNamespace("Rcpp")$complete(x), value = TRUE)[! (substr(grep(pattern, asNamespace("Rcpp")$complete(x), value = TRUE),1,1)==".")]
+  }
+  
+  #.GlobalEnv$DollarNamesGmumr <- function( x, pattern ){
+  #  asNamespace("Rcpp")$`.DollarNames.C++Object`(x, pattern)[! (substr(asNamespace("Rcpp")$`.DollarNames.C++Object`(x, pattern),1,1)==".")]
+  #}
+  #environment(.GlobalEnv$DollarNamesGmumr) <- .GlobalEnv
+  #setMethod( ".DollarNames", "C++Object", .GlobalEnv$DollarNamesGmumr )
 
 
   setMethod("plot",  "Rcpp_GNGServer", plot.gng)
