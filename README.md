@@ -158,12 +158,3 @@ Feel free to contribute to the code. Contributions should be posted as pull requ
 ##Known issues
 ---------
 * Package is not released for Windows yet.
-
-* Igraph plotting issues
-
-	* Due to bug in R (https://bugs.r-project.org/bugzilla/show_bug.cgi?id=15327)
-	  on some OS you have to install liblzma-dev additionally. 
-
-	* Sometimes after installation of igraph you might have disabled graphml support 
-	  (http://lists.gnu.org/archive/html/igraph-help/2011-03/msg00101.html). Try
-	installing libxml2-dev package and reinstalling igraph.a
