@@ -1,7 +1,7 @@
-#include "gng/GNG.h"
+#include "gng/gng.h"
 #include "utils/utils.h"
-#include "gng/GNGGraph.h"
-#include "gng/GNGDataset.h"
+#include "gng/gng_graph.h"
+#include "gng/gng_dataset.h"
 #include "utils/threading.h"
 
 #include <algorithm>

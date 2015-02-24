@@ -1,17 +1,12 @@
+library(gmum.r)
+library(igraph)
+
 ####################################################################
-# Clustering MNIST dataset with GNG algorithm and running RF on it #
-# note: make sure you have in data mnist dataset                   #
- ####################################################################
+#       Clustering MNIST dataset with GNG algorithm                #
+####################################################################
 
 
-# Load the MNIST digit recognition dataset into R
-# http://yann.lecun.com/exdb/mnist/
-# assume you have all 4 files and gunzip'd them
-# creates train$n, train$x, train$y and test$n, test$x, test$y
-# e.g. train$x is a 60000 x 784 matrix, each row is one digit (28x28)
-# call: show_digit(train$x[5,]) to see a digit.
-# brendan o'connor - gist.github.com/39760 - anyall.org
-
+### Helper functions ###
 load_mnist <- function() {
   load_image_file <- function(filename) {
     ret = list()
@@ -35,155 +30,68 @@ load_mnist <- function() {
     ret = y
     ret
   }
-  train <<- load_image_file('./data/train-images.idx3-ubyte')
-  test <<- load_image_file('./data/t10k-images.idx3-ubyte')
+  train <<- load_image_file('./data/train-images-idx3-ubyte')
+  test <<- load_image_file('./data/t10k-images-idx3-ubyte')
   
   train <- train/255.0
   test <- test/255.0
   
   data = list()
-  data$train = cbind(train, as.matrix(load_label_file('./data/train-labels.idx1-ubyte')))
-  data$test = cbind(test, as.matrix(load_label_file('./data/t10k-labels.idx1-ubyte')))
-  
+  data$train = cbind(train, as.matrix(load_label_file('./data/train-labels-idx1-ubyte')))
+  data$test = cbind(test, as.matrix(load_label_file('./data/t10k-labels-idx1-ubyte')))
   
   data
 }
-
-data <- load_mnist()
-
-#write.csv(data$train, 'mnist-train.csv')
-#write.csv(data$test, 'mnist-test.csv')
 
 show_digit <- function(arr784, col=gray(12:1/12), ...) {
   print(matrix(arr784, nrow=28, ncol=28)[1,])
   image(matrix(arr784, nrow=28, ncol=28)[,28:1], col=col, ...)
 }
 
-library("GrowingNeuralGas")
-library(igraph)
-library(testthat)
+### Configure and load examples ###
+train.examples <- 10000
+max.nodes <- 100
+max.iter = 500
+data <- load_mnist() 
+X = data$train[1:train.examples,-785]
+Y = data$train[1:train.examples,785]
+X.test = data$test[,-785]
+Y.test = data$test[,785]
 
-max_nodes <- 1500
+### Train Optimized GNG ###
+gng <- OptimizedGNG(max.nodes=max.nodes, x=X, value.range=c(0,1),
+                    labels=Y, training = gng.train.offline(max.iter, 1e-2))
 
-# Construct gng object, NOTE: adding last column (target) as extra_data - this data won't be used
-# in training, but will be assigned to close vertex in the graph (technically speaking it WILL be used in training,
-# but will bear no effect on convergence)
-gng <- GNG(dataset_type=gng.dataset.bagging, max_nodes=max_nodes, dim=784, lazyheap_optimization=TRUE,
-           experimental_vertex_extra_data=TRUE
-           )
 
-data <- load_mnist()
-data0 <- data$train
-data0[data0[,785]!=0.0,785] = 1.0
-gng$insert_examples(data0)
-
-### Run algorithm ###
-run(gng)
-
-number_nodes(gng)
-mean_error(gng)
-
-### Pause and dump ###
-pause(gng)
-GrowingNeuralGas::dump_model(gng, "mnist.trained.1500.bin")
+### Print some variables and save ###
+numberNodes(gng)
+meanError(gng)
+save.gng(gng, "mnist.trained.100.bin")
 
 ### Plot using igraph layout and coloring from extra vertex ###
 plot(gng, mode=gng.plot.2d.errors, 
-     vertex.color=gng.plot.color.cluster, layout=gng.plot.layout.igraph.fruchterman.fast)
-
-# layout.fruchterman.reingold)
+     vertex.color=gng.plot.color.label, layout=gng.plot.layout.igraph.fruchterman.fast)
 
 
-### Test prediction of 0 ###
-for(i in 1:nrow(data$test)){
-  if(data$test[i, 785]==0){
-    predict(gng, data$test[i,-1])
-    node(gng, predict(gng, data$test[i,-1]))
-    print(node(gng, predict(gng, data$test[i,-1]))$extra_data)
-    break
-  }
-}
+### Show closest to some examples ###
+id=200
+show_digit(X.test[id,])
+show_digit(node(gng, predict(gng, X.test[id,])+1)$pos)
 
-### Test infomap community ###
-plot(gng, vertex.color=gng.plot.color.cluster, 
-     mode=gng.plot.2d, layout=igraph::layout.fruchterman.reingold)
+id=300
+show_digit(X.test[id,])
+show_digit(node(gng, predict(gng, X.test[id,])+1)$pos)
 
-centr <- centroids2.gng(gng)
+id=400
+show_digit(X.test[id,])
+show_digit(node(gng, predict(gng, X.test[id,])+1)$pos)
+
+
 ### Plot centroids ###
+centr <- centroids.gng(gng)
 centroids_pos = lapply(centr, function(x){ node(gng, x)$pos})
 par(mfrow=c(2,2))
 show_digit(node(gng, centr[1])$pos)
 show_digit(node(gng, centr[2])$pos)
 show_digit(node(gng, centr[3])$pos)
 show_digit(node(gng, centr[4])$pos)
-
-
-#####################################################################
-# Code training classifier, not pertaining to Growing-Neural-Gas API#
-#####################################################################
-
-function train_classifier(){
-  ### Transform data ###
-  data <-load_mnist()
-  data_transformed_train <- matrix(0, ncol=(length(centroids_pos) + 1), nrow=nrow(data$train))
-  data_transformed_test <- matrix(0, ncol=(length(centroids_pos) + 1), nrow=nrow(data$test))
-  
-  for(i in 1:nrow(data$train)){
-      data_transformed_train[i, 1:length(centroids_pos)] = unlist(lapply(centroids_pos, 
-                                                                  function(x){ sqrt(sum((x - data$train[i, 1:784]) ^ 2)) } ))                                         
-      data_transformed_train[i, length(centroids_pos)+1 ] = data$train[i, 785]
-  }
-  for(i in 1:nrow(data$test)){
-    data_transformed_test[i, 1:length(centroids_pos)] = unlist(lapply(centroids_pos, 
-                                                                       function(x){ sqrt(sum((x - data$test[i, 1:784]) ^ 2)) } ))                                         
-    data_transformed_test[i, length(centroids_pos)+1 ] = data$test[i, 785]
-  }
-  
-  write.csv(data_transformed_train, file='mnist.transformed.train.csv')
-  write.csv(data_transformed_test, file='mnist.transformed.test.csv')
-  
-  ### Construct formula for nnet ###
-  data_transformed_train = read.csv(file='mnist.transformed.train.csv')
-  data_transformed_test = read.csv(file='mnist.transformed.test.csv')
-  
-  colnames(data_transformed_train) <- paste0("V", seq_len(ncol(data_transformed_train)))
-  colnames(data_transformed_test) <- paste0("V", seq_len(ncol(data_transformed_test)))
-  n <- colnames(data_transformed_train)
-  last_col = paste("V", ncol(data_transformed_train), sep="")
-  f <- as.formula(paste(paste(last_col, " ~", sep=""), paste(n[!n %in% last_col], collapse = " + ")))
-  print(f)
-  
-  
-  ### Train nnet ###
-  install.packages("randomForest")
-  library(randomForest)
-  library(kernlab)
-  library(klaR)
-  library("nnet")
-  
-  rf <- randomForest(x=data_transformed_train[,1:26], 
-                     y=as.factor(data_transformed_train[,27]), ntree=50)
-  
-  as.double(predict(rf, data_transformed_test[1,1:26]))-1
-  
-  k <- 0
-  cor <- 0
-  for(i in 1:nrow(data_transformed_test)){
-    
-    if(i%%100 == 0){
-      print((cor+0.0)/k)
-       print(i)
-    }
-    
-    if((as.double(predict(rf, data_transformed_test[i,1:(ncol(data_transformed_test)-1)]))-1)
-       == data_transformed_test[i,ncol(data_transformed_test)]){
-       cor <- cor + 1
-    }
-  
-    k <- k + 1
-  }
-
-}
-
-
-

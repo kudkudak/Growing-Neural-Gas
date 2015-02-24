@@ -2,9 +2,8 @@ include ../../src/Makevars
 
 # Explicit Makevars inheritances adn overrides
 CXX := $(CXX)
-CPPFLAGS := $(PKG_CPPFLAGS)
-CXXFLAGS := $(PKG_CXXFLAGS) -O2 -g -s
-LDLIBS := $(PKG_LIBS) -lpthread -lgtest -lgtest_main
+CPPFLAGS := $(PKG_CPPFLAGS) -O2 -g -s
+LDLIBS := $(PKG_LIBS) -lpthread -lgtest -lgtest_main -larmadillo
 
 ###
 # Compilation parameters
@@ -19,8 +18,8 @@ ROOT_SRC_PATH := ../../src
 ROOT_TEST_PATH := .
 
 # Branches that will be compiled
-GMUMR_BRANCHES := gng utils
-TEST_BRANCHES := gng
+GMUMR_BRANCHES := cec gng svm utils
+TEST_BRANCHES := cec gng svm
 
 # Additional cleaning paths
 ADDITIONAL_CLEANING := *.graphml *.bin
@@ -36,6 +35,13 @@ SECONDARY_TESTS_NAME := secondary
 SECONDARY_TESTS_TYPES := *NumericTest*
 
 ###
+# Externally compiled libraries
+###
+SVMLIGHT_INCLUDE_PATH := $(ROOT_INCLUDE_PATH)/svmlight
+SVMLIGHT_SRC_PATH := $(ROOT_SRC_PATH)/svmlight
+SVMLIGHT_OBJECT_FILENAMES := svm_common.o svm_hideo.o svm_learn.o
+
+###
 # Generic variables
 ###
 
@@ -48,6 +54,12 @@ TEST_SOURCES := $(wildcard $(TEST_SOURCES_WILDCARD))
 
 OBJECTS := $(patsubst %.cpp, %.o, $(SOURCES))
 TEST_OBJECTS := $(patsubst %.cpp, %.o, $(TEST_SOURCES))
+
+# Externally compiled libraries objects
+SVMLIGHT_OBJECT_PATHS := $(patsubst %, $(SVMLIGHT_SRC_PATH)/%, $(SVMLIGHT_OBJECT_FILENAMES))
+
+# Sum up compiled libraries objects
+COMPILED_LIBRARIES_OBJECTS := $(SVMLIGHT_OBJECT_PATHS)
 
 # Helper scripts
 PRIMARY_TESTS_SCRIPT := $(patsubst %, $(HELPER_SCRIPT_PATTERN_1)%$(HELPER_SCRIPT_PATTERN_2), $(PRIMARY_TESTS_NAME))
@@ -63,20 +75,19 @@ ROOT_INCLUDE := -I $(ROOT_INCLUDE_PATH)
 # Generic branch includes
 BRANCH_INCLUDES := $(patsubst %, -I $(ROOT_INCLUDE_PATH)/%, $(GMUMR_BRANCHES))
 
-# Sum up
-INCLUDES := $(ROOT_INCLUDE) $(BRANCH_INCLUDES)
+# Sum up compiled libraries includes
+SVMLIGHT_INCLUDE := -I $(SVMLIGHT_INCLUDE_PATH)
+COMPILED_LIBRARIES_INCLUDES := $(SVMLIGHT_INCLUDE)
 
-###
-# Internally included libs
-###
-SVMLIGHT_INCLUDE := $(ROOT_INCLUDE_PATH)/svmlight
-SVMLIGHT_LIBS := $(SVMLIGHT_INCLUDE)/svm_learn.o $(SVMLIGHT_INCLUDE)/svm_common.o $(SVMLIGHT_INCLUDE)/svm_hideo.o
-
-CPPFLAGS := $(CPPFLAGS) $(INCLUDES)
+# Sum up all
+INCLUDES := $(ROOT_INCLUDE) $(BRANCH_INCLUDES) $(COMPILED_LIBRARIES_INCLUDES)
 
 ###
 # Compilation rules
 ###
+
+CPPFLAGS := $(CPPFLAGS) $(INCLUDES)
+CFLAGS := $(CPPFLAGS)
 
 all: $(TEST_MAIN_BIN) helper_scripts
 	@echo ... Done!
@@ -84,16 +95,16 @@ all: $(TEST_MAIN_BIN) helper_scripts
 	@echo or use helper scripts: $(PRIMARY_TESTS_SCRIPT) $(SECONDARY_TESTS_SCRIPT)
 
 clean:
-	rm -f $(TEST_MAIN_BIN) $(TEST_OBJECTS) $(PRIMARY_TESTS_SCRIPT) \
-	$(SECONDARY_TESTS_SCRIPT) $(ADDITIONAL_CLEANING)
+	rm -f $(TEST_MAIN_BIN) $(TEST_OBJECTS) $(COMPILED_LIBRARIES_OBJECTS)\
+	$(PRIMARY_TESTS_SCRIPT) $(SECONDARY_TESTS_SCRIPT) $(ADDITIONAL_CLEANING)
 
-$(TEST_MAIN_BIN): $(TEST_OBJECTS) $(OBJECTS)
+$(TEST_MAIN_BIN): $(TEST_OBJECTS) $(OBJECTS) $(COMPILED_LIBRARIES_OBJECTS)
 	@echo Linking all tests...
 	$(CXX) $^ -lgtest_main -o $@ $(LDLIBS)
 
 %.o: %.cpp %.hpp
 	@echo Compiling $@ ...
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CPPFLAGS) -c $< -o $@ 
 
 helper_scripts:
 	@echo Making helper scripts...

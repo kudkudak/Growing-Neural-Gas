@@ -1,8 +1,11 @@
 library(testthat)
-library(igraph)
+
+
+test_that("GNG converges on simple cases", {
 
 for(k in 1:3){
-  print(k)
+  library(igraph)
+  print(paste("Iteration", k))
   max_nodes <- 600
   ex <- gng.preset.sphere(N=90000)
   if(k == 1){
@@ -68,3 +71,11 @@ for(k in 1:3){
   
   print(paste("Finished ",k))
 }
+
+})
+
+test_that("GNG clustering and predict are returning the same", {
+  X <- replicate(10, rnorm(20))
+  gng <- GNG(X)
+  expect_that(all(gng$clustering() == predict(gng,X)), is_true())
+})

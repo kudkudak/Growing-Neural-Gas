@@ -28,8 +28,8 @@ void UniformGrid<VectorContainer, ListContainer, T>::print3d() {
 				cout << inner_index;
 				//if(TMP[inner_index]) cout<<"::";
 				cout << ":";
-				FOREACH(x, m_grid[inner_index])
-				cout << *x << ",";
+				BOOST_FOREACH(int x, m_grid[inner_index])
+					cout << x << ",";
 				cout << "\t";
 
 			}
@@ -112,19 +112,19 @@ void UniformGrid<VectorContainer, ListContainer, T>::scanCell(int k,
 	if (s_search_query != 2)
 		throw "Not implemented for >2 search query..";
 
-	FOREACH(node, m_grid[k])
+	BOOST_FOREACH(int node, m_grid[k])
 	{
 
-		dist_candidate = m_dist_fnc(*node, query);
+		dist_candidate = m_dist_fnc(node, query);
 
 		//
-		if (*node != s_found_cells[1]
+		if (node != s_found_cells[1]
 				&& (s_found_cells_dist[0] < 0
 						|| dist_candidate <= s_found_cells_dist[0])) {
 
 			//Overwrite worst
 			s_found_cells_dist[0] = dist_candidate;
-			s_found_cells[0] = *node;
+			s_found_cells[0] = node;
 
 			//Swap it to the right place
 			for (int j = 1; j < s_search_query; ++j) {
@@ -343,7 +343,8 @@ bool UniformGrid<VectorContainer, ListContainer, T>::remove(double *p) { //retur
 	int * cell = calculateCell(p);
 	int index = getIndex(cell);
 
-	FOREACH(node, m_grid[index])
+	for(typename Node::iterator node = m_grid[index].begin();
+			node != m_grid[index].end(); ++node)
 	{
 		if (isZero(m_dist_fnc(*node, p))) {
 			m_grid[index].erase(node);
@@ -353,3 +354,115 @@ bool UniformGrid<VectorContainer, ListContainer, T>::remove(double *p) { //retur
 	}
 	return false;
 }
+
+template<class VectorContainer, class ListContainer, class T>
+UniformGrid<VectorContainer, ListContainer, T>::~UniformGrid() {
+	delete[] s_center;
+	delete[] s_pos;
+	delete[] s_query;
+	delete[] m_dim;
+	delete[] m_tmp_int;
+}
+
+//TODO: extract constructor base
+template<class VectorContainer, class ListContainer, class T>
+ UniformGrid<VectorContainer, ListContainer, T>::UniformGrid(double * origin, int *dim, int gng_dim, double m_grow_factor, double m_density_threshold,
+		double m_density_threshold_min,
+		boost::shared_ptr<Logger> logger) :
+		m_dist_fnc(0), gng_dim(gng_dim), m_density_threshold(
+				m_density_threshold), m_density_threshold_min(
+				m_density_threshold_min), m_grow_factor(m_grow_factor), m_logger(
+				logger) {
+	neighbourhood_size = int(pow(3.0, (double) gng_dim));
+
+	this->m_density_threshold = m_density_threshold;
+	this->m_density_threshold_min = m_density_threshold_min;
+	this->m_grow_factor = m_grow_factor;
+
+	s_center = new int[this->gng_dim];
+
+	s_pos = new int[this->gng_dim];
+	s_query = new double[this->gng_dim];
+	m_dim = new int[this->gng_dim]; //number of uniform cells along certain axis
+	m_tmp_int = new int[this->gng_dim]; //avoid alloc on heap all the time in calccell <- one thread!
+
+	//Zero
+	for (int i = 0; i < this->gng_dim; ++i)
+		s_center[i] = s_pos[i] = s_query[i] = m_dim[i] = m_tmp_int[i] = 0;
+
+
+	purge(origin, dim, -1.0);
+}
+
+template<class VectorContainer, class ListContainer, class T>
+bool UniformGrid<VectorContainer, ListContainer, T>::searchSuccessful(double min_dist) {
+		REP(i, s_search_query)
+		{
+			if (s_found_cells[i] == -1 || s_found_cells_dist[i] > min_dist)
+				return false;
+		}
+		return true;
+	}
+
+template<class VectorContainer, class ListContainer, class T>
+UniformGrid<VectorContainer, ListContainer, T>::UniformGrid(double * origin, double *axis, double l, int gng_dim,
+		double m_grow_factor, double m_density_threshold,
+		double m_density_threshold_min,
+		boost::shared_ptr<Logger> logger) :
+		m_dist_fnc(0), gng_dim(gng_dim), m_density_threshold(
+				m_density_threshold), m_density_threshold_min(
+				m_density_threshold_min), m_grow_factor(m_grow_factor), m_logger(
+				logger) {
+	neighbourhood_size = int(pow(3.0, (double) gng_dim));
+
+	s_center = new int[this->gng_dim];
+
+	s_pos = new int[this->gng_dim];
+	s_query = new double[this->gng_dim];
+	m_dim = new int[this->gng_dim]; //number of uniform cells along certain axis
+	m_tmp_int = new int[this->gng_dim]; //avoid alloc on heap all the time in calccell <- one thread!
+
+	//Zero
+	for (int i = 0; i < this->gng_dim; ++i)
+		s_center[i] = s_pos[i] = s_query[i] = m_dim[i] = m_tmp_int[i] = 0;
+
+	purge(origin, axis, l);
+
+}
+
+
+template<class VectorContainer, class ListContainer, class T>
+long int UniformGrid<VectorContainer, ListContainer, T>::calculate_new_size(double *origin, double *axis, double l) {
+	unsigned long int result = 1;
+
+	REP(i, this->gng_dim)
+	{
+		result *= calculate_cell_side(axis[i], l, m_dim[i]);
+		if (result > UniformGrid::MAX_SIZE)
+			return -1;
+	}
+	return result;
+}
+
+
+template<class VectorContainer, class ListContainer, class T>
+bool UniformGrid<VectorContainer, ListContainer, T>::check_grow() {
+	unsigned long int result = this->calculate_new_size(m_origin, m_axis,
+			m_l / m_grow_factor);
+
+	if (result == -1)
+		return false;
+
+	double avg_density = m_nodes / (double) m_grid.size();
+	double new_avg_density = m_nodes
+			/ (double) (this->calculate_new_size(m_origin, m_axis,
+					m_l / m_grow_factor));
+
+	DBG(m_logger,2, "avg_desnity = "+to_str(avg_density)); DBG(m_logger,2, "new_avg_density = "+to_str(new_avg_density));
+
+	return avg_density > m_density_threshold
+			&& new_avg_density > m_density_threshold_min;
+}
+
+
+

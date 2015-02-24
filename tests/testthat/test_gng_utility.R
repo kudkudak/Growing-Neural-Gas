@@ -1,7 +1,7 @@
 library(igraph)
 library(testthat)
 
-max_nodes <- 600
+max_nodes <- 500
 
 # Construct gng object
 gng <- GNG(max.nodes=max_nodes, training = gng.train.online(dim=3), verbosity=10, k=1.3)
@@ -20,7 +20,7 @@ meanError(gng)
 
 
 # Wait for it to converge
-Sys.sleep(20.0)
+Sys.sleep(25.0)
 print("Adding jumped distribution")
 pause(gng)
 plot(gng, mode=gng.plot.2d.errors) #0.068 without utility , 10 times less with

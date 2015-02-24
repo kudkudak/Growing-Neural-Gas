@@ -8,8 +8,8 @@
 #ifndef GNGLAZYERRORHEAP_H
 #define	GNGLAZYERRORHEAP_H
 
-#include "Heap.h"
-#include "GNGGraph.h"
+#include <gng_graph.h>
+#include <heap.h>
 namespace gmum {
 struct ErrorNode {
 	double error;

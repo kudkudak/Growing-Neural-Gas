@@ -8,6 +8,7 @@
 #ifndef SHGRAPHDEFS_H
 #define SHGRAPHDEFS_H
 
+#include <globals.h>
 #include <iostream>
 #include <cmath>
 #include <vector>
@@ -15,7 +16,6 @@
 #include <cstring>
 #include <iterator>
 
-#include "GNGGlobals.h"
 /**
  * Basic interface for Edge in GNGGraph.
  */
@@ -76,7 +76,7 @@ public:
 	double dist(GNGNode * gnode) const { //dist doesnt account for param
 		using namespace std;
 		double ret = 0;
-		for (int i = 0; i < dim; ++i)
+		for (size_t i = 0; i < dim; ++i)
 			ret += (this->position[i] - gnode->position[i])
 					* (this->position[i] - gnode->position[i]);
 		return sqrt(ret);
@@ -84,7 +84,7 @@ public:
 
 	friend std::ostream& operator<<(std::ostream& out, const GNGNode & node) {
 		out << node.nr << "(" << node.error << ")(";
-		for (int i = 0; i < node.dim; ++i) {
+		for (size_t i = 0; i < node.dim; ++i) {
 			out << node.position[i] << ",";
 		}
 		out << ")";
@@ -95,7 +95,7 @@ public:
 	vector<double> dumpEdges() {
 		vector<double> dump(1 + this->size(), 0.0);
 		dump[0] = this->size();
-		for (int i = 0; i < this->size(); ++i)
+		for (size_t i = 0; i < this->size(); ++i)
 			dump[i + 1] = (*this)[i]->nr;
 		return dump;
 	}
@@ -111,8 +111,8 @@ public:
 		dump[5] = (int) _position_owner;
 		dump[6] = dim;
 		dump[7] = extra_data;
-		for (int i = 0; i < dim; ++i) {
-			dump[i + 7] = position[i];
+		for (size_t i = 0; i < dim; ++i) {
+			dump[i + 8] = position[i];
 		}
 		return dump;
 	}
@@ -128,7 +128,7 @@ public:
 		dim = x[6];
 		extra_data = x[7];
 		position = position_ptr;
-		for (int i = 0; i < dim; ++i) {
+		for (size_t i = 0; i < dim; ++i) {
 			position[i] = x[i + 8];
 		}
 	}

@@ -1,5 +1,5 @@
-#include "gng/GNG.h" //TODO: path problems
-#include "gng/GNGServer.h"
+#include "gng/gng.h" 
+#include "gng/gng_server.h"
 #include "utils/utils.h"
 
 #include "gtest/gtest.h"

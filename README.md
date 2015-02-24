@@ -53,17 +53,22 @@ You can also refer to R package documentation (pdf version
 
 ### Cluster wine dataset
 
+
+<small>Clustering of the UCI wine dataset</small>
+<center><img src="./doc/img/gng_readme.png" width="100%"></img></center>
+
+
 In this example we will construct a clustering of UCI wine dataset using offline GNG.
 
 ```R
-library("GrowingNeuralGas")
+library(gmum.r)
 
 # Load data
 data(wine, package="rattle")
 scaled_wine <- scale(wine[-1])
 
 # Train in an offline manner
-gng <- GNG(scaled_wine, labels=wine$Type, max_nodes=20)
+gng <- GNG(scaled_wine, labels=wine$Type, max.nodes=20)
 
 # Find closest node to vector [1,1,1]
 predict(gng, c(1,1,1))
@@ -73,12 +78,8 @@ meanError(gng)
 
 # Plot with first 2 coordinates as position
 plot(gng, mode=gng.plot.2d.errors, vertex.color=gng.plot.color.cluster, 
-     layout=gng.plot.layout.v2d)
+     layout=gng.plot.layout.igraph.fruchterman)
 ```
-
-<small>Reconstruction of the Buddha figure from Standford Repositories</small>
-<center><img src="https://raw.github.com/kudkudak/Growing-Neural-Gas/dev/doc/img/ex3.png" width="60%"></img></center>
-
 
 ##List of functions
 

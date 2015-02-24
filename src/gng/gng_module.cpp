@@ -4,26 +4,33 @@
 
 #ifdef RCPP_INTERFACE
 
-#include <RcppCommon.h>
+#include <RcppArmadillo.h>
 using namespace Rcpp;
 
 class GNGConfiguration;
 class GNGServer;
 
-RCPP_EXPOSED_CLASS(GNGConfiguration);
-RCPP_EXPOSED_CLASS(GNGServer);
+RCPP_EXPOSED_CLASS(GNGConfiguration)
+RCPP_EXPOSED_CLASS(GNGServer)
 
 
 
-#include "GNG.h"
-#include "GNGServer.h"
-#include "GNGConfiguration.h"
+#include <gng.h>
+#include <gng_server.h>
+#include <gng_configuration.h>
 using namespace gmum;
 
 
-
+GNGServer * loadFromFile(std::string filename){
+	GNGServer * out = new GNGServer(filename);
+	return out;
+}
 
 RCPP_MODULE(gng_module){
+	//TODO: Rcpp doesn't accept dot starting name so no way to hide it easily
+    Rcpp::function("fromFileGNG", &loadFromFile);
+
+
 	class_<GNGConfiguration>("GNGConfiguration" )
 	.constructor()
 
@@ -52,10 +59,13 @@ RCPP_MODULE(gng_module){
 	.method(".check_correctness", &GNGConfiguration::check_correctness)
 	.method(".set_bounding_box", &GNGConfiguration::setBoundingBox);
 
+
+	
+
 	class_<GNGServer>("GNGServer")
 			 .constructor<GNGConfiguration*>()
-			 .constructor<std::string>()
 			.method("save", &GNGServer::save)
+			.method("isRunning", &GNGServer::isRunning)
 			.method("run", &GNGServer::run)
 			.method("getCurrentIteration", &GNGServer::getCurrentIteration)
 			.method("pause", &GNGServer::pause)
@@ -66,6 +76,7 @@ RCPP_MODULE(gng_module){
 			.method("getConfiguration", &GNGServer::getConfiguration)
 			.method("getNumberNodes", &GNGServer::getNumberNodes)
 			.method(".exportToGraphML", &GNGServer::exportToGraphML)
+			.method(".getGNGErrorIndex", &GNGServer::getGNGErrorIndex)
 			.method("getNode", &GNGServer::getNode)
 			.method("insertExamples", &GNGServer::RinsertExamples)
 			.method("getErrorStatistics", &GNGServer::RgetErrorStatistics)
