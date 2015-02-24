@@ -646,6 +646,10 @@ evalqOnLoad({
                    verbosity=0,
 					k=NULL
                   ){
+    
+    if(is(x, "data.frame")){
+      x = data.matrix(x);
+    }
     gng <- NULL
     call <- match.call(expand.dots = TRUE)
 		if(is.null(k)){
@@ -674,6 +678,9 @@ evalqOnLoad({
 		if(value.range[1] >= value.range[2]){
 			gmum.error(ERROR, "Incorrect range")
 			return		
+		}
+		if(is(x, "data.frame")){
+		  x = data.matrix(x);
 		}
 		call <- match.call(expand.dots = TRUE)
 		gng <- .GNG(x=x, labels=labels, beta=beta, alpha=alpha, max.nodes=max.nodes, 
@@ -967,8 +974,8 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
                   y
                 }
             })
-  
-  
+
+
   insertExamples.gng <<- function(object, examples, labels=c()){   
 	  if(length(labels) == 0){
       	object$insertExamples(examples, vector(mode="numeric", length=0))
