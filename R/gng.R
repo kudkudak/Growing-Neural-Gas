@@ -1,5 +1,3 @@
-#dev note: I have no idea how to document S4 methods using roxygen, I will have to assign someone to this task
-
 library(igraph)
 library(methods)
 
@@ -49,7 +47,7 @@ gng.train.online <- function(dim){
 .gng.dataset.bagging <- 2
 .gng.dataset.sequential <-1
 
-gng.train.offline <- function(max.iter = 100, min.improvement = 1e-2){
+gng.train.offline <- function(max.iter = 100, min.improvement = 1e-3){
   c(.gng.train.offline, max.iter , min.improvement)
 }
 
@@ -336,6 +334,26 @@ errorStatistics.gng <- NULL
 OptimizedGNG <- NULL
 
 
+#' @title clustering
+#' 
+#' @description Gets vector with node indexes assigned to examples in the dataset
+#' 
+#' @usage
+#' clustering(gng)
+#' 
+#' @export
+#' 
+#' @rdname clustering-methods
+#' 
+#' @docType methods
+#'
+#' @examples
+#' clustering(gng)
+#' 
+#' @aliases clustering
+#'
+clustering.gng <- NULL
+
 #' @title errorStatistics
 #' 
 #' @description Gets vector with errors for every second of execution
@@ -424,6 +442,11 @@ summary.gng <- NULL
 convertToGraph.gng <- NULL
 
 
+
+
+
+
+
 generateExamples <- NULL
 
 #' @title insertExamples
@@ -474,6 +497,8 @@ evalqOnLoad({
                    
   ){
     
+
+    
     config <- new(GNGConfiguration)
     
     # Fill in configuration
@@ -481,36 +506,36 @@ evalqOnLoad({
       config$dim = ncol(x)
     }else{
 	  
-       config$dim = training[2]
-		print(config$dim)    
+    config$dim = training[2]  
 	}
 
     
     if(type[1] == .gng.type.optimized){
-      config$uniformgrid_optimization = TRUE
-      config$lazyheap_optimization = TRUE  
-      config$set_bounding_box(type[2], type[3])
+      config$.uniformgrid_optimization = TRUE
+      config$.lazyheap_optimization = TRUE  
+      config$.set_bounding_box(type[2], type[3])
       
       if(training[1] == .gng.train.offline){
-        if(!max(df) <= type[3] && !min(df) >= type[2]){
-          gmum.error("Passed incorrect parameters. The dataset is not in the defined range")
+        if(!max(x) <= type[3] && !min(x) >= type[2]){
+          gmum.error(ERROR_BAD_PARAMS, "Passed incorrect parameters. The dataset is not in the defined range")
         }
       }
       
     }else{
-      config$uniformgrid_optimization = FALSE
-      config$lazyheap_optimization = FALSE
+      config$.uniformgrid_optimization = FALSE
+      config$.lazyheap_optimization = FALSE
     }
     
     if(type[1] == .gng.type.utility){
-      config$experimental_utility_k = type[2]
-      config$experimental_utility_option = 1
+      config$.experimental_utility_k = type[2]
+      config$.experimental_utility_option = 1
     }
     else{
-      config$experimental_utility_option = 0
+      config$.experimental_utility_option = 0
     }
     
-    config$dataset_type=.gng.dataset.bagging
+    
+    config$.dataset_type=.gng.dataset.bagging
     config$beta = beta
     config$max_edge_age = max.edge.age
     config$alpha = alpha  
@@ -521,7 +546,7 @@ evalqOnLoad({
     config$lambda = lambda
     config$verbosity = verbosity
     
-    if(!config$check_correctness()){
+    if(!config$.check_correctness()){
       gmum.error(ERROR_BAD_PARAMS, "Passed incorrect parameters.")
     }
     
@@ -530,6 +555,7 @@ evalqOnLoad({
     
     # Perform training on passed dataset
     if(training[1] == .gng.train.offline){
+      
       print("Training offline")
       if(is.null(x)){
         gmum.error(ERROR, "Passed null data and requested training offline")
@@ -541,34 +567,63 @@ evalqOnLoad({
         print(max_iter)
         min_relative_dif = training[3]
         iter = 0
-        errors_calculated = 0
-        while(iter < max_iter || errors_calculated == 0){
-          Sys.sleep(0.1)
-          iter = server$getCurrentIteration()
-          
-          if(iter %% (max_iter/100) == 0){    
-            print(paste("Iteration", iter))
-          }
-          
-          # Iter 5 = 5 times passed whole dataset. 
-          if(iter > 5){
-            errors_calculated = 1
-            errors = server$getErrorStatistics()
-            best_previously = min(errors[(length(errors)-5):length(errors)-1])
-            current = errors[length(errors)]
-            if(best_previously != 0){
-              change = 1.0 - current/best_previously
-              if(change < min_relative_dif){
-				print(best_previously)
-				print(errors[(length(errors)-5):length(errors)-1])
-                print("Patience bailed out")
-				break
+        previous_iter = -1
+        best_so_far = 1e10
+        initial_patience = 3
+        error_index = -1 # always bigger than 0
+        patience = initial_patience
+
+        tryCatch({
+          while(iter < max_iter && server$isRunning()){
+            Sys.sleep(0.1)
+            iter = server$getCurrentIteration()
+            
+            if(previous_iter != iter && iter %% (max_iter/100) == 0){    
+              print(paste("Iteration", iter))
+            }
+         
+            if(length(server$getErrorStatistics()) > 5){
+              errors = server$getErrorStatistics()
+  
+              best_previously = min(errors[(length(errors)-5):length(errors)])
+              
+              #this is same as (best_so_far-best_previously)/best_so_far < min_relative_di
+              #we get minimum of window 5 and look at the history
+              if( (error_index - server$.getGNGErrorIndex()) > 4 && 
+                (best_so_far - best_previously) < best_so_far*min_relative_dif){
+                patience = patience - 1
+                if(patience <= 0){
+                  print(sprintf("Best error during training: %f", best_so_far))
+                  print(sprintf("Best error in 5 previous iterations %f", best_previously))
+          				print(errors[(length(errors)-5):length(errors)])
+                  print("Patience (which you can control) elapsed, bailing out")
+          				break
+                }
+              }else{
+                patience = initial_patience
               }
+              
+              
+              error_index = server$.getGNGErrorIndex()
+              best_so_far = min(best_previously, best_so_far)
             }
           }
-        }
-        
-        terminate(server)
+          
+          previous_iter = iter
+          
+          if(server$isRunning()){
+            terminate(server)
+          }
+          else{
+            gmum.error(ERROR, "Training failed")
+          }
+        }, interrupt=
+        function(interrupt){
+          if(server$isRunning()){
+            terminate(server)
+          }
+         
+        })
         
       }
     }
@@ -591,13 +646,21 @@ evalqOnLoad({
                    verbosity=0,
 					k=NULL
                   ){
+    
+    if(is(x, "data.frame")){
+      x = data.matrix(x);
+    }
+    gng <- NULL
+    call <- match.call(expand.dots = TRUE)
 		if(is.null(k)){
-					.GNG(x=x, labels=labels, beta=beta, alpha=alpha, max.nodes=max.nodes, 
+					gng <- .GNG(x=x, labels=labels, beta=beta, alpha=alpha, max.nodes=max.nodes, 
 			eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.default(), training=training, lambda=lambda, verbosity=verbosity)
 		}else{
-				.GNG(x=x, labels=labels, beta=beta, alpha=alpha, max.nodes=max.nodes, 
+				gng <- .GNG(x=x, labels=labels, beta=beta, alpha=alpha, max.nodes=max.nodes, 
 			eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.utility(k=k), training=training, lambda=lambda, verbosity=verbosity)		
 		}
+		assign("call", call, gng)
+		gng
 	}
 
    OptimizedGNG <<- function(x=NULL, labels=c(),
@@ -616,17 +679,28 @@ evalqOnLoad({
 			gmum.error(ERROR, "Incorrect range")
 			return		
 		}
-		.GNG(x=x, labels=labels, beta=beta, alpha=alpha, max.nodes=max.nodes, 
-eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min=value.range[1]*1.1, max=value.range[2]*1.1), training=training, lambda=lambda, verbosity=verbosity)
-
+		if(is(x, "data.frame")){
+		  x = data.matrix(x);
+		}
+		call <- match.call(expand.dots = TRUE)
+		gng <- .GNG(x=x, labels=labels, beta=beta, alpha=alpha, max.nodes=max.nodes, 
+eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min=value.range[1], max=value.range[2]), training=training, lambda=lambda, verbosity=verbosity)
+    assign("call", call, gng)
+    gng
 	}    
 
      setGeneric("node", 
                 function(x, gng_id, ...) standardGeneric("node"))
- 
+
+    setGeneric("clustering", 
+           function(object) standardGeneric("clustering"))
+
+
      setGeneric("convertToGraph", 
                 function(object, ...) standardGeneric("convertToGraph"))
-     
+
+
+
      setGeneric("run", 
                 function(object, ...) standardGeneric("run"))
      
@@ -689,14 +763,34 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
   summary.gng <<- function(object){
     print(sprintf("Growing Neural Gas, nodes %d with mean error %f", 
                   object$getNumberNodes(), object$getMeanError()))
+    print(sprintf("Trained %d iterations", object$getCurrentIteration()))
     print("Mean errors[s]: ")
-    print(object$getErrorStatistics())
+    errors = object$getErrorStatistics()
+    if(length(errors) > 10){
+      errors = errors[(length(errors)-10):length(errors)]
+    }
+    
+    print(errors)
+  }
+
+
+  # Autocompletion fix
+
+  .GlobalEnv$`.DollarNames.C++Object` <- function( x, pattern ){
+    grep(pattern, asNamespace("Rcpp")$complete(x), value = TRUE)[! (substr(grep(pattern, asNamespace("Rcpp")$complete(x), value = TRUE),1,1)==".")]
   }
   
+  #.GlobalEnv$DollarNamesGmumr <- function( x, pattern ){
+  #  asNamespace("Rcpp")$`.DollarNames.C++Object`(x, pattern)[! (substr(asNamespace("Rcpp")$`.DollarNames.C++Object`(x, pattern),1,1)==".")]
+  #}
+  #environment(.GlobalEnv$DollarNamesGmumr) <- .GlobalEnv
+  #setMethod( ".DollarNames", "C++Object", .GlobalEnv$DollarNamesGmumr )
+
 
   setMethod("plot",  "Rcpp_GNGServer", plot.gng)
   setMethod("print",  "Rcpp_GNGServer", print.gng)
   setMethod("summary", "Rcpp_GNGServer", summary.gng)
+  setMethod("show", "Rcpp_GNGServer", summary.gng)
   
   node.gng <<- function(x, gng_id){
     x$getNode(gng_id)
@@ -708,6 +802,16 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
   
   pause.gng <<- function(object){
     object$pause()
+    n = 0.0
+    sleep = 0.1
+    while(object$isRunning()){
+        Sys.sleep(sleep)  
+        n = n + 1
+        if(n > 2/sleep){
+            print("Warning: GNG has not paused! Check status with gng$isRunning(). Something is wrong.")
+            return()
+        }
+    }
   }
   
   terminate.gng <<- function(object){
@@ -721,13 +825,19 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
   errorStatistics.gng <<- function(object){
     object$getErrorStatistics()
   }  
-  
+ 
+  clustering.gng <<- function(object){
+    object$clustering()
+  }  
+
   save.gng <<- function(object, filename){
+    warning("Saving does not preserve currently training history")
     object$save(filename)
   }
   
   load.gng <<- function(filename){
-    new(GNGServer, filename)
+    warning("Saving does not preserve currently training history")
+    fromFileGNG(filename)
   }
  
   
@@ -750,7 +860,7 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
   setMethod("meanError", "Rcpp_GNGServer", meanError.gng) 
   setMethod("errorStatistics", "Rcpp_GNGServer", errorStatistics.gng) 
   
-  #' Get number of nodes
+  #'Get number of nodes
   setMethod("numberNodes" ,
             "Rcpp_GNGServer",
             function(object){
@@ -758,33 +868,114 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
             })
   
   
-  
+    
   convertToGraph.gng <- function(object){
-    .gng.construct_igraph(object)
+    pause(object)
+    
+    if(object$getNumberNodes() == 0){
+      return(graph.empty(n=0, directed=FALSE))
+    }
+    
+    #Prepare index map. Rarely there is a difference in indexing
+    #due to a hole in memory representation of GNG graph (i.e.
+    #indexing in gng can be non-continuous)
+    
+    # Warning: This is a hack. If there is a bug look for it here
+    indexesGNGToIGraph <- 1:(2*object$.getLastNodeIndex()) 
+    indexesIGraphToGNG <- 1:object$getNumberNodes()
+    
+    if(object$.getLastNodeIndex() != object$getNumberNodes()){
+      igraph_index = 1
+      for(i in (1:object$.getLastNodeIndex())){
+        node <- node(object, i)
+        if(length(node) != 0){
+          indexesGNGToIGraph[i] = igraph_index
+          indexesIGraphToGNG[igraph_index] = i
+          igraph_index = igraph_index + 1
+        }
+      }
+    }
+    
+    adjlist<-list()
+    for(i in 1:object$.getLastNodeIndex()){
+      node <- node(object, i)
+      if(length(node) != 0){
+        
+        igraph_index = indexesGNGToIGraph[i]
+        #print(paste(object$.getLastNodeIndex(), length(indexesGNGToIGraph), object$isRunning()))
+        #print(paste(igraph_index, node$neighbours))
+        neighbours = node$neighbours[node$neighbours > i]
+        adjlist[[igraph_index]] <- sapply(neighbours, function(x){ indexesGNGToIGraph[x] })
+      } else{
+        #print("Empty node")
+      }
+    }
+    
+    #print("Creating the graph")
+    
+    g <- graph.adjlist(adjlist, mode = "all", duplicate=FALSE)
+    for(i in 1:object$.getLastNodeIndex()){
+      node <- node(object, i)
+      if(length(node) != 0){
+        igraph_index = indexesGNGToIGraph[i]
+        #TODO: it is more efficient to assign whole vectors
+        #TODO: refactor in whole code v0 v1 v2 to pos_1 pos_2 pos_3
+        V(g)[igraph_index]$v0 <- node$pos[1]
+        V(g)[igraph_index]$v1 <- node$pos[2]
+        V(g)[igraph_index]$v2 <- node$pos[3]
+        V(g)[igraph_index]$label <- node$label
+        V(g)[igraph_index]$error <- node$error
+        if(!is.null(node$utility)){
+          V(g)[igraph_index]$utility = node$utility
+        }
+      } 
+    }
+    
+    # Add distance information
+    dists <- apply(get.edges(g, E(g)), 1, function(x){ 
+      object$nodeDistance(indexesIGraphToGNG[x[1]], indexesIGraphToGNG[x[2]])
+    })
+    E(g)$dists = dists
+    
+    g
   }
+
   
-  
-  #' Get node descriptor from graph
-  #'
-  #' @note This function will dump graph to .graphml file on this first and then will remove
-  #' the file. Be cautious with huge graphs!
-  #' 
-  #' @param gng_id gng id of the node NOTE: nmight differ from one in exported igraph
+
   setMethod("convertToGraph" ,
             "Rcpp_GNGServer",
             convertToGraph.gng)
-  
-  
-  #' Find closest example
-  #' @param x Vector of dimensionality of vertex
-  #' @return gng_index of the closest example
+
+
+  setMethod("clustering" ,
+            "Rcpp_GNGServer",
+            clustering.gng)
+
   setMethod("predict" ,
             "Rcpp_GNGServer",
             function(object, x){
-              object$predict(x)
+                if( is.vector(x)){
+                    object$predict(x)
+                }else{
+                  if ( !is(x, "data.frame") && !is(x, "matrix") && !is(x,"numeric")  ) {
+                    gmum.error(ERROR_BAD_PARAMS, "Wrong target class, please provide data.frame, matrix or numeric vector")
+                  }
+                  
+                  if (!is(x, "matrix")) {
+                    x <- data.matrix(x)
+                  }
+                  
+                  y <- rep(NA, nrow(x))
+                  
+                  for(i in 1:nrow(x)){
+                    y[i] <- object$predict(x[i,])
+                  }
+                  
+                  y
+                }
             })
-  
-  
+
+
   insertExamples.gng <<- function(object, examples, labels=c()){   
 	  if(length(labels) == 0){
       	object$insertExamples(examples, vector(mode="numeric", length=0))
@@ -820,4 +1011,18 @@ eps.n=eps.n, eps.w=eps.w, max.edge.age=max.edge.age, type=gng.type.optimized(min
             "Rcpp_GNGServer",
             insertExamples.gng)
   
+
+  methods = list()
+  for(name in names(GNGConfiguration@methods)){
+    methods[[name]] = eval(substitute(
+      function(...) .CppObject$WHAT(...), list(WHAT = as.name(name)))) 
+  }
+  
+  methods[["initialize"]] <- function(...){
+    
+  }
+  
+
+
 })
+

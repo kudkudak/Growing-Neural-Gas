@@ -1,5 +1,5 @@
-#include "gng/GNG.h" //TODO: path problems
-#include "gng/GNGServer.h"
+#include "gng/gng.h" 
+#include "gng/gng_server.h"
 #include "utils/utils.h"
 
 #include "gtest/gtest.h"
@@ -203,7 +203,7 @@ TEST(GNGNumericTest, FewDimsSkewedUGConvergence) {
 			"fewdims.graphml", extra_examples, num_extra * (config.dim + 1));
 
 	ASSERT_GE(results.first, 10.0);
-	ASSERT_LE(fabs(results.second), 1e-1);
+	ASSERT_LE(fabs(results.second), 3e-1);
 }
 
 TEST(GNGNumericTest, FewDimsUGConvergence) {

@@ -10,7 +10,7 @@
 #ifndef THREADING_H
 #define THREADING_H
 
-#include "utils/tinythread.h" //TODO: path problems
+#include "utils/tinythread.h"
 #include "utils/fast_mutex.h"
 
 namespace gmum{

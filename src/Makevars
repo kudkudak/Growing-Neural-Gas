@@ -1,22 +1,23 @@
-SOURCES = $(wildcard utils/*.cpp gng/*.cpp)
-OBJECTS=$(SOURCES:.cpp=.o)
+# Note!: R is overwriting all optimization flags, if you are a dev you can change flags in ~/.R/Makevars 
 
-#OBJECTS go to different folder depending on the target
-#OBJECTS2=$(notdir $(SOURCES))
-#OBJECTS3=$(OBJECTS2:.cpp=.o)
-#OBJECTS4=$(addprefix ../build/release/,$(OBJECTS3)) 
+CPP_SOURCES := $(wildcard utils/*.cpp gng/*.cpp)
+SOURCES := $(CPP_SOURCES)
+INCLUDES := -I ../inst/include/utils -I ../inst/include -I ../inst/include/gng
 
-R_HOME :=  $(shell R RHOME)
-DEBUG := -DNDEBUG_GMUM  -DNDEBUG_GMUM_2
-GNG_FLAGS := -D RCPP_INTERFACE
+OBJECTS = $(CPP_SOURCES:.cpp=.o)
 
-CPPFLAGS := $(shell $(R_HOME)/bin/R CMD config --cppflags)
-RLDFLAGS := $(shell $(R_HOME)/bin/R CMD config --ldflags)
-RCPPINCL := $(shell $(R_HOME)/bin/Rscript -e "Rcpp:::CxxFlags()")
-RCPPLIBS := $(shell $(R_HOME)/bin/Rscript -e "Rcpp:::LdFlags()")
-RCPPARMAINCL :=	$(shell $(R_HOME)/bin/Rscript -e "RcppArmadillo:::CxxFlags()")	
+DEBUG := -DNDEBUG_GMUM -DNDEBUG_GMUM_2
+PREPROCESS := $(DEBUG) -DARMA_DONT_USE_CXX11 -DRCPP_INTERFACE
 
-PKG_CPPFLAGS := -O4 $(DEBUG) -I../inst/include -I../inst/include/gng -I../inst/include/utils -I. $(CPPFLAGS) $(RCPPINCL) $(RCPPARMAINCL)
-PKG_CXXFLAGS := -O4 $(GNG_FLAGS) $(DEBUG) $(RCPPFLAGS) $(RCPPINCL) $(RCPPARMAINCL) $(RINSIDEINCL) $(shell $(R_HOME)/bin/R CMD config CXXFLAGS) -g -pthread -fpic  
-PKG_LIBS := -O4 $(DEBUG) $(RLDFLAGS) $(RRPATH) $(RBLAS) $(RLAPACK) $(RCPPLIBS) $(RLDFLAGS) $(RINSIDELIBS) -lpthread 
+GCC_STD := 
+
+R_HOME :=     $(shell R RHOME)
+R_LIBS :=    $(shell $(R_HOME)/bin/R CMD config --ldflags)  $(shell echo 'Rcpp:::LdFlags()'  | $(R_HOME)/bin/R --vanilla --slave)
+R_CPPFLAGS := $(shell $(R_HOME)/bin/R CMD config --cppflags)  $(shell echo 'Rcpp:::CxxFlags()' | $(R_HOME)/bin/R --vanilla --slave)     $(shell echo 'RcppArmadillo:::CxxFlags()' | $(R_HOME)/bin/R --vanilla --slave)
+LAPACK_LIBS := $(shell ${R_HOME}/bin/R CMD config LAPACK_LIBS)
+BLAS_LIBS := $(shell ${R_HOME}/bin/R CMD config BLAS_LIBS)
+
+PKG_CPPFLAGS := $(GCC_STD) $(PREPROCESS) $(R_CPPFLAGS) $(INCLUDES) -pthread -mtune=native
+PKG_LIBS := $(LAPACK_LIBS) $(BLAS_LIBS) $(R_LIBS)
+
 
