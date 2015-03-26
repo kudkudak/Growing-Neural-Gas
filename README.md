@@ -61,7 +61,7 @@ You can also refer to R package documentation (pdf version
 In this example we will construct a clustering of UCI wine dataset using offline GNG.
 
 ```R
-library(gmum.r)
+library(GrowingNeuralGas)
 
 # Load data
 data(wine, package="rattle")
@@ -70,8 +70,9 @@ scaled_wine <- scale(wine[-1])
 # Train in an offline manner
 gng <- GNG(scaled_wine, labels=wine$Type, max.nodes=20)
 
-# Find closest node to vector [1,1,1]
-predict(gng, c(1,1,1))
+# Find closest node to vector [1,...,1]
+vct = rep(1, 13)
+predict(gng, vct)
 
 # Convert to igraph and print mean degree of the network
 ig = convertToGraph(gng)
