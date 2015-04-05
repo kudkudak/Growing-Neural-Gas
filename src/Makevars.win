@@ -1,0 +1,18 @@
+# Note!: R is overwriting all optimization flags, if you are a dev you can change flags in ~/.R/Makevars 
+
+CPP_SOURCES := $(wildcard utils/*.cpp gng/*.cpp)
+SOURCES := $(CPP_SOURCES)
+INCLUDES := -I -I ../inst/include/utils -I ../inst/include  -I ../inst/include/gng
+
+OBJECTS = $(CPP_SOURCES:.cpp=.o)
+
+DEBUG := -DNDEBUG_GMUM -DNDEBUG_GMUM_2
+PREPROCESS := $(DEBUG) -DARMA_DONT_USE_CXX11 -DRCPP_INTERFACE
+
+R_LIBS :=    $(shell R CMD config --ldflags)  $(shell echo 'Rcpp:::LdFlags()'  | R --vanilla --slave)
+R_CPPFLAGS := $(shell R CMD config --cppflags)  $(shell echo 'Rcpp:::CxxFlags()' | R --vanilla --slave)     $(shell echo 'RcppArmadillo:::CxxFlags()' | R --vanilla --slave)
+LAPACK_LIBS := $(shell R CMD config LAPACK_LIBS)
+BLAS_LIBS := $(shell R CMD config BLAS_LIBS)
+
+PKG_CPPFLAGS := $(PKG_CPPFLAGS) $(GCC_STD) $(PREPROCESS) $(R_CPPFLAGS) $(INCLUDES) -Wall -pedantic -mtune=native -static-libstdc++ -static-libgcc -lstdc++ -lpthread
+PKG_LIBS := $(PKG_LIBS) $(LAPACK_LIBS) $(BLAS_LIBS) $(R_LIBS) -static-libstdc++ -static-libgcc -lstdc++ -lpthread
