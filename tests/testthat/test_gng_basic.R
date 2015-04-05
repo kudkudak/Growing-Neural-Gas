@@ -77,13 +77,14 @@ test_that("GNG synchronization looks ok", {
         data(cec_mouse_1_spherical)
         dataset = input
         gng <- GNG(dataset, verbosity=3, max.nodes=20)
+        gng$.updateClustering()
         sum_1 = (sum( gng$clustering() != predict(gng, dataset)))
 
-        data(cec_mouse_1_spherical)
-        dataset = input
         gng <- GNG(train=gng.train.online(dim=2), verbosity=3, max.nodes=20)
         gng$insertExamples(dataset) 
-        Sys.sleep(0.1)
+        gng$pause()
+        gng$.updateClustering()
+
         sum_2 = (sum( gng$clustering() != predict(gng, dataset)))
         
         expect_that(sum_1 == 0 && sum_2 == 0, is_true())

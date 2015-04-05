@@ -34,16 +34,13 @@ Daniel Fiser, Jan Faigl, Miroslav Kulich optimization paper [Growing neural gas 
 ##Installation
 -----------
 
-You can install it as an R package, it is easiest to do it using devtools (make sure you download devtools and RCurl packages in the first place).
+You can install it as an R package, it is easiest to do it using devtools.
 
 ```R
 devtools::install_github("kudkudak/Growing-Neural-Gas")
 ```
 
-I recommend using RStudio, especially for plotting.
-
-See **Known issues** if your installation fails. There are few problems with
-R/igraph that are platform dependent.
+For more details (Windows installation) see [src/README.md](src/README.md)
 
 ##Usage
 
@@ -160,6 +157,3 @@ This is not a full documentation. Please refer to R package documentation (pdf v
 ---------
 Feel free to contribute to the code. Contributions should be posted as pull requests. For testing please refer to tests folder. 
 
-##Known issues
----------
-* Package is not released for Windows yet.
