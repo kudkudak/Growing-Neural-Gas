@@ -79,10 +79,7 @@ pair<double, double> test_convergence(GNGConfiguration * cnf = 0,
 	while (true) {
 		++iteration;
 
-		REPORT_PRODUCTION(s->getCurrentIteration());
 		gmum::sleep(sleep_ms);
-		REPORT_PRODUCTION(s->getGraph().get_number_nodes());
-		REPORT_PRODUCTION(s->getMeanError());
 		if (iteration >= ms_loop / sleep_ms)
 			break;
 	}
@@ -150,10 +147,7 @@ TEST(GNGNumericTest, Serialization) {
 
 	while (true) {
 		++iteration;
-		REPORT_PRODUCTION(s->getCurrentIteration());
 		gmum::sleep(sleep_ms);
-		REPORT_PRODUCTION(s->getGraph().get_number_nodes());
-		REPORT_PRODUCTION(s->getMeanError());
 		if (iteration >= ms_loop / sleep_ms)
 			break;
 	}

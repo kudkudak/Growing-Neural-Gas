@@ -6,6 +6,7 @@
 #include <string>
 
 GNGServer::GNGServer(std::string filename) {
+
 	cerr << filename << endl;
 
 	std::ifstream input;
@@ -19,19 +20,23 @@ GNGServer::GNGServer(std::string filename) {
 
 GNGServer::GNGServer(GNGConfiguration configuration,
 		std::istream * input_graph) {
+
+
 	init(configuration, input_graph);
 }
 
 void GNGServer::init(GNGConfiguration configuration,
 		std::istream * input_graph) {
 
+	m_index = gng_server_count++;
+
+
 	algorithm_thread = 0;
-	m_current_dataset_memory_was_set = false;
 	m_running_thread_created = false;
 
 	m_logger = boost::shared_ptr<Logger>(new Logger(configuration.verbosity));
 
-	DBG(m_logger,10, "GNGServer()::constructing GNGServer");
+	LOG(m_logger,5, "GNGServer()::constructing GNGServer");
 
 	if (!configuration.check_correctness())
 		throw BasicException("Invalid configuration passed to GNGServer");
@@ -127,11 +132,14 @@ void GNGServer::init(GNGConfiguration configuration,
 }
 
 void GNGServer::run() {
-	DBG(m_logger,10, "GNGServer::runing algorithm thread");
-	algorithm_thread = new gmum::gmum_thread(&GNGServer::_run, (void*) this);
-	DBG(m_logger,10, "GNGServer::runing collect_statistics thread");
-
-	m_running_thread_created = true;
+	if(!algorithm_thread){
+		DBG(m_logger,10, "GNGServer::runing algorithm thread");
+		algorithm_thread = new gmum::gmum_thread(&GNGServer::_run, (void*) this);
+		DBG(m_logger,10, "GNGServer::runing collect_statistics thread");
+		m_running_thread_created = true;
+	}else{
+		gngAlgorithm->run(/*synchronized*/ true);
+	}
 }
 
 GNGConfiguration GNGServer::getConfiguration() {
@@ -225,8 +233,14 @@ unsigned int GNGServer::getNumberNodes() const {
 	return nr;
 }
 
+
+
 double GNGServer::getMeanError() {
 	return gngAlgorithm->getMeanError();
+}
+
+bool GNGServer::hasStarted() const{
+	return this->getCurrentIteration() != 0;
 }
 
 vector<double> GNGServer::getMeanErrorStatistics() {
@@ -245,6 +259,10 @@ unsigned GNGServer::getGNGErrorIndex() const{
 }
 
 #ifdef RCPP_INTERFACE
+
+void GNGServer::_updateClustering(){
+	gngAlgorithm->updateClustering();
+}
 
 //This is tricky - used only by convertToIGraph in R, because
 //it might happen that we delete nodes and have bigger index of the last node
@@ -317,10 +335,16 @@ Rcpp::NumericVector GNGServer::RgetErrorStatistics() {
 	vector<double> x = getMeanErrorStatistics();
 	return NumericVector(x.begin(), x.end());
 }
-void GNGServer::RinsertExamples(Rcpp::NumericMatrix & r_points,
+
+void GNGServer::RinsertExamples(Rcpp::NumericMatrix & r_points){
+	RinsertLabeledExamples(r_points, Rcpp::NumericVector());
+}
+
+void GNGServer::RinsertLabeledExamples(Rcpp::NumericMatrix & r_points,
 		Rcpp::NumericVector r_extra ) {
 	std::vector<double> extra(r_extra.begin(), r_extra.end());
 	arma::mat * points = new arma::mat(r_points.begin(), r_points.nrow(), r_points.ncol(), false);
+
 
 	arma::Row<double> mean_colwise = arma::mean(*points, 0 /*dim*/);
 	arma::Row<double> std_colwise = arma::stddev(*points, 0 /*dim*/);
@@ -349,32 +373,46 @@ void GNGServer::RinsertExamples(Rcpp::NumericMatrix & r_points,
 
 	arma::inplace_trans( *points, "lowmem");
 
+
+
+
 	if(extra.size()) {
+		if(!(points->n_cols== extra.size())){
+
+			cerr<<"Error: please pass same number of labels as examples\n";
+			cerr<<"Error: passed "<<points->n_cols<<" "<<extra.size()<<"\n";
+			return;
+		}
 		insertExamples(points->memptr(), &extra[0], 0 /*probabilty vector*/,
 				(unsigned int)points->n_cols, (unsigned int)points->n_rows);
 	} else {
+
 		insertExamples(points->memptr(), 0 /* extra vector */, 0 /*probabilty vector*/,
 				(unsigned int)points->n_cols, (unsigned int)points->n_rows);
 	}
 
 	arma::inplace_trans( *points, "lowmem");
+
+	if(!isRunning()){
+		run();
+	}
 }
 
 #endif
 
 ///Pause algorithm
 void GNGServer::pause() {
-	gngAlgorithm->pause();
+	gngAlgorithm->pause(/* synchronized*/ true);
 }
 
 ///Terminate algorithm
 void GNGServer::terminate() {
-	getAlgorithm().terminate();
-	DBG(m_logger,20, "GNGServer::getAlgorithm terminated, joining algorithm thread");
-	if (algorithm_thread)
-		algorithm_thread->join();
-	DBG(m_logger,20, "GNGServer::algorithm thread terminated, joining statistic thread");
-	gmum::sleep(100);
+	if(gngAlgorithm.get()){
+		LOG(m_logger,5, "GNGServer::getAlgorithm terminating");
+		LOG(m_logger,10, "GNGServer::isRunning ="+ to_str(gngAlgorithm->isRunning()));
+		gngAlgorithm->terminate(/*synchronized*/true);
+		LOG(m_logger,10, "GNGServer::isRunning ="+ to_str(gngAlgorithm->isRunning()));
+	}
 }
 
 GNGAlgorithm & GNGServer::getAlgorithm() {
@@ -388,15 +426,27 @@ GNGDataset & GNGServer::getDatabase() {
 }
 
 GNGServer::~GNGServer() {
-	DBG(m_logger,10, "GNGServer::destructor called");
-#ifdef RCPP_INTERFACE
+	LOG(m_logger, 5, "GNGServer::destructor for "+to_str(m_index)+" called");
 
-	if(m_current_dataset_memory_was_set) {
-		R_ReleaseObject(m_current_dataset_memory);
-
+	if(gngAlgorithm.get()){
+	    terminate();
 	}
-	//R Matrix will be deleted from R level
-#endif
+
+	LOG(m_logger, 5, "GNGServer::joining to algorithm_thread");
+
+	if(algorithm_thread){
+		algorithm_thread->join();
+	}
+
+	LOG(m_logger, 5, "GNGServer::destructor for "+to_str(m_index)+" finished");
+
 }
 
-
+unsigned GNGServer::getDatasetSize() const{
+    if(gngDataset.get()){
+	    gmum::scoped_lock<GNGDataset> db_lock(*gngDataset.get());
+        return gngDataset->size();
+    }else{
+        return 0;
+    }
+}

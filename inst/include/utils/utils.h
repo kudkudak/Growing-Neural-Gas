@@ -35,13 +35,7 @@ typedef vector<int> VI;
 
 #include <utils/logger.h>
 
-#ifdef DEBUG
-	#define DBG_2(logger, level, text) logger->log(level, text);
-	#define REPORT_2(x) cerr<<#x<<"="<<(x)<<endl<<std::flush;
-#else
-	#define DBG_2(verbosity, level, text)
-	#define REPORT_2(x)
-#endif
+#define LOG(logger, level, text) logger->log(level, text);
 
 #ifdef DEBUG
 	#define DBG(logger, level, text) logger->log(level, text);
@@ -50,8 +44,6 @@ typedef vector<int> VI;
 	#define DBG(verbosity, level, text)
 	#define REPORT(x)
 #endif
-
-#define REPORT_PRODUCTION(x) cout<<#x<<"="<<(x)<<endl<<std::flush;
 
 
 template<class T>

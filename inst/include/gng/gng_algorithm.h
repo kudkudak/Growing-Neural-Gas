@@ -66,10 +66,13 @@ public:
 	///Retrieve closest node's gng_index to the example
 	int predict(const std::vector<double> &);
 
-	void run();
-	void pause();
+	//Updates clustering field on the dataset kept in memory
+	void updateClustering();
+
+	void run(bool synchronized=true);
+	void pause(bool synchronized=true);
 	bool isRunning();
-	void terminate();
+	void terminate(bool synchronized=true);
 
 	unsigned getErrorIndex() const;
 	void setMaxNodes(int value);
@@ -90,9 +93,7 @@ public:
 	circular_buffer<pair<double, double> > m_mean_error; //error of the network
 	int m_lambda; //lambda parameter
 	double m_eps_w, m_eps_n; //epsilon of the winner and of the neighbour
-	int m_max_age;
-	int m_max_nodes;
-	int m_iteration;
+	int m_max_age, m_max_nodes, m_iteration;
 
 	bool m_toggle_uniformgrid, m_toggle_lazyheap;
 
@@ -124,7 +125,7 @@ public:
 		GNG_PREPARING, GNG_RUNNING, GNG_PAUSED, GNG_TERMINATED
 	};
 
-	GngStatus m_gng_status;
+	GngStatus m_gng_status, m_gng_status_request;
 	bool running;
 
 	enum UtilityOptions {

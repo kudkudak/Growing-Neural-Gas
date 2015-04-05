@@ -4,8 +4,7 @@ library(testthat)
 max_nodes <- 500
 
 # Construct gng object
-gng <- GNG(max.nodes=max_nodes, training = gng.train.online(dim=3), verbosity=10, k=1.3)
-
+gng <- GNG(max.nodes=max_nodes, training = gng.train.online(dim=3), verbosity=3, k=1.3)
 
 # Construct examples, here we will use a sphere
 ex <- gng.preset.sphere(N=10000, prob=-1)
@@ -25,7 +24,7 @@ print("Adding jumped distribution")
 pause(gng)
 plot(gng, mode=gng.plot.2d.errors) #0.068 without utility , 10 times less with
 
-ex2 <- gng.preset.box(N=90000, r=1.0, center=c(3.0,3.0,3.0), prob=-1)
+ex2 <- gng.preset.box(N=10000, r=1.0, center=c(3.0,3.0,3.0), prob=-1)
 insertExamples(gng, ex2, labels)
 
 
@@ -39,7 +38,7 @@ g <- convertToGraph(gng)
 length(V(g))
 
 if("rgl" %in% rownames(installed.packages()) == TRUE) {
-  plot(gng, mode=gng.plot.rgl3d)
+  plot(gng, mode=gng.plot.3d)
 }
 
 

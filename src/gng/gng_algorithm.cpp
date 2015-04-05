@@ -1,4 +1,4 @@
-/*
+﻿/*
  * File: GNGAlgorithm.cpp
  * Author: staszek "kudkudak" jastrzebski <grimghil<at>gmail.com>
  *
@@ -35,7 +35,7 @@ GNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
 	do {
 		max = errorHeap.extractMax();
 
-		DBG_2(m_logger, 4, "GNGAlgorithm::LargestErrorLazy::found max " + to_string(max.i));
+		DBG(m_logger, 4, "GNGAlgorithm::LargestErrorLazy::found max " + to_string(max.i));
 
 		GNGNode * gng_node = &m_g[max.i];
 		if (gng_node->error_cycle != c) {
@@ -45,7 +45,7 @@ GNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
 			largest[0] = gng_node;
 			int j = 0;
 			double error = 0.0;
-			DBG_2(m_logger, 4, "GNGAlgorithm::LargestErrorLazy::found max " + to_string(max.i));
+			DBG(m_logger, 4, "GNGAlgorithm::LargestErrorLazy::found max " + to_string(max.i));
 
 			BOOST_FOREACH(GNGEdge * edg, *largest[0])
 			{
@@ -69,7 +69,7 @@ GNGNode ** GNGAlgorithm::LargestErrorNodesLazy() {
 			break;
 		}
 
-	} while (1); DBG_2(m_logger, 3, "GNGAlgorithm::LargestErrorLazy::returning");
+	} while (1); DBG(m_logger, 3, "GNGAlgorithm::LargestErrorLazy::returning");
 	return largest;
 
 }
@@ -87,9 +87,11 @@ GNGAlgorithm::GNGAlgorithm(GNGGraph * g, GNGDataset* db,
 				eps_w), m_eps_n(eps_n), m_density_threshold(0.1), m_grow_rate(
 				1.5), errorHeap(), dim(dim), m_toggle_uniformgrid(
 				uniformgrid_optimization), m_toggle_lazyheap(
-				lazyheap_optimization), running(false), m_utility_option(
+				lazyheap_optimization),  m_utility_option(
 				utility_option), m_mean_error(1000), m_utility_k(utility_k), m_logger(
-				logger), m_iteration(0) {
+				logger), m_iteration(0),
+				m_gng_status(GNG_TERMINATED),
+				m_gng_status_request(GNG_TERMINATED) {
 
 	DBG(m_logger, 1, "GNGAlgorithm:: Constructing object");
 	DBG(m_logger, 10,
@@ -190,6 +192,14 @@ void GNGAlgorithm::randomInit() {
 void GNGAlgorithm::addNewNode() {
 	using namespace std;
 
+    if (m_max_nodes <= m_g.get_number_nodes()) {
+		DBG(m_logger, 4,
+				"GNGAlgorith::AddNewNode:: achieved maximum number of nodes");
+		return;
+	}
+
+	LOG(m_logger, 10, "GNGAlgorith::AddNewNode "+to_string(m_g.get_number_nodes()));
+
 	DBG(m_logger, 4, "GNGAlgorith::AddNewNode::start search");
 
 	if (m_toggle_lazyheap)
@@ -204,19 +214,14 @@ void GNGAlgorithm::addNewNode() {
 	else
 		error_nodes_new = LargestErrorNodes();
 
-	DBG_2(m_logger, 4, "GNGAlgorith::AddNewNode::search completed");
+	DBG(m_logger, 4, "GNGAlgorith::AddNewNode::search completed");
 
 	if (!error_nodes_new[0] || !error_nodes_new[1])
 		return;
 
-	DBG_2(m_logger, 4, "GNGAlgorith::AddNewNode::search completed and successful");
+	DBG(m_logger, 4, "GNGAlgorith::AddNewNode::search completed and successful");
 
-	if (m_max_nodes <= m_g.get_number_nodes()) {
-		DBG(m_logger, 4,
-				"GNGAlgorith::AddNewNode:: achieved maximum number of nodes");
-		delete[] error_nodes_new;
-		return;
-	}
+	
 
 	double position[this->dim]; //param
 
@@ -238,11 +243,11 @@ void GNGAlgorithm::addNewNode() {
 	if (m_toggle_uniformgrid)
 		ug->insert(m_g[new_node_index].position, new_node_index);
 
-	DBG_2(m_logger, 4, "GNGAlgorith::AddNewNode::added " + to_string(m_g[new_node_index]));
+	DBG(m_logger, 4, "GNGAlgorith::AddNewNode::added " + to_string(m_g[new_node_index]));
 
 	m_g.removeUDEdge(error_nodes_new[0]->nr, error_nodes_new[1]->nr);
 
-	DBG_2(m_logger, 3, "GNGAlgorith::AddNewNode::removed edge beetwen " +
+	DBG(m_logger, 3, "GNGAlgorith::AddNewNode::removed edge beetwen " +
 			to_string(error_nodes_new[0]->nr) + " and" + to_string(error_nodes_new[1]->nr));
 	DBG(m_logger, 2,
 			"GNGAlgorithm::AddNewNode::largest error node after removing edge : "
@@ -252,7 +257,7 @@ void GNGAlgorithm::addNewNode() {
 
 	m_g.addUDEdge(new_node_index, error_nodes_new[1]->nr);
 
-	DBG_2(m_logger, 3, "GNGAlgorith::AddNewNode::add edge beetwen " +
+	DBG(m_logger, 3, "GNGAlgorith::AddNewNode::add edge beetwen " +
 			to_string(error_nodes_new[0]->nr) + " and" + to_string(new_node_index));
 
 	if (!m_toggle_lazyheap) {
@@ -274,8 +279,9 @@ void GNGAlgorithm::addNewNode() {
 								+ getUtility(error_nodes_new[1]->nr)));
 
 	delete[] error_nodes_new;
-	DBG_2(m_logger, 3, "GNGAlgorith::AddNewNode::delete done");
+	DBG(m_logger, 3, "GNGAlgorith::AddNewNode::delete done");
 }
+
 
 int GNGAlgorithm::predict(const std::vector<double> & ex) {
 
@@ -290,13 +296,13 @@ int GNGAlgorithm::predict(const std::vector<double> & ex) {
 
 std::pair<double, int> GNGAlgorithm::adapt(const double * ex,
 		const double * extra) {
-	DBG_2(m_logger, 4, "GNGAlgorith::Adapt::commence search");
+	DBG(m_logger, 4, "GNGAlgorith::Adapt::commence search");
 
 	std::pair<int, int> nearest = _getNearestNeurons(ex);
 	GNGNode * nearest_0 = &m_g[nearest.first], * nearest_1 = &m_g[nearest.second];
 
 
-	DBG_2(m_logger, 4, "GNGAlgorith::Adapt::found nearest nodes to the drawn example " + to_string(*nearest_0) + " " + to_string(*nearest_1));
+	DBG(m_logger, 4, "GNGAlgorith::Adapt::found nearest nodes to the drawn example " + to_string(*nearest_0) + " " + to_string(*nearest_1));
 
 	double error = m_g.get_dist(nearest_0->position, ex);
 
@@ -310,14 +316,14 @@ std::pair<double, int> GNGAlgorithm::adapt(const double * ex,
 				this->getUtility(nearest_0->nr) + error_2 - error);
 	}
 
-	DBG_2(m_logger, 3, "GNGAlgorith::Adapt::increasing error");
+	DBG(m_logger, 3, "GNGAlgorith::Adapt::increasing error");
 
 	if (!m_toggle_lazyheap)
 		increaseError(nearest_0, error);
 	else
 		increaseErrorNew(nearest_0, error);
 
-	DBG_2(m_logger, 3, "GNGAlgorith::Adapt::accounted for the error");
+	DBG(m_logger, 3, "GNGAlgorith::Adapt::accounted for the error");
 
 	if (m_toggle_uniformgrid)
 		ug->remove(nearest_0->position);
@@ -366,7 +372,7 @@ std::pair<double, int> GNGAlgorithm::adapt(const double * ex,
 
 	bool BYPASS = false;
 
-	DBG_2(m_logger, 4, "GNGAlgorith::Adapt::commence scan of edges");
+	DBG(m_logger, 4, "GNGAlgorith::Adapt::commence scan of edges");
 
 	//TODO: assuming here GNGNode not any arbitrary node :/
 	GNGNode::EdgeIterator edg = nearest_0->begin();
@@ -485,7 +491,7 @@ void GNGAlgorithm::testAgeCorrectness() {
 
 void GNGAlgorithm::resizeUniformGrid() {
 
-	DBG_2(m_logger, 6, "GNGAlgorithm::Resize Uniform Grid");
+	DBG(m_logger, 6, "GNGAlgorithm::Resize Uniform Grid");
 	DBG(m_logger, 6,
 			"GNGAlgorithm::Resize Uniform Grid old_l="
 					+ to_string(ug->getCellLength()));
@@ -553,27 +559,32 @@ GNGNode ** GNGAlgorithm::LargestErrorNodes() {
 	return largest;
 }
 
+void GNGAlgorithm::updateClustering() {
+	gmum::scoped_lock<GNGDataset> db_lock(*g_db);
+	for(unsigned int i=0;i<g_db->size();++i){
+		set_clustering(i, _getNearestNeurons(g_db->getPosition(i)).first);
+	}
+}
+
 void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that computes)
-	this->running = true;
-	int size = g_db->size();
-
-	DBG_2(m_logger, 3, "GNGAlgorithm::runAlgorithm()");
-
+    m_gng_status = m_gng_status_request = GNG_RUNNING;
 	//Initialize global counters
 	s = 0;
 	c = 0; // cycle variable for lazyheap optimization
 
-	DBG_2(m_logger, 3, "GNGAlgorithm::check size of the db " + to_string(size));
+	LOG(m_logger, 7, "GNGAlgorithm::check size of the db " + to_string(g_db->size()));
 
 	while (g_db->size() < 2) {
-		while (this->m_gng_status != GNG_RUNNING) {
-			DBG(m_logger, 1,
-					"GNGAlgorithm::status in database loop = "
-							+ to_string(this->m_gng_status));
-			if (this->m_gng_status == GNG_TERMINATED)
+        this->status_change_mutex.lock();
+		while (m_gng_status_request == GNG_PAUSED) {
+			if (m_gng_status_request == GNG_TERMINATED){
+				m_gng_status = GNG_TERMINATED;
+				status_change_mutex.unlock();
 				return;
+			}
 			this->status_change_condition.wait(this->status_change_mutex);
 		}
+        this->status_change_mutex.unlock();
 	}
 
 	if (m_g.get_number_nodes() == 0) {
@@ -591,19 +602,22 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 	double time_elapsed =0., time_elapsed_last_error=0.;
 	int accumulated_error_count = 0, accumulated_error_count_last = 0;
 
-	DBG(m_logger, 3, "GNGAlgorithm::init successful, starting the loop"); DBG_2(m_logger, 1, "GNGAlgorithm::gng_status="+to_string(this->m_gng_status));
+	LOG(m_logger, 3, "GNGAlgorithm::init successful, starting the loop"); 
+    LOG(m_logger, 10, "GNGAlgorithm::gng_status="+to_string(this->m_gng_status));
+    LOG(m_logger, 10, "GNGAlgorithm::gng_status_request="+to_string(this->m_gng_status_request));
 	while (true) {
-
-		while (this->m_gng_status != GNG_RUNNING) {
-			DBG(m_logger, 1,
-					"GNGAlgorithm::status in main loop = "
-							+ to_string(this->m_gng_status));
-			if (this->m_gng_status == GNG_TERMINATED)
-				break;
+		this->status_change_mutex.lock();
+		while (this->m_gng_status_request == GNG_PAUSED) {
+			m_gng_status = m_gng_status_request;
 			this->status_change_condition.wait(this->status_change_mutex);
 		}
-		if (this->m_gng_status == GNG_TERMINATED)
+		if (this->m_gng_status_request == GNG_TERMINATED){
+	        LOG(m_logger, 10, "GNGAlgorithm::terminate request"); 
+		    this->status_change_mutex.unlock();
 			break;
+		}
+		this->status_change_mutex.unlock();
+		m_gng_status = GNG_RUNNING;
 
 		double dt =0.;
 		boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
@@ -616,6 +630,8 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 				//Fined grained locks are necessary to prevent deadlocks
 				gmum::scoped_lock<GNGDataset> db_lock(*g_db);
 				ex = g_db->drawExample();
+
+
 				position = g_db->getPosition(ex);
 				vertex_data = g_db->getExtraData(ex);
 				DBG(m_logger, 0, "GNGAlgorithm::draw example");
@@ -660,14 +676,12 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 			accumulated_error_count = 0;
 		}
 
-		DBG_2(m_logger, 4, "GNGAlgorithm::add new node");
-
 		{
 			gmum::scoped_lock<GNGGraph> graph_lock(m_g);
 			addNewNode();
 
 			if (m_toggle_uniformgrid && ug->check_grow()) {
-				DBG_2(m_logger, 10, "GNGAlgorithm:: resizing uniform grid");
+				DBG(m_logger, 10, "GNGAlgorithm:: resizing uniform grid");
 				resizeUniformGrid();
 			}
 
@@ -679,10 +693,10 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 		}
 		++m_iteration;
 
-		DBG_2(m_logger, 9, "GNGAlgorithm::iteration "+to_string(m_iteration));
+		DBG(m_logger, 9, "GNGAlgorithm::iteration "+to_string(m_iteration));
 	}
+	m_gng_status = GNG_TERMINATED
 	DBG(m_logger, 30, "GNGAlgorithm::Terminated server");
-	this->running = false;
 }
 
 
@@ -695,9 +709,23 @@ void GNGAlgorithm::runAlgorithm() { //1 thread needed to do it (the one that com
 
 
 /** Start algorithm loop */
-void GNGAlgorithm::run() {
-	this->m_gng_status = GNG_RUNNING;
-	this->status_change_condition.notify_all();
+void GNGAlgorithm::run(bool synchronized) {
+    //TODO: refactor run to resume?
+    if(m_gng_status == GNG_TERMINATED){
+        return;
+    }
+
+    if(m_gng_status != GNG_RUNNING){
+	    m_gng_status_request = GNG_RUNNING;
+	    this->status_change_condition.notify_all();
+    }
+    if(this->g_db->size() > 2 && synchronized){ 
+        //Algorithm should start. Run is synchronized. 
+        //Terminated is also accepted state
+        while(m_gng_status == GNG_PAUSED){
+            gmum::sleep(10);
+        }
+    }
 }
 
 bool GNGAlgorithm::isRunning(){
@@ -705,15 +733,30 @@ bool GNGAlgorithm::isRunning(){
 }
 
 /** Pause algorithm loop */
-void GNGAlgorithm::pause() {
-	this->m_gng_status = GNG_PAUSED;
-	this->status_change_condition.notify_all();
+void GNGAlgorithm::pause(bool synchronized) {
+    if(this->m_gng_status != GNG_PAUSED){
+	    this->m_gng_status_request = GNG_PAUSED;
+	    this->status_change_condition.notify_all();
+    }
+    if(this->g_db->size() > 2 && synchronized){
+         //Terminated is also accepted state
+         while(m_gng_status == GNG_RUNNING){
+            gmum::sleep(10);        
+         }
+    }
 }
 
 /** Terminate the algorithm */
-void GNGAlgorithm::terminate() {
-	this->m_gng_status = GNG_TERMINATED;
-	this->status_change_condition.notify_all();
+void GNGAlgorithm::terminate(bool synchronized) {
+    if(this->m_gng_status != GNG_TERMINATED){
+	    this->m_gng_status_request = GNG_TERMINATED;
+	    this->status_change_condition.notify_all();
+    }
+    if(synchronized){
+        while(m_gng_status == GNG_RUNNING){
+            gmum::sleep(10);        
+        }
+    }
 }
 
 void GNGAlgorithm::setMaxNodes(int value) {
@@ -733,7 +776,7 @@ double GNGAlgorithm::getMeanError() {
 	gmum::scoped_lock<gmum::fast_mutex> alg_lock(m_statistics_mutex);
 	DBG(m_logger, 3, gmum::to_string(m_mean_error.size()));
 	if(m_mean_error.size() == 0){
-		return std::numeric_limits<double>::max();
+		return -1.0;
 	}else{
 
 		return m_mean_error[m_mean_error.size()-1].second;
@@ -756,10 +799,6 @@ const vector<int> & GNGAlgorithm::get_clustering(){
 	if(isRunning()){
 		was_running = true;
 		pause();
-		while(isRunning()){
-			DBG(m_logger, 2, "get_clustering waiting for pause");
-			this->status_change_condition.wait(this->status_change_mutex);
-		}
 	}
 	vector<int> & result = clustering_result;
 	if(was_running)
@@ -868,7 +907,7 @@ void GNGAlgorithm::fixErrorNew(GNGNode * node) {
 		return;
 
 	while(c - node->error_cycle > m_betha_powers_to_n_length - 1){
-		DBG_2(m_logger, 5, "Recreating m_betha_powers_to_n");
+		DBG(m_logger, 5, "Recreating m_betha_powers_to_n");
 		delete[] m_betha_powers_to_n;
 		m_betha_powers_to_n_length *= 2;
 		m_betha_powers_to_n = new double[m_betha_powers_to_n_length];

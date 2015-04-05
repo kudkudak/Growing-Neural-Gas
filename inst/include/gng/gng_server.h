@@ -29,6 +29,8 @@ using namespace Rcpp;
 using namespace arma;
 #endif
 
+static int gng_server_count=0;
+
 using namespace gmum;
 
 /** Holds together all logic and objects.*/
@@ -45,6 +47,8 @@ public:
 
 	void pause();
 
+	bool hasStarted() const;
+
 	void terminate();
 
 	double nodeDistance(int id1, int id2) const;
@@ -60,6 +64,8 @@ public:
 	void insertExamples(double * positions, double * extra,
 			double * probability, unsigned int count, unsigned int dim);
 
+
+    unsigned getDatasetSize() const;
 	unsigned getGNGErrorIndex() const;
 	bool isRunning() const;
 	vector<double> getMeanErrorStatistics();
@@ -76,8 +82,6 @@ public:
 	//Constructor needed for RCPPInterface
 	GNGServer(GNGConfiguration * configuration);
 
-	SEXP m_current_dataset_memory;//will be deleted in ~delete
-
 	///Moderately slow function returning node descriptors
 	Rcpp::List getNode(int index);
 
@@ -87,18 +91,23 @@ public:
 
 	Rcpp::NumericVector RgetErrorStatistics();
 
-	void RinsertExamples(Rcpp::NumericMatrix & r_points,
-			Rcpp::NumericVector r_extra = Rcpp::NumericVector());
+	void RinsertExamples(Rcpp::NumericMatrix & r_points);
+
+	void RinsertLabeledExamples(Rcpp::NumericMatrix & r_points,
+			Rcpp::NumericVector r_extra);
 
 	//This is tricky - used only by convertToIGraph in R, because
 	//it might happen that we delete nodes and have bigger index of the last node
 	//than actual nodes (especially in the case of utility version of GNG)
 	unsigned int _getLastNodeIndex() const;
 
+	///Calls updateClustering on the GNGAlgorithm object
+	void _updateClustering();
 #endif
 
 private:
-	bool m_current_dataset_memory_was_set;
+	int m_index;
+
 	bool m_running_thread_created;
 
 	gmum::gmum_thread * algorithm_thread;
@@ -127,7 +136,6 @@ private:
 		GNGServer * gng_server = (GNGServer*) server;
 		try {
 			DBG(gng_server->m_logger,10, "GNGServer::run::proceeding to algorithm");
-			gng_server->getAlgorithm().run();
 			gng_server->getAlgorithm().runAlgorithm();
 		} catch (std::exception & e) {
 			cerr << "GNGServer::failed _run with " << e.what() << endl;

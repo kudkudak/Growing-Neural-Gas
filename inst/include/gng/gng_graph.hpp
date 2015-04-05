@@ -400,7 +400,7 @@ void RAMGNGGraph<Node, Edge, Mutex>::load(std::istream & input) {
 template<class Node, class Edge, class Mutex>
 void RAMGNGGraph<Node, Edge, Mutex>::resizeGraph() {
 	//DBG(m_logger,5, "GNGGraph::resizing graph from "+to_string(g.size()));
-	DBG_2(m_logger,5, "GNGGraph::resizing");
+	DBG(m_logger,5, "GNGGraph::resizing");
 	unsigned int previous_size = g.size();
 	//Grow positions pool
 
@@ -432,7 +432,7 @@ void RAMGNGGraph<Node, Edge, Mutex>::resizeGraph() {
 	next_free[g.size() - 1] = -1;
 	first_free = previous_size;
 
-	DBG_2(m_logger,5, "GNGGraph::resizing done");DBG(m_logger,5, to_str(first_free));DBG(m_logger,5, to_str(next_free[previous_size]));
+	DBG(m_logger,5, "GNGGraph::resizing done");DBG(m_logger,5, to_str(first_free));DBG(m_logger,5, to_str(next_free[previous_size]));
 }
 
 static void writeToGraphML(GNGGraph &g, std::ostream & out) {

@@ -13,7 +13,7 @@ public:
 
 	}
     void log(int level, std::string line){
-                if(level>= m_verbosity) std::cerr<<line<<std::endl<<std::flush;
+       if(level <= m_verbosity) std::cerr<<line<<std::endl<<std::flush;
     }
 };
 

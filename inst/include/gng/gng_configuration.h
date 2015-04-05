@@ -84,7 +84,7 @@ public:
 
 	GNGConfiguration() {
 
-		verbosity = 10;
+		verbosity = 1;
 
 		starting_nodes = 100;
 

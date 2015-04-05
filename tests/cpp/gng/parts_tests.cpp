@@ -167,7 +167,6 @@ TEST(DatabaseTests, BasicDatasetTest) {
 	unsigned int dim = 6;
 	gmum::recursive_mutex phase_2_lock;
 	unsigned int num_examples = 100, meta_data_dim = 1;
-	REPORT_PRODUCTION("Creating databse");
 	GNGDatasetSimple<double> dataset2(&phase_2_lock, dim,
 			true /* store_extra */,
 			GNGDatasetSimple<double>::SamplingProbability, logger);
@@ -184,7 +183,6 @@ TEST(DatabaseTests, BasicDatasetTest) {
 		labels[i] = i;
 		probabilities[i] = 0.3;
 	}
-	REPORT_PRODUCTION("Adding first batch");
 	dataset2.insertExamples(x, labels, probabilities, num_examples);
 
 
@@ -195,10 +193,8 @@ TEST(DatabaseTests, BasicDatasetTest) {
 		labels[i] = i - 2;
 		probabilities[i] = 0.9;
 	}
-	REPORT_PRODUCTION("Adding second batch");
 	dataset2.insertExamples(x, labels, probabilities, num_examples);
 
-	REPORT_PRODUCTION("Quering");
 	for (int i = 0; i < 1000; ++i) {
 		unsigned int a = dataset2.drawExample();
 		unsigned int b = dataset2.drawExample();
