@@ -2,7 +2,7 @@
 
 Easy to install and use package for fast **online** GNG algorithm.
 
-Part of gmum.R project. See gmum research group page [here](http://gmum.ii.uj.edu.pl).
+**Note**: Growing-Neural-Gas is now part of gmum.R [gmum.R](https://github.com/gmum/gmum.r) package.
 
 ##General
 ------
